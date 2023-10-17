@@ -1,0 +1,23 @@
+blog_key:
+  version: 1.x
+  header: true
+  css:
+    theme:
+      css/blog.css: {}
+  js:
+    js/blog.js: {} 
+
+  dependencies:
+    - core/jquery
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog      
+
+blog_form:
+  version: 1.x
+  header: true
+  js:
+    js/blog_form.js: {}
+  dependencies:
+    - core/jquery

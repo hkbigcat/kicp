@@ -1,0 +1,47 @@
+<div class="homepage_div">
+
+     <div class="title"><a href="/blog">Blog Home</a></div> 
+    <div class="title">My Blog</div> 
+    <ul>
+        <li><a href="{{ path('blog.blog_view' , {'blog_id': items['my_blog_id']}) }}">View My Blog</a></li>
+        <li><a href="{{ path('blog.add_data') }}">Write New Entry</a></li>
+        <li><a href="{{ path('blog.my_photo') }}">My Photo</a></li>
+        <li><a href="../blog_delegate">My Delegated Users</a></li>
+        <li><a href="#add-record" onclick="getAddGroupMemberUI('blog',{{ my_blog_id }});">My Blog Access Control</a></li>
+    </ul>
+    <div class="title">Other Blogs</div>
+    <ul>
+        <li><a href="javascript:;" onClick="self.location.href='blog_favorite'">My Favorite Blogs</a></li>
+        <li><a href="{{ path('blog.blog_all_list') }}">View All Blogs</a></li>
+    </ul>
+    <div id="add-record" class="modal access_control_table" style="display:none;"></div>
+    <script>
+    jQuery('a[href="#add-record"]').click(function(event) {
+        event.preventDefault();
+        jQuery(this).modal({
+            escapeClose: false,
+            clickClose: false,
+            showClose: false
+        });
+    });
+    </script>
+
+    {% if archive | length %}
+    <div class="title">Blog Archive</div>
+        {% for Years, Months in archive %}
+        <div><ul id="blog_menu">{{Years}} </li>
+            {% for Month, items in Months %}
+            <ul style="margin-bottom:0px;margin-top:0px;">
+                <li><a href="javascript:;" onClick="ShowHideDiv('blog_submenu_{{Years}}{{Month}}')">{{ (Years ~ Month ~ '-1') | date ("F") }} ({{items | length }})</a></li>
+                <ul id="blog_submenu_{{Years}}{{Month}}" class="blog_menu_month" style="display:none;">
+                    {% for item in items %}
+                    <li><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}">{{ item['entry_title'] }}</a></li>
+                    {% endfor %}
+                </ul>
+            </ul>    
+            {% endfor %}
+        </ul></div>    
+        {% endfor %}
+    {% endif  %}
+ </div>
+

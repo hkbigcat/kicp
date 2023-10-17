@@ -1,0 +1,6 @@
+fileshare.fileshare:
+  title: Fileshare
+  description: KICP filesshare
+  menu_name: main
+  route_name: fileshare.fileshare_content
+  weight: 20

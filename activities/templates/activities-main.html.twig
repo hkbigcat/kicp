@@ -1,0 +1,32 @@
+{% include '@activities/leftmenu.html.twig' %}
+<div id="right_content">
+    <div style="float:right;margin-top:-50px;text-align:right;">
+        <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
+        <button class="kicp_button" onclick="self.location.href='activities_admin'"><i class="fa-solid fa-gear"></i>Admin</button>
+        <div style="text-align:right;margin-top:5px;">
+            <div id="DivFollower">Knowledge Management Unit <span id="DivFollow_3232"><a href="javascript:void(0);" onclick="updateFollowUserStatus('KMU.OGCIO', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+        </div>
+    </div>
+    <div class="type_title">{{ items['evt_type_name']}}</div>
+    <div class="type_description">
+        {{ items['description'] | raw  | nl2br  }}
+    </div>  
+
+    {% if events is not empty %}
+        {% include '@activities/activities-general.html.twig' %}
+    {% else %}    
+
+        {% if copitems is not empty %}
+            {% include '@activities/activities-cop-inside.html.twig' %}    
+        {% else %}    
+            {% if items['type_id'] == 1 %}
+                {% include '@activities/activities-cop-top.html.twig' %}
+            {% endif %}
+        {% endif %}
+
+    {% endif %}
+
+
+
+</div>

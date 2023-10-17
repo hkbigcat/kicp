@@ -1,0 +1,14 @@
+activities_key:
+  version: 1.x
+  header: true
+  css:
+    theme:
+      css/activities.css: {}
+  js:
+    js/activities.js: {}
+    
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog      

@@ -1,0 +1,57 @@
+{% include '@blog/leftmenu.html.twig' %}
+
+<div class="homepage_div">
+    <div class="title">Thematic Blogs</div>
+  {% for item in items['thematic'] %}
+    <div class="entry_new" style="margin:bottom:20px;">       
+      <div id="Div_Entry_{{item['entry_id']}}_Image" class="blog_image"><img src="/system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']}}" border="0"  style="width:64px;height:64px;"></div>
+      <div class="blog_text">
+        <span class="title_link"><a href="blog_view/{{item['blog_id']}}">{{item['user_displayname']}}</a></span> 
+        <span id="DivFollow_{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span>
+        ({{item['counter']}} views)
+      </div>
+    </div>    
+  {% endfor %}
+</div>
+
+
+<div class="homepage_div">
+    <div class="title">Personal Blogs</div>
+  {% for item in items['personal'] %}
+    <div class="entry_new" style="margin:bottom:20px;">   
+      <div id="Div_Entry_{{item['entry_id']}}_Image" class="blog_image">
+        {% if (item['image_name']) and (item['image_name'] != 'shadow.gif')  %}
+            <img src="/system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0"  style="width:64px;height:64px;">
+        {% else %}    
+             <img src="/sites/default/files/public/default/shadow.gif" border="0"  style="width:64px;height:64px;">
+        {% endif %}    
+      </div>
+      <div class="blog_text">
+        <span class="title_link"><a href="blog_view/{{item['blog_id']}}">{{item['user_displayname']}}</a></span> 
+        <span id="DivFollow_{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span>
+        ({{item['counter']}} views)
+      </div>
+    </div>    
+  {% endfor %}
+</div>
+
+<div class="homepage_div">
+    <div class="title">Latest update on blogs</div>
+     {% for item in items['latest'] %} 
+    <div class="entry_new" style="margin:bottom:20px;">
+        <div id="Div_{{item['entry_id']}}_Image" class="blog_image">
+        {% if (item['image_name']) and (item['image_name'] != 'shadow.gif')  %}
+            <img src="/system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0"  style="width:64px;height:64px;">
+        {% else %}    
+             <img src="/sites/default/files/public/default/shadow.gif" border="0"  style="width:64px;height:64px;">
+        {% endif %}
+        </div>
+        <div class="blog_text">
+          <span class="title_link"><a href="blog_entry/{{item['entry_id']}}">{{item['entry_title']}}</a></span>
+          <br><strong>{{item['user_displayname']}}</strong> 
+          <span id="DivFollow_{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span>
+          <div>({{item['entry_modify_datetime']}})</div>
+          <div>({{item['counter']}} views)</div>
+         </div>
+         {% endfor %}
+    </div>

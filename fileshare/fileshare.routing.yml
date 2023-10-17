@@ -1,0 +1,110 @@
+fileshare.fileshare_content:
+  path: '/fileshare'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::getShareFile'
+    _title: 'File Share'
+  requirements:
+    _permission: 'access content'
+  option:
+     no_cache: TRUE
+     
+
+fileshare.fileshare_folder:
+  path: '/fileshare_folder'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::myShareFolder'
+    _title: 'File Share Folder'
+  requirements:
+    _permission: 'access content'
+  option:
+     no_cache: TRUE
+
+fileshare.fileshare_tag:
+  path: '/fileshare_tag'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::getShareFileTag'
+    _title: 'File Share Tag'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+fileshare.fileshare_folder_add:
+  path: '/fileshare_folder_add'
+  defaults:
+    _form: '\Drupal\fileshare\Form\FileShareFolderAdd'
+    _title: 'Add File Share Folder'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE     
+
+fileshare.fileshare_folder_change:
+  path: '/fileshare_folder_change'
+  defaults:
+    _form: '\Drupal\fileshare\Form\FileShareFolderChange'
+    _title: 'Edit File Share Folder'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE     
+
+fileshare.fileshare_folder_delete:
+  path: '/fileshare_folder_delete/{folder_id}'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::deleteShareFileFolder'
+    _title: 'File Share'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+fileshare.fileshare_view:
+  path: '/fileshare_view/{file_id}'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::viewShareFile'
+    _title: 'File Share View'
+  requirements:
+    _permission: 'access content'  
+  options:
+     no_cache: TRUE
+
+fileshare.fileshare_add:
+  path: '/fileshare_add'
+  defaults:
+    _form: '\Drupal\fileshare\Form\FileShareAdd'
+    _title: 'Add Share File'
+  requirements:
+    _permission: 'access content'
+  option:
+     no_cache: TRUE
+
+fileshare.fileshare_change:
+  path: '/fileshare_change/{file_id}'
+  defaults:
+    _form: '\Drupal\fileshare\Form\FileShareChange'
+    _title: 'Edit Share File'
+  requirements:
+    _permission: 'access content'
+  option:
+     no_cache: TRUE
+
+fileshare.fileshare_delete:
+  path: '/fileshare_delete/{file_id}'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::deleteShareFile'
+    _title: 'File Share Delete'
+  requirements:
+    _permission: 'access content'  
+  option:
+     no_cache: TRUE
+
+fileshare.fileshare_autocomplete:
+  path: '/fileshare_change/autocomplete/tags'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::HandleAutocomplete'
+    _format: 'json'
+  requirements:
+    _permission: 'access content'

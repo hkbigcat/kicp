@@ -1,0 +1,39 @@
+{% include '@activities/leftmenu.html.twig' %}
+<div id="right_content">
+    <ul class="submenu_container">
+        <li class="submenu_item"><a href="javascript:void(0);" class="active" id="submenu_link_info" onclick="getEventData('info',{{ items['evt_id'] }})">Event Information</a></li>
+        {% if items['has_photo']  %}
+        <li class="submenu_item"><a href="javascript:void(0);" id="submenu_link_photo" onclick="getEventData('photo',{{ items['evt_id'] }})">Photo</a></li>
+        {% endif %} 
+          {% if items['has_deliverable']  %}
+        <li class="submenu_item"><a href="javascript:void(0);" id="submenu_link_deliverable" onclick="getEventData('deliverable',{{ items['evt_id'] }})">Deliverable</a></li>
+        {% endif %} 
+        <li class="submenu_item"><a href="video_list?media_event_id=57" id="submenu_link_video" target="_blank">Video</a></li>
+        {% include '@common/common-like.html.twig'  with {module: 'activities', 'record_id':  items['evt_id'], countLike: items ['countlike'], 'liked': items ['liked']  }  %}
+    </ul>
+    <div id="event_info" class="type_item" style="width:98%;">
+        <div class="event_column_title">Event Name:</div>
+        <div class="event_column_content"> {{ items['evt_name']   }}</div>
+        <div id="event_detail">
+            <div class="event_column_title">Date:</div>
+            <div class="event_column_content">{{ items['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ items['evt_end_date'] | date('H:i:s')  }} ({{ items['evt_start_date'] | date('l')  }})</div>
+            <div class="event_column_title">Venue:</div>
+            <div class="event_column_content">{{ items['venue']  }}</div>
+            <div class="event_column_title">Enrollment Period:</div>
+            <div class="event_column_content">{{ items['evt_enroll_start'] | date('d.m.Y')  }} - {{ evens['evt_enroll_end'] | date('d.m.Y')  }}</div>
+            <div class="event_column_title">Created By:</div>
+            <div class="event_column_content">{{ items['user']['user_name'] }} <span id="DivFollow_{{ items['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('KMU.OGCIO', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+        </div>
+
+        {% include '@common/common-tags-list.html.twig'  with {'tags': items['tags']}  %}            
+        <input type="hidden" name="tag_page" id="tag_page" value="activities_tag">
+    </div>
+    <div class="event_column_description"><div>&nbsp;</div>
+    <div class="event_column_enroll_status"><a href="javascript:void(0);" onclick="window.open('activities_enroll_status?evt_id=318', 'enroll_status')">Enrollment Status</a></div>
+    <div id="description_content" style="text-align:justify;">
+            {{ items['evt_description'] | raw  }}
+
+    </div>
+</div>
+
+

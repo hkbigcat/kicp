@@ -1,0 +1,8 @@
+<div class="comment_title">Total {{ items ['comments'] | length }} comment(s)</div><br>
+  {% if comments | length %}
+  {% for comment in comments %}
+	<div class="comment_username">({{loop.length - loop.index + 1 }}) {{ comment['display_name'] }} commented on {{ comment['comment_create_datetime']  }}</div>
+    <div class="comment_content">{{ comment['comment_content']  }}
+	</div><br>
+  {% endfor %}
+  {% endif %}    

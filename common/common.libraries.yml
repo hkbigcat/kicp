@@ -1,0 +1,36 @@
+common_key:
+  version: 1.x
+  css:
+    theme:
+      css/common.css: {}
+    header: true
+  js:
+    js/common.js: {} 
+
+  dependencies:
+    - core/jquery
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog
+
+content_table:
+  version: 1.x
+  css:
+    theme:
+      css/content_table.css: {}
+  js:
+      js/content_table.js: {}
+  header: true
+  dependencies:
+    - core/jquery
+
+content_tags:
+  version: 1.x
+  css:
+    theme:
+      css/tags.css: {}
+    header: true  
+  js:
+    js/tags.js: {}
+    

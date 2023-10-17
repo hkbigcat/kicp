@@ -1,0 +1,6 @@
+name: KM Activities Module
+description: KM Activities Maintenance
+package: KICP
+type: module
+core: 8.x
+core_version_requirement: ^9.4 || ^10

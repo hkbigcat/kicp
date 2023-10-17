@@ -1,0 +1,7 @@
+activities.activities:
+  title: Activities
+  description: KCIP Activities
+  menu_name: main
+  route_name: activities.content
+  weight: 60
+

@@ -1,0 +1,12 @@
+
+{% if tags is not empty  %}
+<div style="margin-top:4rem"><span class="entry_subtitle">Tags: </span> 
+    {% for tag in tags %}
+    {% if loop.last %}
+    <a href="javascript:;" onClick="addTagUrl('{{tag}}')">{{tag}}</a>
+    {% else %}
+    <a href="javascript:;" onClick="addTagUrl('{{tag}}')">{{tag}}</a>,
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %} 

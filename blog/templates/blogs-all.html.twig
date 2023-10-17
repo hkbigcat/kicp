@@ -1,0 +1,30 @@
+{% include '@blog/leftmenu.html.twig' %}
+<div id="MainEntryContainer">
+    <form id="search_form" name="search_form" method="get">
+        <div style="width:100%;text-align:right;float:right;margin:5px;">
+        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="User Name / Blog Name"></div>
+    </form>
+    <div id="BlogListDiv" class="BlogName">Blog List</div>
+    <div id="DivContentTable">
+
+        <div class="common_table_header">
+            <div style="width:12%;">&nbsp;</div>
+            <div style="width:33%;text-align:left;">User Name</div>
+            <div style="width:33%;text-align:left;">Blog Name</div>
+            <div style="width:17%;text-align:left;">Blog Type</div>
+        </div>
+
+        {% for item in items %}
+           {% if  item['user_name'] %}
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
+            <div style="width:12%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
+            <div style="width:33%;float:left;display:block;">{{  item['user_name'] }}<span id="DivFollow{{  item['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{  item['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+            <div style="width:33%;float:left;display:block;"><a href="/blog_view/{{  item['blog_id'] }}">Blog of {{  item['user_name'] }}</a></div>
+            <div style="width:17%;float:left;display:block;">{% if item['blog_type'] == "P"  %}Personal{% else %}Thematic{% endif%}</div>
+        </div>
+           {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>

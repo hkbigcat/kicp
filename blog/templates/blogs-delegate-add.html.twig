@@ -1,0 +1,65 @@
+{% include '@blog/leftmenu.html.twig' %}
+<div id="MainEntryContainer">
+    <div id="BlogListDiv" class="BlogName">My Delegated Users - Add</div> 
+    <div style="width: 25%; float:right; text-align:right;">
+        <button class="kicp_button" onClick="self.location.href='/blog_delegate'"><i class="fa-solid fa-user-group"></i> My Delegated Users</button>
+    </div>
+    <div id="DivContentTable">
+        <div class="common_table_header">
+            <div style="width:11%;">&nbsp;</div>
+            <div style="width:60%;text-align:left;">User Name</div>
+            <div style="width:15%;text-align:left;">&nbsp;</div>
+        </div>
+
+        {% for item in items %}
+           {% if  item['member_id'] %}
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
+            <div style="width:11%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
+            <div style="width:60%;float:left;display:block;"><span title="{{  item['user_id'] }}">{{  item['member_name'] }}</span><span id="DivFollow{{  item['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{  item['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+            <div style="width:15%;float:left;display:block;"><span><button class="kicp_button" onClick="module_item_delete('blog_delegate','{{ item['member_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button></span></div>
+        </div>
+           {% endif %}
+        {% endfor %}
+    </div>
+    
+    <div style="width:100%;float:right;margin-top:10px;">
+            <form name="serch_str_form" id="serch_str_form" method="GET">
+                <div style="display:block;width:100%;text-align:right;">
+                <b>Search User:</b> <input type="text" name="search_str" id="search_str" value="{{ items['search_str'] }}" placeholder="User Name" size="40">
+                </div>
+            </form>
+    </div>
+
+    {% if  members is not empty %}
+    <div style="margin-top:10px;">
+        <fieldset>
+            <legend>&nbsp;<b>Please Select User</b>&nbsp;</legend>
+            <div id="DivContentTable" style="display:inline-block;max-height:380px;overflow-x:hidden;">
+                <div id="DivContentTable">
+                    <form name="add_search_form" id="add_search_form" medthod="post" action="/blog_delegate_list_add_action">
+                    <input type="hidden" name="delegate_user_id" id="delegate_user_id">
+                    <input type="hidden" name="search_str" id="search_str2" value="{{ items['search_str'] }}">
+
+                    {% for member in members %}
+                    {% if  member['user_id'] %}
+                    <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
+                        <div style="width:11%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
+                        <div style="width:60%;float:left;display:block;"><span title="{{  member['user_id'] }}">{{  member['user_name'] }}</span></div>
+                        <div style="width:15%;float:left;display:block;"><span><button class="kicp_button" onClick="addDelegate(this.form, '{{  member['user_id'] }}');return false;"><i class="fa-solid fa-circle-plus"></i> Add</button></span></div>
+                    </div>
+
+                    {% endif %}
+                    {% endfor %}
+
+                    </form>
+                </div>
+            
+            </div>
+        </fieldset>
+    </div>
+    <div style="float:right; margin:20px;">{{ pager }}</div>
+    {% endif %}
+
+</div>
+
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog Delegrate User'}  %}

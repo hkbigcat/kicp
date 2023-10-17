@@ -1,0 +1,19 @@
+common.download:
+  path: '/download/{module_name}/{file_id}'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::downloadModuleFile'
+    _title: 'Download File'
+  requirements:
+    _permission: 'access content'  
+  options:
+     no_cache: TRUE
+
+common.addLike:
+  path: '/add_like'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::addLike'
+    _title: 'Add Like'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE     

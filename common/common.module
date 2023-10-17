@@ -1,0 +1,63 @@
+<?php
+
+//use Drupal\common\CommonUtil;
+
+/*		
+
+// alter the form in CKEditor
+function blog_form_editor_image_dialog_alter(&$form, &$form_state, $form_id) {
+	// function name: {MODULE}_form_{FORM_ID}_alter
+	// Modification for the form with the given form ID goes here. For example, if
+	// FORM_ID is "user_register_form" this code would run only on the user
+	// registration form.
+
+	$form['fid'] = array(
+		'#title' => $form[fid]['#title'],
+		'#type' => $form[fid]['#type'],
+		'#upload_location' => $form[fid]['#upload_location'] . 'public/UploadImage',
+		//'#default_value' => $form[fid]['#default_value'],
+		'#upload_validators' =>$form[fid]['#upload_validators'],
+		'#required' => $form[fid]['#required'],
+	);
+				
+}
+
+function hook_file_move($file, $source, $destination="") {
+	$file_user = user_load($file->uid);
+	// Make sure that the file name starts with the owner's user name.
+	if (strpos($file->filename, $file_user->name) !== 0) {
+		$file->filename = $file_user->name . '_' . $file->filename;
+		$file->save();
+
+		watchdog('file', t('Moved file %source has been renamed to %destination', array('%source' => $source->filename, '%destination' => $file->filename)));
+	}
+}
+*/
+
+
+/**
+ * @file
+ * Contains common.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function common_page_attachments_alter(&$page) {
+    $page['#attached']['library'][] = 'common/common_key';
+	
+    	
+}
+
+
+/**
+ * Implements hook_help().
+ */
+function common_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.common':
+      return '<p>' . t('Common module that provides list data.') . '</p>';
+      break;
+  }
+}  
+  
+  

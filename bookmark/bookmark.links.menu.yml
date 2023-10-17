@@ -1,0 +1,7 @@
+bookmark.bookmark:
+  title: Bookmarks
+  description: KCIP bookmark
+  menu_name: main
+  route_name: bookmark.bookmark_content
+  weight: 20
+

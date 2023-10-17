@@ -1,0 +1,149 @@
+blog.blog_content:
+  path: '/blog'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::content'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_entry:
+  path: '/blog_entry/{entry_id}'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::viewEntry'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_view:
+  path: '/blog_view/{blog_id}'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::viewBlog'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.add_data:
+  path: '/blog_add'
+  defaults:
+    _form: '\Drupal\blog\Form\BlogAdd'
+    _title: 'Blog - New Entry'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.change_data:
+  path: '/blog_change/{entry_id}'
+  defaults:
+    _form: '\Drupal\blog\Form\BlogChange'
+    _title: 'Blog - Edit Entry'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.delete_data:
+  path: '/blog_delete/{entry_id}'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::BlogDelete'
+    _title: 'Delete Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.blog_tag:
+  path: '/blog_tag'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::ViewBlogByTag'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.my_photo:
+  path: '/blog_my_photo'
+  defaults:
+    _form: '\Drupal\blog\Form\BlogMyPhoto'
+    _title: 'Blog - My Photo'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.comment_add:
+  path: '/blog_comment_add'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::CommentAdd'
+    _title: 'Add Blog Comment'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+blog.comment_list:
+  path: '/blog_comment_list/{entry_id}'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::CommentList'
+    _title: 'Display Blog Comment'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_all_list:
+  path: '/blog_list'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::ViewAllBlogList'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_delegate:
+  path: '/blog_delegate'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::BlogDelegateList'
+    _title: 'My Delegated Users List'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.delegate_delete:
+  path: '/blog_delegate_delete/{user_id}'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::BlogDelegateDelete'
+    _title: 'Delete Blog Delegated Users'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_delegate_list_add:
+  path: '/blog_delegate_list_add'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::BlogDelegateAdd'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+blog.blog_delegate_list_add_action:
+  path: '/blog_delegate_list_add_action'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::BlogDelegateAddAction'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

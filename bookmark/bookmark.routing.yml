@@ -1,0 +1,39 @@
+bookmark.bookmark_content:
+  path: '/bookmark'
+  defaults:
+    _controller: '\Drupal\bookmark\Controller\BookmarkController::BookmarkContent'
+    _title: 'Bookmarks'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+bookmark.add_data:
+  path: '/bookmark_add'
+  defaults:
+    _form: '\Drupal\bookmark\Form\BookmarkAdd'
+    _title: 'Add Bookmark'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+bookmark.change_data:
+  path: '/bookmark_change/{bid}'
+  defaults:
+    _form: '\Drupal\bookmark\Form\BookmarkChange'
+    _title: 'Edit Bookmark'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+bookmark.delete_data:
+  path: '/bookmark_delete/{bid}'
+  defaults:
+    _controller: '\Drupal\bookmark\Controller\BookmarkController::BookmarkDelete'
+    _title: 'Delete Bookmark'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

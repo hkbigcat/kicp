@@ -1,0 +1,110 @@
+<?php
+
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\file\Entity;
+use Drupal\file\Entity\File;
+
+
+function blog_page_attachments_alter(&$page) {
+        
+        $page['#attached']['library'][] = 'blog/blog_key';
+        $page['#attached']['library'][] = 'common/common_key';
+        $page['#attached']['library'][] = 'common/content_table';
+
+        $path = $current_path = \Drupal::service('path.current')->getPath();
+        if ( str_contains($path, '/blog_add') || str_contains($path, '/blog_change') ) {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }        
+
+        if ( str_contains($path, '/blog_entry')  ) {
+            $page['#attached']['library'][] = 'blog/blog_form';
+        }	
+
+
+}
+
+
+function blog_theme($existing, $type, $theme, $path) {
+
+    return [
+        'blogs-home' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],
+        'blogs-entry' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'archive' => NULL,
+            ],
+        ],
+        'blogs-view' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'archive' => NULL,                
+                'tagsUrl' => NULL,
+                'pager' => NULL,
+            ],
+        ],
+        'blogs-comments' =>[
+            'variables' => [
+                'comments' => NULL,
+            ],
+        ],
+        'blogs-all' =>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+                'archive' => NULL,     
+            ],
+        ],
+        'blogs-delegate' =>[
+            'variables' => [
+                'items' => NULL,
+                'archive' => NULL,     
+            ],
+        ],
+        'blogs-delegate-add' =>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+                'archive' => NULL,     
+                'members' => NULL,
+            ],
+        ],        
+
+    ];
+
+}
+
+/*
+function fileshare_file_download($uri) {
+
+    $scheme = \Drupal\Core\StreamWrapper\StreamWrapperManager::getScheme($uri);
+    if ($scheme === 'private') {
+        $uri_target = array();
+        $uri_target = explode('/', \Drupal\Core\StreamWrapper\StreamWrapperManager::getTarget($uri));
+
+        return $uri;
+    } else {
+        return $uri;
+    }
+}
+*/
+
+/**
+ * Implements hook_help().
+ */
+function blog_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.blog':
+        return '<p>' . t('Blog module that provides KICP blogs.') . '</p>';
+        break;
+    }
+  }  
+    

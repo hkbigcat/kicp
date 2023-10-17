@@ -1,0 +1,317 @@
+@charset "utf-8";
+/* using by:  */
+
+/* override the oroginal layout CSS [Start] */
+body, table, tr, td, div, span {
+    font-family: Georgia,"Times New Roman",Times,serif;
+}
+
+
+.menu-item {
+    font-size: 1.25em;
+}
+
+
+#block-usernameblock {
+    display: inline-block;
+    float:right;
+    position:relative;
+    margin-top:-17px;
+}
+
+#block-bartik-branding {
+    margin-top: -8px;
+    margin-bottom: -45px;
+}
+
+#block-usernameblock div {
+    color: #051B64;
+}
+/* old KICP icon (on top left corner) */
+
+#block-kicpicon-2 {
+    display: inline-block;
+    float:left;
+    margin-top: -20px;
+}
+/* override the oroginal layout CSS [End] */
+
+.cpRateStarOn {
+    background-image: url(../../../../modules/custom/common/images/icon_star_on.gif);
+    background-repeat: no-repeat;
+    padding-left: 16px;
+    height: 20px;
+    display: inline-block;
+}
+
+.cpRateStarHalf {
+    background-image: url(../../../../modules/custom/common/images/icon_star_half.gif);
+    background-repeat: no-repeat;
+    padding-left: 16px;
+    height: 20px;
+    display: inline-block;
+}
+
+.cpRateStarOff {
+    background-image: url(../../../../modules/custom/common/images/icon_star_off.gif);
+    background-repeat: no-repeat;
+    padding-left: 16px;
+    height: 20px;
+    display: inline-block;
+}
+
+.noDisplay{
+    display:none;
+}
+
+.cpRateWording{
+    padding-left:5px;
+}
+
+.small{
+    font-size:0.8em;
+    padding-left:0px;
+    font-weight:bold;
+}
+
+.cpRateComment{
+    font-style:italic;
+    font-weight:bold;
+}
+
+table.dataTable tbody th, table.dataTable tbody tr, table.dataTable tbody td {
+    padding: 0px !important;
+    border: 0px;    
+}
+
+table.row_table {     
+    border: 1px solid #ddd;        
+    margin: 0px;
+}
+
+.dataTables_filter input {
+    width: 300px; 
+}
+
+.selecterd_tag_div {
+    padding:2px;
+    display: inline-block;
+    width:65%;
+}
+
+.selecterd_tag_div>.item {
+    border:1px solid #DDDDDD;
+    display: inline-block;
+    padding: 5px;
+    border-radius: 5px;
+    margin-right: 3px;
+}
+
+.selecterd_tag_div>.item:hover  {
+    background: #F6F6F6;
+}
+
+#DivLoadMore a {
+    padding:5px;
+    border-radius:5px;
+    background-color:#62C1FC;
+    color:#FFFFFF;
+}
+
+#DivLoadMore a:hover {
+    background-color: #449ACF;
+    color: #FFFFFF;
+    text-decoration: underline;
+}
+
+.tagBullet {
+    display:inline-block;
+    line-height: 2em;
+    padding: 3px 6px;
+    border:1px solid #DBDBDB;
+    border-radius: 5px;
+    margin:7px 5px;
+    box-shadow: 1px 1px 1px #ECECEC;
+    background-color: #FCFCFC
+}
+
+.tagBullet:hover {
+    /*border:1px solid #C2C2C2;*/
+    background-color: #F2F2F2;
+    box-shadow: 1px 1px 1px #888888;
+}
+
+.tagHighlight {
+    color: #8950C7;
+}
+
+.tagHighlight:hover {
+    color: #6000C7;
+}
+
+.copTagInput {
+    border: 1px solid #FAFAD2;
+    background: #FAFAD2;
+}
+
+.highlight_icon2 {
+    padding:7px;
+    border-radius:5px;
+    background-color:#2982FF;
+    color:#FFFFFF;
+    
+    float:right; margin-top:7px; margin-left:10px;
+}
+
+.highlight_icon2:hover {
+    background-color: #0E5BC7;
+    color: #FFFFFF;
+    text-decoration: none;
+} 
+
+.highlight_icon2:focus {
+    color: #FFFFFF;
+}
+
+#MainEntryContainer100 {
+    width:100%;
+    margin:8px;
+    display:inline-block;
+}
+
+.group_member_list {
+    background-color: #EEEEEE;
+    position:absolute;
+    border:1px solid #CCCCCC;
+    border-radius: 3px;
+    width:280px;
+    display:block;
+    /*top:-15px;*/
+    margin-left:4px;
+    z-index:1;
+    box-shadow: 1px 1px 5px #e6e6e6;
+}
+
+.group_member_list > .group_name {
+    color: #000000;
+    background-color: #DDDDDD;
+    padding:4px;
+    border-radius: 3px 3px 0 0;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+.group_member_list > .group_close {
+    float:right;
+    display:inline-block;
+    margin-right:5px;
+    font-size:13pt;
+    cursor:pointer;
+    padding:0px 6px;
+}
+
+.group_member_list > .group_close:hover {
+    background-color: #ECECEC;
+    font-size:14pt;
+}
+
+.group_member_list > .group_member {
+    max-height: 210px;
+    overflow-x: auto;
+    padding:4px;
+}
+
+#edit-tags--description {
+    color: blue;
+    letter-spacing: 0.1em;
+}
+
+#block-bartik-branding>a>img{
+    width: 100%;
+    height: auto;
+}
+
+.text-left-100 {
+    margin: 10px 0px; 
+    width: 100%; 
+    float: left; 
+    display: block;
+    font-weight:bold;
+}
+
+.text-left-90 {
+    width: 93%; 
+    float: left; 
+    margin-bottom:20px;
+}
+
+.text-left-6 {
+    width: 6%; 
+    float: left; 
+}
+
+.quoteMessage {
+    width:95%;
+    margin-left:20px;
+    background-color:#EDEDED; 
+    border:1px dotted #7A7A7A;
+    padding:10px;
+    /*display: table-cell;*/
+}
+
+
+.announcement_div {
+    padding:7px;
+    border-radius:5px;
+    background-color:#62C1FC;
+    color:#FFFFFF;
+    float:right; 
+    margin-top:-40px; 
+    margin-left:10px;
+    margin-right:10px;
+}
+
+.announcement_div>a {
+    color:#45442C;
+}
+
+.fa-user-plus {
+    color:darkgreen;
+}
+
+
+.kicp_button {
+    height:40px;
+    background-image: linear-gradient(to bottom,rgb(158,195,207),rgb(71 103 145));
+    font-size: 16px;
+    padding:10px 13px;
+    color:#fff;
+    cursor:pointer;
+    border:none;
+    margin:5px;
+    border-radius: 10px;
+}
+
+.kicp_button:hover {
+    background-image: linear-gradient(to bottom,rgb(143, 84, 167),rgb(46, 6, 36));
+    box-shadow: 0 10px 10px 0 grey;
+}
+
+
+.kicp_button > .svg-inline--fa {
+    color:rgb(209 205 225);
+    margin: 0 10px;
+}
+
+#DivFollower {
+    border: 1px solid #DBDBDB;
+    float:right; 
+    text-align:right;
+    padding: 7px;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+#DivFollower:hover {
+    border-color: #DBDBDB;
+    background-color:#F2F2F2;
+}

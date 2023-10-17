@@ -1,0 +1,7 @@
+blog.blog:
+  title: Blog
+  description: KCIP blog
+  menu_name: main
+  route_name: blog.blog_content
+  weight: 10
+

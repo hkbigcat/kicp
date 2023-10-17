@@ -1,0 +1,89 @@
+<?php
+
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\file\Entity;
+use Drupal\file\Entity\File;
+
+
+function fileshare_page_attachments_alter(&$page) {
+        
+        $page['#attached']['library'][] = 'fileshare/fileshare_key';
+        $page['#attached']['library'][] = 'common/content_table';
+        
+        //$page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
+        //$page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
+
+        $path = $current_path = \Drupal::service('path.current')->getPath();
+        if (str_contains($path, '/fileshare_view')) {
+            $page['#attached']['library'][] = 'fileshare/fileshare_slides';
+        } 
+        
+        if (str_contains($path, '/fileshare_folder_add') || (str_contains($path, '/fileshare_folder_change')) || (str_contains($path, '/fileshare_add')) || (str_contains($path, '/fileshare_change')) ) {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }
+        
+    
+
+}
+
+function fileshare_theme($existing, $type, $theme, $path) {
+
+    return [
+        'fileshare-files' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'pager' => NULL,
+                'tagsUrl' => NULL,
+            ],
+        ],
+        'fileshare-foldertable' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'pager' => NULL,
+            ],
+
+        ],
+        'fileshare-view' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'slides' => NULL,
+            ],
+
+        ],        
+
+    ];
+
+}
+
+
+function fileshare_file_download($uri) {
+
+    $scheme = \Drupal\Core\StreamWrapper\StreamWrapperManager::getScheme($uri);
+    if ($scheme === 'private') {
+        $uri_target = array();
+        $uri_target = explode('/', \Drupal\Core\StreamWrapper\StreamWrapperManager::getTarget($uri));
+
+        return $uri;
+    } else {
+        return $uri;
+    }
+}
+
+
+/**
+ * Implements hook_help().
+ */
+function fileshare_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.fileshare':
+        return '<p>' . t('Fileshare module that provides fileshare.') . '</p>';
+        break;
+    }
+  }  
+    

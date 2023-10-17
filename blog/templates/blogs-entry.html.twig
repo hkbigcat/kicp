@@ -1,0 +1,54 @@
+{% include '@blog/leftmenu.html.twig' %}
+
+{% include '@common/common-tags.html.twig' %}
+
+<input type="hidden" name="tag_page" id="tag_page" value="../blog_tag">
+<input type="hidden" name="notag_page" id="notag_page" value="../blog">
+
+<div id="MainEntryContainer">
+   <div style="float:right;">
+      <button class="kicp_button"  onclick="self.location.href='../blog_view/{{ items ['blog_id'] }}'"><i class="fa-solid fa-thumbtack"></i> All posts</button>
+      <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+      <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
+    </div>
+    <div class="BlogName">{{ items ['blog_name'] }}<span id="DivFollow_{{ items ['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ items ['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+    
+    <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
+        <div style="float:right">
+            <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': items['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
+            <span><button class="kicp_button" onClick="module_item_delete('blog',{{ items['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+
+         </div>
+        <div class="entry_title">{{ items ['entry_title'] }} </div>
+        <div class="entry_content" id="COp_entry_content">
+            {{ items ['entry_content']  | raw }}
+        </div><br>
+
+        {% for attachment in items['attachment'] %}
+            <a href="/download/blog/{{ items ['entry_id'] }}?fname={{ attachment | url_encode }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
+        {% endfor %}
+        {% include '@common/common-tags-list.html.twig' %}    
+        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span>{{ items ['entry_modify_datetime'] }}
+          {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  items['entry_id'], countLike: items['countlike'], 'liked': items['liked']  }  %}
+        </div>
+  </div>
+
+  <hr style="margin: 20px 0;"><a name="comment_area"></a>
+
+<div id="blogCommentContainer">
+    {% include '@blog/blogs-comments.html.twig'  with {comments: items['comments'] }  %}
+</div>
+
+  <form id="CommentForm" name="CommentForm" method="POST">
+      <div id="blogNewCommentContainer">
+        <div>Post your comment:</div>
+        <textarea name="my_comment" id="my_comment" rows="6" cols="26"></textarea><br>
+        <input type="hidden" name="entry_id" id="entry_id" value="{{ items['entry_id'] }}">
+        <input type="checkbox" name="is_guest" id="is_guest" value="1"> Post as  <input type="text" name="guest_name" id="guest_name" size="10" maxlength="100" class="comment_guest_name_field" value="Guest" onclick="document.getElementById('is_guest').checked=true;"><br>
+        <div class="comment_remarks">Please type your preferred name in "Post as" (with checkbox on) or your name will be shown for comment submitted.</div><br>
+        <input type="button" name="submitBtn" id="submitBtn" value="Submit">&nbsp;
+        <input type="Reset" name="cancelBtn" id="cancelBtn" value="Cancel">  
+      </div>
+  </form>
+
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}

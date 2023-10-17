@@ -1,0 +1,30 @@
+{% include '@common/common-tags.html.twig' %}
+
+<input type="hidden" name="tag_page" id="tag_page" value="../bookmark">
+<div id="DivContentTable">
+    <div style="float:right">
+        <button class="kicp_button" onClick="self.location.href='../bookmark_add'"><i class="fa-solid fa-circle-plus"></i> Add </button>
+    </div>
+  {% for item in items %}
+    <!--{{item ['bid'] }} -->
+    <div id="row_{{ loop.index0 + 1 }} " class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%; margin-left:20px;">
+        <div style="width:78%;float:left;display:block;padding-right:5%;">
+            <div class="entry_title2 bookmark_column2"><a href="{{item ['bAddress'] }}" target="_blank">{{item ['bTitle'] }}</a></div>
+            <div class="bookmark_column2">{{item ['bDescription'] | raw }}</div>
+
+                {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}    
+
+            <div class="bookmark_column2"><span class="bookmark_subtitle">Created By.:</span> {{item ['user_name'] }}<span id="DivFollow_{{item ['user_id'] }}"></span></div>
+            <div class="bookmark_column2"><span class="bookmark_subtitle">Modified Date:</span> {{item ['bModified'] }} </div>
+        </div>
+        <div style="display:inline;">
+               <span><button class="kicp_button" onClick="location.href='/bookmark_change/{{ item['bid'] }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
+               <span><button class="kicp_button" onClick="module_item_delete('bookmark',{{ item['bid'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+        </div>
+    </div>
+   {% endfor %}
+</div>
+
+    <div style="float:right; margin:20px;">{{ pager }}</div>
+
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'bookmark'}  %}    

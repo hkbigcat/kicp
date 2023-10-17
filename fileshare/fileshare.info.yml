@@ -1,0 +1,7 @@
+name: File Share Module
+description: File Share Maintenance
+package: KICP
+type: module
+core_version_requirement: ^9.4 || ^10
+dependencies:
+  - 'common'

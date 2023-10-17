@@ -1,0 +1,7 @@
+name: Common Module
+description: 'KICP Common Module'
+package: Custom
+type: module
+version: 1.0
+core: 8.x
+core_version_requirement: ^9 || ^10

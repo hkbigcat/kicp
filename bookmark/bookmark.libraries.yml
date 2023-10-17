@@ -1,0 +1,7 @@
+bookmark_key:
+  version: 1.x
+  css:
+    theme:
+      css/bookmark.css: {}
+  header: true
+  

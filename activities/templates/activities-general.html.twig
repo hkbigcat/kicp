@@ -1,0 +1,13 @@
+    <div class="type_item_row" style="flex-wrap:wrap; margin-top:1rem">
+     {% for event in events %}
+
+        <div class="type_item">
+            <div class="left_inline" style="width:340px;margin-left:10px;margin-right:10px;font-weight:bold;">
+                <span class="activities_title"><a href="/activities_detail/{{ event['evt_id'] }}">{{ event['evt_name'] }}</a></span> 
+                <div class="item_date">(on {{ event['evt_start_date'] | date('d.m.Y')  }})</div>
+            </div>
+         {% include '@common/common-like.html.twig'  with {module: 'activities', 'record_id': event['evt_id'], countLike:event['countlike'], 'liked': event['liked']  }  %}
+        </div>
+    
+    {% endfor %}    
+</div>

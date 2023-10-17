@@ -1,0 +1,6 @@
+.selected {
+    background-color: #CEC;
+}
+.unselected {
+    background-color: initial;
+}

@@ -1,0 +1,15 @@
+fileshare_key:
+  version: 1.x
+  css:
+    theme:
+      css/fileshare.css: {}
+  header: true
+
+fileshare_slides:
+  version: 1.x
+  css:
+    theme:
+      css/slides.css: {}
+  header: true
+  js:
+    js/slides.js: {}    

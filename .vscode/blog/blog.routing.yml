@@ -1,0 +1,9 @@
+blog.content:
+  path: '/blog'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::content'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
