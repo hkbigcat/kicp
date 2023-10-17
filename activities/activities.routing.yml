@@ -47,6 +47,15 @@ activities.activities_detail:
     _permission: 'access content'
   options:
     no_cache: TRUE
-        
+
+activities.admin_content:
+  path: '/activities_admin'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::AdminContent'
+    _title: 'KM Activities Management'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE     
 
   

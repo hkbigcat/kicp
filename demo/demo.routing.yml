@@ -1,0 +1,9 @@
+demo.box:
+  path: '/demo'
+  defaults:
+    _controller: '\Drupal\demo\Controller\DemoController::content'
+    _title: 'Demo'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

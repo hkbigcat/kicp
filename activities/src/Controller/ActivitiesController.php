@@ -73,7 +73,6 @@ class ActivitiesController extends ControllerBase {
         $EventDetail = ActivitiesDatatable::getEventDetail($evt_id);
 
         $activitiesType = ActivitiesDatatable::getAllActivityType();
-        $activitiesType = ActivitiesDatatable::getAllActivityType();
         $GroupInfo = ActivitiesDatatable::getCOPGroupInfo();
 
         return [
@@ -84,6 +83,23 @@ class ActivitiesController extends ControllerBase {
             '#empty' => t('No entries available.'),
         ];                
 
+
+    }
+
+
+    public function AdminContent() {
+     
+        
+        $activitiesType = ActivitiesDatatable::getAllActivityType();
+
+        return [
+            '#theme' => 'activities-admin',
+            '#items' => $activitiesType,
+            '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],
+        ];   
+        
 
     }
 

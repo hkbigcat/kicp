@@ -40,7 +40,7 @@ function activities_theme($existing, $type, $theme, $path) {
                 'copitems' => NULL,
             ],
         ],
-        'activities-details'=>[
+        'activities-admin'=>[
             'variables' => [
                 'items' => NULL,
                 'groups' => NULL,
