@@ -104,4 +104,17 @@ class ActivitiesController extends ControllerBase {
     }
 
 
+    public function ActivityEventData($evt_id="") {
+
+        $photos = ActivitiesDatatable::getEventPhotoByEventId($evt_id);
+
+        return [
+            '#theme' => 'activities-photo',
+            '#items' => $photos,
+            '#empty' => t('No entries available.'),
+        ];   
+
+    }
+
+
 }

@@ -4,8 +4,16 @@ activities_key:
   css:
     theme:
       css/activities.css: {}
+      css/lightgallery-bundle.css: {}
+      css/lg-zoom.css: {}
+      css/lg-thumbnail.css: {}
+
   js:
     js/activities.js: {}
+    js/lightgallery.umd.js: {}
+    js/thumbnail/lg-thumbnail.umd.js: {}
+    js/zoom/lg-zoom.umd.js: {}
+    
     
   dependencies:
     - core/jquery

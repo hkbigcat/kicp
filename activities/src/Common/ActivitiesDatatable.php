@@ -116,7 +116,6 @@ class ActivitiesDatatable {
             return $record;
         } else {
             $sql = 'SELECT evt_photo_id, evt_photo_url, evt_photo_description FROM kicp_km_event_photo WHERE evt_id='.$evt_id.' AND is_deleted = 0 ORDER BY evt_photo_url';
-            $result = db_query($sql);
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
 

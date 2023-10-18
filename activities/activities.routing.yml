@@ -48,6 +48,16 @@ activities.activities_detail:
   options:
     no_cache: TRUE
 
+activities.event_data:
+  path: '/activities_event_data/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityEventData'
+    _title: 'Get Event Data'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
 activities.admin_content:
   path: '/activities_admin'
   defaults:
