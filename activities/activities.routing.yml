@@ -68,4 +68,13 @@ activities.admin_content:
   options:
     no_cache: TRUE     
 
+activities.admin_event:
+  path: '/activities_admin_event/{type_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::AdminEvents'
+    _title: 'KM Activities Management Event'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE     
   

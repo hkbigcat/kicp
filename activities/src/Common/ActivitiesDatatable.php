@@ -82,6 +82,34 @@ class ActivitiesDatatable {
  
     }
 
+    public static function getAdminEvents($type_id) {
+
+        //$sql = 'SELECT a.evt_id, a.evt_id, a.evt_id, a.evt_end_date, IF(a.is_recent,\'Y\', \'N\') as is_recent, IF(a.is_visible, \'Y\', \'N\') as is_visible, b.evt_type_name 
+        //FROM kicp_km_event a LEFT JOIN kicp_km_event_type b ON (b.evt_type_id=a.evt_type_id AND b.is_deleted=0) WHERE a.evt_type_id ='.$type_id.' AND a.is_archived = 0 AND a.is_deleted = 0 ORDER BY a.evt_start_date DESC';
+        $database = \Drupal::database();
+
+        $query = $database-> select(' kicp_km_event', 'a'); 
+        $query -> join('kicp_km_event_type', 'b', 'a.evt_type_id = b.evt_type_id');
+        if ($type_id==1) {
+            $query -> join('kicp_km_cop', 'c', 'a.cop_id = c.cop_id');
+            $query-> fields('c', ['cop_name']);
+            $query-> condition('c.is_deleted', '0');
+        }
+        $query-> fields('a', ['evt_id', 'evt_name','evt_id', 'evt_start_date', 'evt_end_date', 'is_recent', 'is_visible' ]);
+        $query-> fields('b', ['evt_type_name']);
+        $query-> condition('a.evt_type_id', $type_id);
+        $query-> condition('a.is_archived', '0');
+        $query-> condition('b.is_deleted', '0');
+        $query-> orderBy('a.evt_start_date', 'DESC');
+
+        
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);        
+
+        return $result;
+    }
+
+
     public static function getEventDetail($evt_id) {
 
         $record = array();

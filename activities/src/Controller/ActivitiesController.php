@@ -102,6 +102,22 @@ class ActivitiesController extends ControllerBase {
         
 
     }
+    
+    public function AdminEvents($type_id="") {
+
+        $events = ActivitiesDatatable::getAdminEvents($type_id);
+        $events['type_id'] = $type_id;
+
+        return [
+            '#theme' => 'activities-admin-events',
+            '#items' => $events,
+            '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],            
+        ];   
+
+    }
+
 
 
     public function ActivityEventData($evt_id="") {
@@ -115,6 +131,8 @@ class ActivitiesController extends ControllerBase {
         ];   
 
     }
+
+    
 
 
 }

@@ -56,6 +56,12 @@ function activities_theme($existing, $type, $theme, $path) {
                 'copitems' => NULL,
             ],
         ],
+        'activities-admin-events' =>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],        
         'activities-photo' =>[
             'variables' => [
                 'items' => NULL,
@@ -65,6 +71,7 @@ function activities_theme($existing, $type, $theme, $path) {
         ],        
 
         
+
 
     ];
 

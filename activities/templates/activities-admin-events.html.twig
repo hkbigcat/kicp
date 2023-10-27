@@ -1,0 +1,46 @@
+<div id="right_content" style="width:100%;">
+    <div id="DivContentTable">
+        <div class="common_table_header">
+            <div style="width:6%;">&nbsp;</div>
+            {% if  items['type_id'] == 1 %}
+            <div style="width:16%;text-align:left;">Event Name</div>
+            <div style="width:12%;text-align:left;">COP</div>
+             {% else %}
+             div style="width:26%;text-align:left;">Event Name</div>
+             {% endif %}
+            <div style="width:9%;text-align:left;">Start</div>
+            <div style="width:10%;text-align:left;">End</div>
+            <div style="width:7%;text-align:left;">Recent</div>
+            <div style="width:8%;text-align:left;">Visible</div>
+            <div style="width:29%;text-align:left;">&nbsp;</div>
+
+        </div>
+
+        {% for item in items %}
+           {% if  item['evt_name'] %}
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
+            <div style="width:5%;float:left; display:block;">{{ loop.index0 + 1 }}</div>
+            {% if  items['type_id'] == 1 %}
+            <div style="width:18%;float:left;display:block;">{{ item['evt_name'] }}</div>
+            <div style="width:10%;float:left; display:block;">{{ item['cop_name'] }}</div>
+             {% else %}
+             <div style="width:28%;float:left;display:block;padding-right:12px;">{{ item['evt_name'] }}</div>
+             {% endif %}
+            <div style="width:10%;float:left;display:block;">{{  item['evt_start_date'] }}</a></div>
+            <div style="width:12%;float:left;display:block;">{{  item['evt_end_date'] }}</a></div>
+            <div style="width:8%;float:left;display:block;">{% if item['is_recent'] %} Y {% else %} N {% endif %}</div>
+            <div style="width:8%;float:left;display:block;">{% if item['is_visible'] %} Y {% else %} N {% endif %}</div>
+            <div style="width:29%;float:left;display:block;">
+                <button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
+                <button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'"><i class="fa-solid fa-pencil"></i> Delete</button>
+                <button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'">Enrollment List</button>
+                <button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'">Photo</button>
+                <button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'">Deliverable</button>
+            </div>
+        </div>
+          {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>
