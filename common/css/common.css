@@ -280,15 +280,14 @@ table.row_table {
 
 
 .kicp_button {
-    height:40px;
+    
     background-image: linear-gradient(to bottom,rgb(158,195,207),rgb(71 103 145));
-    font-size: 16px;
-    padding:10px 13px;
     color:#fff;
-    cursor:pointer;
-    border:none;
     margin:5px;
-    border-radius: 10px;
+    border-radius: 7px;
+    /*height:40px;*/
+    /*padding:10px 13px;*/
+    /*font-size: 16px;*/
 }
 
 .kicp_button:hover {
