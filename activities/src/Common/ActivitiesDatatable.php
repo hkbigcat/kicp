@@ -99,6 +99,7 @@ class ActivitiesDatatable {
         $query-> fields('b', ['evt_type_name']);
         $query-> condition('a.evt_type_id', $type_id);
         $query-> condition('a.is_archived', '0');
+        $query-> condition('a.is_deleted', '0');
         $query-> condition('b.is_deleted', '0');
         $query-> orderBy('a.evt_start_date', 'DESC');
 
@@ -149,6 +150,20 @@ class ActivitiesDatatable {
 
             return $result;
         }
-    }    
+    } 
+    
+    public static function getEventSubmitReply() {
+        $output = array();
+
+        $sql = 'SELECT id, reply, display FROM kicp_km_event_submitreply WHERE is_visible = 1 ORDER BY reply';
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
+        
+        foreach($result as $record) {
+            $output[$record['reply']] = $record['display'];
+        }
+        
+        return $output;
+    }
 
 }

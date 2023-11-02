@@ -126,20 +126,21 @@ class TagStorage  {
 
         return $return_value;
     }
-    
-    public static function markDelete($entry) {
-        $tags = $entry['tags'];
+    */
+
+    public static function markDelete($module, $entry_id) {
         $return_value = NULL;
-        $entry1 = array(
-          'is_deleted' => $entry['is_deleted'],
-        );
 
         try {
-            $return_value = db_update('kicp_tags')
-                ->fields($entry1)
-                ->condition('module', $entry['module'])
-                ->condition('fid', $entry['module_entry_id'])
-                ->execute();
+
+            $database = \Drupal::database();
+            $return_value = $database->update('kicp_tags')->fields([
+                'is_deleted'=>1 , 
+            ])
+            ->condition('module',  $module)
+            ->condition('fid',  $entry_id)
+            ->execute();
+
         }
         catch (\Exception $e) {
             drupal_set_message(
@@ -151,6 +152,6 @@ class TagStorage  {
         
         return $return_value;
     }
-    */
+    
 
 }

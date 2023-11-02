@@ -77,4 +77,23 @@ activities.admin_event:
     _permission: 'access content'
   options:
     no_cache: TRUE     
-  
+
+activities.admin_item_add:
+  path: '/activities_item_add'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityItemAdd'
+    _title: 'KM Activities - Add Event'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+activities.admin_item_delete:
+  path: '/activities_item_delete/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::deleteEventItem'
+    _title: 'Delete Event'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE  

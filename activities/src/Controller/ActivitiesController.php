@@ -10,8 +10,11 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
+use Drupal\common\Controller\TagStorage;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Pager\PagerManagerInterface;
+use Drupal\Core\Database\Query\PagerSelectExtender;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
@@ -129,6 +132,40 @@ class ActivitiesController extends ControllerBase {
             '#items' => $photos,
             '#empty' => t('No entries available.'),
         ];   
+
+    }
+
+    public function deleteEventItem($evt_id="") {
+
+        $current_time =  \Drupal::time()->getRequestTime();
+
+        // delete record
+    
+        try {
+          $database = \Drupal::database();
+          $query = $database->update('kicp_km_event')->fields([
+            'is_deleted'=>1 , 
+            'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+          ])
+          ->condition('evt_id', $evt_id)
+          ->execute();
+
+          // delete tags
+          $return2 = TagStorage::markDelete($this->module, $evt_id);
+
+          return new RedirectResponse("/activities_admin_event/2");
+  
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Event has been deleted'));
+  
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete event at this time due to datbase error. Please try again. ' )
+                );
+
+            }	
+
 
     }
 

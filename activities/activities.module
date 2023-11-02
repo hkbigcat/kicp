@@ -15,7 +15,7 @@ function activities_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'common/content_table';
 
         $path = $current_path = \Drupal::service('path.current')->getPath();
-        if ( str_contains($path, '/activities_add') || str_contains($path, '/activities_change') ) {
+        if ( str_contains($path, '/activities_item_add') || str_contains($path, 'activities_item_change') ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
 
