@@ -53,8 +53,7 @@ class ActivityItemAdd extends FormBase  {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
+    public function buildForm(array $form, FormStateInterface $form_state, $type_id="") {
 
         $config = \Drupal::config('activities.settings'); 
 
@@ -140,6 +139,7 @@ class ActivityItemAdd extends FormBase  {
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
             '#required' => TRUE,
+            '#default_value' => $type_id,
         );        
 
 
@@ -215,7 +215,6 @@ class ActivityItemAdd extends FormBase  {
         $form['evt_logo'] = array(
             '#title' => t('Event Logo'),
             '#type' => 'file',
-            '#size' => 90,
         );
 
         $form['evt_forum_id'] = array(
@@ -295,6 +294,7 @@ class ActivityItemAdd extends FormBase  {
             $$key = $value;
         }
         
+
         $evt_is_cop_evt = 1;
         $evt_cop_id = $evt_cop_id;
         $current_time =  \Drupal::time()->getRequestTime();
@@ -306,7 +306,7 @@ class ActivityItemAdd extends FormBase  {
             'evt_enroll_start' => ($evt_enroll_start=="" ? NULL : $evt_enroll_start),
             'evt_enroll_end' => ($evt_enroll_end=="" ? NULL : $evt_enroll_end),
             'evt_description' => $evt_description,
-            'evt_logo_url' => $img_name,
+            'evt_logo_url' => $_FILES['files']['name']['evt_logo'],
             'evt_is_cop_evt' => $evt_is_cop_evt,
             'cop_id' => $evt_cop_id,
             'is_recent' => $is_recent,
@@ -327,14 +327,8 @@ class ActivityItemAdd extends FormBase  {
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),            
           );
 
-          $img_name = '';
-          $hasImage = false;
-          
-          if ($_FILES['files']['name']['evt_logo'] != "") {
-              $hasImage = true;
-              $img_name = $_FILES['files']['name']['evt_logo'];                
-          }
 
+          
           try {
             $query = \Drupal::database()->insert('kicp_km_event')
             ->fields( $eventEntry);
@@ -350,9 +344,8 @@ class ActivityItemAdd extends FormBase  {
                 
             } 
             
-            if($hasImage) {
-                
-
+            if ($_FILES['files']['name']['evt_logo'] != "") {
+                $file_system = \Drupal::service('file_system');   
                 $image_path = 'private://activities/item';
                 if (!is_dir($file_system->realpath($image_path))) {
                     // Prepare the directory with proper permissions.
@@ -375,9 +368,10 @@ class ActivityItemAdd extends FormBase  {
                 $file[0]->uid = $file_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
+
             }            
 
-            $url = Url::fromUserInput('/activities_admin_event/2');
+            $url = Url::fromUserInput('/activities_admin_event/'.$evt_type_id);
             $form_state->setRedirectUrl($url);
     
     
@@ -389,8 +383,11 @@ class ActivityItemAdd extends FormBase  {
             \Drupal::messenger()->addStatus(
                 t('Unable to save event at this time due to datbase error. Please try again. '.serialize($eventEntry) )
                 );
-            
+
+           
         }	
+
+
     }
 
 }

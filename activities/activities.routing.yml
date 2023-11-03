@@ -79,7 +79,7 @@ activities.admin_event:
     no_cache: TRUE     
 
 activities.admin_item_add:
-  path: '/activities_item_add'
+  path: '/activities_item_add/{type_id}'
   defaults:
     _form: '\Drupal\activities\Form\ActivityItemAdd'
     _title: 'KM Activities - Add Event'
