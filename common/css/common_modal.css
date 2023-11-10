@@ -1,0 +1,15 @@
+#ul_group_type > li {
+    position:relative;
+    float:left;
+    padding:7px;
+    border:1px solid #7A7A7A;
+    border-radius: 5px 5px 0 0;
+    margin-right:1px;
+}
+
+#ul_group_type > li:hover {
+    background-color: #eeeeee;
+}
+#ul_group_type > .is_active {
+    background-color: #FFFFDD;
+}

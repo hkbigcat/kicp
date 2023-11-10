@@ -16,6 +16,9 @@ function module_item_delete(module, item_id) {
    case 'blog_elegate':
         msgtitle = 'Blog delegrate users';
       break;          
+   case 'activities_item':
+        msgtitle = 'KM Activities';
+      break;          
 
     default:
       msgtitle = module;        

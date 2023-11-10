@@ -17,3 +17,24 @@ common.addLike:
     _permission: 'access content'
   options:
     no_cache: TRUE     
+
+common.get_add_group_member_ui:
+  path: '/get_add_group_member_ui'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getAddGroupMemberUI'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+common.get_add_group_member_group_type:
+  path: '/get_add_group_member_group_type'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getAddGroupMemberGroupType'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+
+    

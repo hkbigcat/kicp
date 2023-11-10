@@ -86,6 +86,9 @@ class ActivitiesDatatable {
 
         //$sql = 'SELECT a.evt_id, a.evt_id, a.evt_id, a.evt_end_date, IF(a.is_recent,\'Y\', \'N\') as is_recent, IF(a.is_visible, \'Y\', \'N\') as is_visible, b.evt_type_name 
         //FROM kicp_km_event a LEFT JOIN kicp_km_event_type b ON (b.evt_type_id=a.evt_type_id AND b.is_deleted=0) WHERE a.evt_type_id ='.$type_id.' AND a.is_archived = 0 AND a.is_deleted = 0 ORDER BY a.evt_start_date DESC';
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        
         $database = \Drupal::database();
 
         $query = $database-> select(' kicp_km_event', 'a'); 
@@ -101,6 +104,9 @@ class ActivitiesDatatable {
         $query-> condition('a.is_archived', '0');
         $query-> condition('a.is_deleted', '0');
         $query-> condition('b.is_deleted', '0');
+        if ($search_str && $search_str !="") {
+            $query->condition('a.evt_name', '%' . $search_str . '%', 'LIKE');
+        }                    
         $query-> orderBy('a.evt_start_date', 'DESC');
 
         

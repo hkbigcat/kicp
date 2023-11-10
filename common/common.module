@@ -58,6 +58,22 @@ function common_help($route_name, RouteMatchInterface $route_match) {
       return '<p>' . t('Common module that provides list data.') . '</p>';
       break;
   }
-}  
+}
+
+
+function common_theme($existing, $type, $theme, $path) {
+	return [
+        'common-accesscontrol' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],
+		'common-accesscontrol-grouptype' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],
+	];
+}
   
   

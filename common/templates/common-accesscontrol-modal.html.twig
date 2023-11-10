@@ -1,0 +1,11 @@
+<div id="add-record" class="modal access_control_table" style="display:none;"></div>
+<script>
+    jQuery('a[href="#add-record"]').click(function(event) {
+        event.preventDefault();
+        jQuery(this).modal({
+            escapeClose: false,
+            clickClose: false,
+            showClose: false
+        });
+    });
+</script>

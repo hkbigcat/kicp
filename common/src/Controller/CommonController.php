@@ -136,6 +136,31 @@ class CommonController extends ControllerBase {
         $response = new Response();
         $response->setContent('||' . $returnFlag . '@@' . implode('##', $returnAry) . '||');
         return $response;
-    }    
+    }   
+    
+    
+    public function getAddGroupMemberUI() {
+
+        $renderable = [
+            '#theme' => 'common-accesscontrol',
+          ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);
+          
+        $response = array($content);
+        return new JsonResponse($response);
+
+    }
+
+    public function getAddGroupMemberGroupType() {
+
+        $renderable = [
+            '#theme' => 'common-accesscontrol-grouptype',
+          ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);
+
+        $response = array($content);
+        return new JsonResponse($response);
+
+    }
 
 }
