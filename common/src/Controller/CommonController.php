@@ -10,9 +10,11 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\fileshare\Controller\FileShareController;
 use Drupal\blog\Common\BlogDatatable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
+use Drupal\common\Common\CommonDatatable;
 
 class CommonController extends ControllerBase {
 
@@ -160,6 +162,28 @@ class CommonController extends ControllerBase {
 
         $response = array($content);
         return new JsonResponse($response);
+
+    }
+
+
+    public function getAllPublicGroupForAddAccessControl() {
+
+
+        $search_str = \Drupal::request()->request->get('search_str'); 
+
+        $publicGroup = CommonDatatable::getAllPublicGroup($search_str);
+        
+        $publicGroup['search_str'] = $search_str;
+
+        $renderable = [
+            '#theme' => 'common-accesscontrol-grouptype',
+            '#items' => $publicGroup,
+          ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);
+
+        $response = array($content);
+        return new JsonResponse($response);        
+        
 
     }
 

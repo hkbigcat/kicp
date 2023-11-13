@@ -111,3 +111,24 @@
       -webkit-transform: scaleY(1.0);
     }
   }
+
+.modal > .modal-header {
+    border-bottom: 1px solid #E5E5E5;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.modal > .modal-body {
+    /*width:870px;*/
+    width:100%;
+    height:620px;
+    max-height:660px;
+    overflow-x:auto;
+}
+
+.modal > .modal-footer {
+    border-top: 1px solid #E5E5E5;
+    margin-top: 10px;
+    padding-top: 10px;
+    text-align: center;    
+}
