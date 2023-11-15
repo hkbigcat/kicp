@@ -168,19 +168,27 @@ class CommonController extends ControllerBase {
 
     public function getAllPublicGroupForAddAccessControl() {
 
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
 
-        $search_str = \Drupal::request()->request->get('search_str'); 
-
-        $publicGroup = CommonDatatable::getAllPublicGroup($search_str);
         
-        $publicGroup['search_str'] = $search_str;
-
-        $renderable = [
-            '#theme' => 'common-accesscontrol-grouptype',
-            '#items' => $publicGroup,
-          ];
-        $content = \Drupal::service('renderer')->renderPlain($renderable);
-
+        $search_str = $params['search_str'];
+        $publicGroup = CommonDatatable::getAllPublicGroup($search_str);
+        if ($publicGroup && $publicGroup !="") {
+            $renderable = [
+                '#theme' => 'common-accesscontrol-grouptype',
+                '#items' => $publicGroup,
+                //'#search_str' => $search_str,
+            ];
+            $content = \Drupal::service('renderer')->renderPlain($renderable);
+        } else {
+            $content = "No Record found";
+        }
+        
         $response = array($content);
         return new JsonResponse($response);        
         

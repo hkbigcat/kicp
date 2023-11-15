@@ -11,7 +11,7 @@ function getAddGroupMemberUI(module, record_id) {
         success: function (data)
         {
            jQuery("#add-record").html(data);
-           ChangeDisplayGroupList(module,record_id,'P');
+           //ChangeDisplayGroupList(module,record_id,'P');
            
         }, error: function (error) {
             return "Fail to retrieve content, please try again later.";
@@ -74,7 +74,7 @@ function update_access_control_allow_edit(module, record_id, group_type, group_i
 function get_search_public_group(search_str, module, record_id) {
     
     jQuery("#div_public_group").html(loadingImg);
-    
+    console.log("search_str: "+search_str+" module: "+module+" record_id: "+record_id);
     jQuery.ajax({
         type: 'POST',
         url: 'get_search_public_group',
@@ -82,7 +82,6 @@ function get_search_public_group(search_str, module, record_id) {
         cache: false,
         success: function (data) {
             jQuery('#div_public_group').html(data);
-           console.log(data);
         },
         error: function (error) {
             alert('Error: ' + error);
