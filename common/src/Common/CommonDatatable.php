@@ -16,4 +16,19 @@ class CommonDatatable {
         return $group;
     }
 
+
+    public static function getBuddyGroupByUId($uid) {
+        $record = array();
+        if ($uid == "") {
+            return $record;
+        } else {
+            $sql = "SELECT a.buddy_group_id, a.buddy_group_name, b.user_id FROM kicp_buddy_group a ";
+            $sql .= " JOIN xoops_users b ON (b.user_id = a.user_id) ";
+            $sql .= " WHERE b.uid =" . $uid . " AND a.is_deleted = 0 ORDER BY buddy_group_name";
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
+            return $result;
+        }
+    }
+
 }

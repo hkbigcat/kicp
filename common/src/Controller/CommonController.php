@@ -12,6 +12,7 @@ use Drupal\blog\Common\BlogDatatable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\common\CommonUtil;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
 use Drupal\common\Common\CommonDatatable;
@@ -155,9 +156,34 @@ class CommonController extends ControllerBase {
 
     public function getAddGroupMemberGroupType() {
 
-        $renderable = [
-            '#theme' => 'common-accesscontrol-grouptype',
-          ];
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+
+        $group_type = $params['group_type'];
+
+        
+        if ($group_type=="B") {
+            $myBuddyGroup = CommonDatatable::getBuddyGroupByUId($authen->getUId());
+
+            $renderable = [
+                '#theme' => 'common-accesscontrol-personal',
+                '#items' =>  $myBuddyGroup,
+              ];
+        } else {
+        
+            $renderable = [
+                '#theme' => 'common-accesscontrol-grouptype',
+                '#bgroups' =>  $myBuddyGroup,
+            ];
+
+        }
         $content = \Drupal::service('renderer')->renderPlain($renderable);
 
         $response = array($content);
