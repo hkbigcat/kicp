@@ -1,0 +1,15 @@
+<div class="access_control_header" style="padding:2px;width:99%;">
+    <div style="width:80%;">Personal Groups</div>
+    <div style="width:18%;text-align:center;">Action</div>
+</div>
+<div style="padding:2px;width:99%;">
+{% for item in items %}            
+    <div style="display:inline-block;width:100%;border-bottom:1px dotted #CCCCCC;">
+        <div style="width:8%;display:inline-block;vertical-align:top;"><img src="modules/custom/common/images/icon_group_b.gif"></div>
+        <div style="display:inline-block;width:75%;">
+            <a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_B287', 'B',287)"><span id="group_member_B287">{{ item['buddy_group_name'] }}</span></a>
+        </div>
+        <div style="display:inline-block;width:15%;vertical-align:top;text-align:center;"><a href="javascript:;" onclick="add_access_control('blog','1243','B','287')">Add</a></div>                    
+    </div>
+{% endfor %}                
+</div>

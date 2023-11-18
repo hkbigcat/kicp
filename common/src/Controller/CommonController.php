@@ -168,7 +168,6 @@ class CommonController extends ControllerBase {
 
         $group_type = $params['group_type'];
 
-        
         if ($group_type=="B") {
             $myBuddyGroup = CommonDatatable::getBuddyGroupByUId($authen->getUId());
 
@@ -180,7 +179,6 @@ class CommonController extends ControllerBase {
         
             $renderable = [
                 '#theme' => 'common-accesscontrol-grouptype',
-                '#bgroups' =>  $myBuddyGroup,
             ];
 
         }
