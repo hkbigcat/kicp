@@ -12,8 +12,8 @@ class CommonDatatable {
         $sql = "SELECT pub_group_id AS group_id, pub_group_name AS group_name FROM kicp_public_group WHERE is_deleted=0 ".$cond." ORDER BY pub_group_name";
         
         $database = \Drupal::database();
-		$group = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
-        return $group;
+		$groups = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
+        return $groups;
     }
 
 

@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\common\CommonUtil;
+use Drupal\common\AccessControl;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
 use Drupal\common\Common\CommonDatatable;
@@ -144,7 +145,17 @@ class CommonController extends ControllerBase {
     
     public function getAddGroupMemberUI() {
 
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+
+        $current_group = AccessControl::getMyAccessControl($params['module'], $params['record_id']);
+
         $renderable = [
+            '#groups' => $current_group,
             '#theme' => 'common-accesscontrol',
           ];
         $content = \Drupal::service('renderer')->renderPlain($renderable);
@@ -176,7 +187,6 @@ class CommonController extends ControllerBase {
                 '#items' =>  $myBuddyGroup,
               ];
         } else {
-        
             $renderable = [
                 '#theme' => 'common-accesscontrol-grouptype',
             ];

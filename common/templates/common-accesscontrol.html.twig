@@ -4,7 +4,30 @@
 <div class="modal-body" id="modal-body">
     <div style="display:flex;">
         <div id="modal-body-left" style="border:1px solid #EEEEEE;width:50%;height:600px;overflow-x:auto;max-height:600px;padding:5px;">
+{{ groups }}
+{% if groups is empty  %}        
             <div style="padding:5px;text-align:center;display:inline-block;width:98%;border:1px solid #ECECEC;">No record found.</div>
+{% else  %}
+            <div class="access_control_header">
+                <div style="width:1%;">&nbsp;</div>
+                <div style="width:5%;">&nbsp;</div>
+                <div style="width:59%;text-align:left;">Group Name</div>
+                <div style="width:23%;text-align:left;">Group Type</div>
+            </div>
+    {% for group in groups %}            
+            <div id="row_1 " class="DivContentTable_item  odd" style="width:100%;">
+                <div style="width:1%;float:left;display:block;">&nbsp;</div>
+                <div style="width:4%;float:left;display:block;">1</div>
+                <div style="width:64%;float:left;display:block;"><a href="javascript:void(0);" onclick="displayGroupMember('group_member_P_105', 'P',105)" style="border-bottom:0px;" id="group_member_link"><span id="group_member_P_105">{{ group['group_name'] }}</span></a></div>
+                <div style="width:15%;float:left;display:block;">Public</div>
+                <div style="width:5%;float:left;display:block;"><a href="javascript:void(0);" onclick="delete_access_control('blog','33','P','105')">x</a>
+                    <input type="hidden" name="this_module" id="this_module" value="blog">
+                    <input type="hidden" name="record_id" id="record_id" value="33">
+                    <input type="hidden" name="id" id="id" value="2761">
+                </div>
+            </div>
+    {% endfor %}            
+ {% endif %}
         </div>
         <div id="modal-body-right" style="border:1px solid #EEEEEE;width:50%;height:600px;overflow-x:auto;max-height:600px;margin-left:10px;padding:5px;">
             <ul id="ul_group_type" style="list-style:none;padding:4px;position:relative;">
@@ -12,17 +35,7 @@
                 <li><a onclick="ChangeDisplayGroupList('blog','1243','B');">Personal Group(s)</a></li>
             </ul>
             <div id="group_list" style="border:1px solid #999999; width:97%;float:right;padding:3px;height:550px;overflow-x:auto;">
-                <div style="padding:2px;width:99%;">
-                    <div class="access_control_header" style="width:98%;padding:3px;border:1px solid #FFFFFF;">Add Public Group</div>
-                    <div class="access_control_header" style="width:100%;display:flex;"><div style="width:40%;padding:2px;border:1px solid #FFFFFF;">Group Name:</div>
-                    <div style="width:57%;padding:2px;border:1px solid #FFFFFF;">
-                        <input type="text" name="pub_group_search_str" id="pub_group_search_str" value="" size="20" style="height:24px; font-size:9pt;" tabindex="1" onkeypress="return key_press_search_public_group(event); ">
-                    </div>
-                </div>
-                <div class="access_control_header" style="width:100%; display:flex;">
-                    <div style="width:40%;padding:2px;border:1px solid #FFFFFF;">Load Group List:</div>
-                    <div style="width:57%;padding:2px;border:1px solid #FFFFFF;"><a href="javascript:;" style="border-bottom:0px;" tabindex="2"><img src="modules/custom/common/images/btn_load.gif" border="0" alt="Load" title="Load" onclick="get_search_public_group(jQuery('#pub_group_search_str').val(), 'blog', 1243)" id="loadBtn"></a></div>
-                </div>
+{% include '@common/common-accesscontrol-grouptype.html.twig' %}
             </div>
             <div id="div_public_group" style="padding:2px;width:99%;"></div>
         </div>     
