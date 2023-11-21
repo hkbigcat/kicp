@@ -20,7 +20,7 @@
     {% for item in items %}
 	<div style="display:inline-block;width:100%;border-bottom:1px dotted #CCCCCC;">
 		<div style="width:8%;display:inline-block;vertical-align:top;"><img src="modules/custom/common/images/icon_group_p.gif"></div>
-		<div style="display:inline-block;width:75%;"><a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_P10021', 'P',10021)"><span id="group_member_P10021">{{  item['group_name'] }}</span></a></div>
+		<div style="display:inline-block;width:75%;"><a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_P{{  item['group_id'] }}', 'P',{{  item['group_id'] }})"><span id="group_member_P{{  item['group_id'] }}">{{  item['group_name'] }}</span></a></div>
 		<div style="display:inline-block;width:15%;text-align:center;vertical-align:top;"><a href="javascript:;" onclick="add_access_control('blog','{{  item['group_id'] }}','P','{{  item['group_id'] }}')">Add</a></div>
 	</div>
     {% endfor %}

@@ -229,4 +229,147 @@ class CommonController extends ControllerBase {
 
     }
 
+    public function getGroupMemberDiv() {
+        
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+        
+        /*
+         * 3 parameters from ajax
+         * elmt_name
+         * group_type
+         * group_id
+         */
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+        
+        if($group_type == "P") {
+            $groupInfo = CommonDatatable::getPublicGroupByGroupId($group_id);
+        } else if($group_type == "B") {
+            $groupInfo = CommonDatatable::getBuddyGroupByGroupId($group_id);
+        }
+        
+
+        $groupMembers = CommonDatatable::getUserListByGroupId($group_type, $group_id, $group_user_id="");
+        
+        $i = 0;
+        
+        foreach($groupMembers as $groupMember) {
+                        
+            $group_member .= '<div>'.$groupMember['user_name'].'</div>';
+            $i++;
+        }
+        
+        $group_name = $groupInfo->group_name;
+        
+        
+        $response = array('group_name' => $group_name, 'group_member' => $group_member);
+        return new JsonResponse($response);
+        
+    }    
+
+
+    public function AccessControlAddAction() {
+        
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $author = CommonUtil::getSysValue('AuthorClass');
+        
+        $my_user_id = $authen->getUserId();
+        
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+        
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+        
+        $content = "";
+        
+        if($this_module == "" || $record_id == "") {
+            $content .= "Missing data 1";
+        } else if($group_type == "" || $group_id == "") {
+            $content .= "Missing data 2";
+        }
+        
+        // check whether the selected group already exist
+        $record = AccessControl::accessControlInfo("", array('module' => $this_module, 'user_id' => $my_user_id, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id, 'is_deleted' => 0));
+        $isRecordExist = (isset($record->id) && $record->id != "") ? true : false;
+        
+        // record already exist
+        if($isRecordExist) {
+                   
+            $content .= "Already exist.";
+            
+        } else {
+            
+            $transaction = db_transaction();
+
+            try {
+                $entry = array(
+                  'module' => $this_module,
+                  'group_type' => $group_type,
+                  'group_id' => $group_id,
+                  'record_id' =>$record_id,
+                  'user_id' => $my_user_id,
+                  'create_datetime' => date('Y-m-d H:i:s'),
+                );
+
+                $return = CommonController::addAccessControlRecord($entry);
+
+
+
+                if ($return) {
+
+                    // write logs to common log table
+                    $entry3 = array(
+                      'module_name' => $this_module,
+                      'record_id' => $record_id,
+                      'action' => 'Insert',
+                      'description' => 'Add access control, module='.$this_module.', id=' . $record_id.', group type='.$group_type.', group id='.$group_id,
+                      'log_user_id' => $my_user_id,
+                    );
+                    
+                    $content .= "Updated";
+                    
+
+                }
+                else {
+                    
+                    drupal_set_message(t('Access control list is not updated.'), 'error');
+                    //\Drupal::logger('error')->notice('Access control list is not updated (3)');
+                    
+                    $content .= "Error";
+                }
+        
+            }
+            catch (Exception $e) {
+                $transaction->rollback();
+                $variables = Error::decodeException($e);
+                drupal_set_message(t('Access control list is not updated.'), 'error');
+                //\Drupal::logger('error')->notice('Access control list is not updated: ' . $variables);
+                
+                $content .= "Error";
+                
+            }
+            
+            //exit;
+            
+        }
+        
+        $response = array($content);
+        return new JsonResponse($response);
+        
+    }    
+
 }

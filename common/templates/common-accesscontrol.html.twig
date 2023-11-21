@@ -18,9 +18,9 @@
             <div id="row_1 " class="DivContentTable_item  odd" style="width:100%;">
                 <div style="width:1%;float:left;display:block;">&nbsp;</div>
                 <div style="width:4%;float:left;display:block;">1</div>
-                <div style="width:64%;float:left;display:block;"><a href="javascript:void(0);" onclick="displayGroupMember('group_member_P_105', 'P',105)" style="border-bottom:0px;" id="group_member_link"><span id="group_member_P_105">{{ group['group_name'] }}</span></a></div>
+                <div style="width:64%;float:left;display:block;"><a href="javascript:;" onclick="displayGroupMember('group_member_P_{{ group['group_id'] }}', 'P',{{ group['group_id'] }})" style="border-bottom:0px;" id="group_member_link"><span id="group_member_P_105">{{ group['group_name'] }}</span></a></div>
                 <div style="width:15%;float:left;display:block;">Public</div>
-                <div style="width:5%;float:left;display:block;"><a href="javascript:void(0);" onclick="delete_access_control('blog','33','P','105')">x</a>
+                <div style="width:5%;float:left;display:block;"><a href="javascript:;" onclick="delete_access_control('blog','33','P','105')">x</a>
                     <input type="hidden" name="this_module" id="this_module" value="blog">
                     <input type="hidden" name="record_id" id="record_id" value="33">
                     <input type="hidden" name="id" id="id" value="2761">

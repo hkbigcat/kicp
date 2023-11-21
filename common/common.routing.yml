@@ -46,4 +46,11 @@ common.get_search_public_group:
   options:
     no_cache: TRUE  
 
-    
+common.get_group_member_div:
+  path: '/get_group_member_div'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getGroupMemberDiv'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

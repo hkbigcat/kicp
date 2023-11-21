@@ -108,3 +108,59 @@ function disableEditorFormat(){
         }
     }
 }
+
+function displayGroupMember(elmt, group_type, group_id) {
+    // hide all elements of group member div
+    jQuery('[id^="div_member_"]').css('display', 'none');
+    jQuery.ajax({
+        contentType: "application/json; charset=utf-8",
+        type: "POST",
+        url: 'get_group_member_div',
+        data: JSON.stringify({"elmt_name": elmt, "group_type": group_type, "group_id": group_id}),
+        cache: false,
+        success: function (data)
+        {
+            var group_name = data['group_name'];
+            var group_member = data['group_member'];
+            
+            // display the specific element
+            jQuery( "<div id='div_member_"+ elmt +"' style='position:relative;' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'><div class='group_member_list'><span class='group_close' title='Close' alt='Close'>x</span><div class='group_name' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'>"+ group_name +"</div><div class='group_member'> "+ group_member + "</div></div></div>" ).insertAfter( jQuery('#'+elmt).closest('#group_member_link') );
+        }
+    });
+        
+}
+
+
+function add_access_control(module, record_id, group_type, group_id) {
+    
+    jQuery("#add-access-control-confirm").dialog({
+        title: 'Access Control',
+        width: 400,
+        height: 225,
+        modal: true,
+        buttons: {
+            "OK": function () {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: 'access_control_add_action',
+                    data: JSON.stringify({"this_module": module, "record_id": record_id, "group_type": group_type, "group_id": group_id}),
+                    cache: false,
+                    success: function (data) {
+                        // reload group member UI (member list)
+                        reloadCurrentAccessControlGroup(module, record_id);
+
+                    },
+                    error: function (error) {
+                        alert('Error: ' + error);
+                    }
+                });
+                jQuery(this).dialog("close");
+            },
+
+            Cancel: function () {
+                jQuery(this).dialog("close");
+            }
+        }
+    });   
+    
+}
