@@ -151,11 +151,12 @@ class CommonController extends ControllerBase {
         if (!empty($content)) {
             $params = json_decode($content, TRUE);  // Decode json input
         }
-
-        $current_group = AccessControl::getMyAccessControl($params['module'], $params['record_id']);
+        $record_id = $params['record_id'];
+        $current_group = AccessControl::getMyAccessControl($params['module'], $record_id);
 
         $renderable = [
             '#groups' => $current_group,
+            '#record_id' => $record_id,
             '#theme' => 'common-accesscontrol',
           ];
         $content = \Drupal::service('renderer')->renderPlain($renderable);
@@ -178,6 +179,7 @@ class CommonController extends ControllerBase {
         }
 
         $group_type = $params['group_type'];
+        $record_id = $params['record_id'];
 
         if ($group_type=="B") {
             $myBuddyGroup = CommonDatatable::getBuddyGroupByUId($authen->getUId());
@@ -185,10 +187,12 @@ class CommonController extends ControllerBase {
             $renderable = [
                 '#theme' => 'common-accesscontrol-personal',
                 '#items' =>  $myBuddyGroup,
+                '#record_id' => $record_id,
               ];
         } else {
             $renderable = [
                 '#theme' => 'common-accesscontrol-grouptype',
+                '#record_id' => $record_id,
             ];
 
         }
@@ -209,14 +213,14 @@ class CommonController extends ControllerBase {
             $params = json_decode($content, TRUE);  // Decode json input
         }
 
-        
+        $record_id = $params['record_id'];
         $search_str = $params['search_str'];
         $publicGroup = CommonDatatable::getAllPublicGroup($search_str);
         if ($publicGroup && $publicGroup !="") {
             $renderable = [
                 '#theme' => 'common-accesscontrol-grouptype',
                 '#items' => $publicGroup,
-                //'#search_str' => $search_str,
+                '#record_id' => $record_id,
             ];
             $content = \Drupal::service('renderer')->renderPlain($renderable);
         } else {
@@ -259,17 +263,18 @@ class CommonController extends ControllerBase {
         $groupMembers = CommonDatatable::getUserListByGroupId($group_type, $group_id, $group_user_id="");
         
         $i = 0;
-        
-        foreach($groupMembers as $groupMember) {
-                        
-            $group_member .= '<div>'.$groupMember['user_name'].'</div>';
-            $i++;
+        foreach($groupMembers as $groupMember) {                 
+                $group_member .= '<div>'.$groupMember['user_name'].'</div>';
+                $i++;
         }
         
         $group_name = $groupInfo->group_name;
         
-        
-        $response = array('group_name' => $group_name, 'group_member' => $group_member);
+        if ($groupMembers) {
+            $response = array('group_name' => $group_name, 'group_member' => $group_member);
+        } else {
+            $response = array('group_name' => $group_name, 'group_member' => 'No record');
+        }
         return new JsonResponse($response);
         
     }    
@@ -294,6 +299,7 @@ class CommonController extends ControllerBase {
             $$key = $value;
         }
         
+        
         $content = "";
         
         if($this_module == "" || $record_id == "") {
@@ -313,8 +319,6 @@ class CommonController extends ControllerBase {
             
         } else {
             
-            $transaction = db_transaction();
-
             try {
                 $entry = array(
                   'module' => $this_module,
@@ -325,40 +329,33 @@ class CommonController extends ControllerBase {
                   'create_datetime' => date('Y-m-d H:i:s'),
                 );
 
-                $return = CommonController::addAccessControlRecord($entry);
-
-
+                $query = \Drupal::database()->insert('kicp_access_control')
+                ->fields($entry);
+                $entry_id = $query->execute();
 
                 if ($return) {
-
-                    // write logs to common log table
-                    $entry3 = array(
-                      'module_name' => $this_module,
-                      'record_id' => $record_id,
-                      'action' => 'Insert',
-                      'description' => 'Add access control, module='.$this_module.', id=' . $record_id.', group type='.$group_type.', group id='.$group_id,
-                      'log_user_id' => $my_user_id,
-                    );
-                    
                     $content .= "Updated";
-                    
-
                 }
                 else {
+
                     
-                    drupal_set_message(t('Access control list is not updated.'), 'error');
-                    //\Drupal::logger('error')->notice('Access control list is not updated (3)');
+                    $messenger = \Drupal::messenger(); 
+                    $messenger->addMessage( t('Access control list is not updated.'), 'error');
                     
                     $content .= "Error";
                 }
         
             }
             catch (Exception $e) {
-                $transaction->rollback();
+            
                 $variables = Error::decodeException($e);
+
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Access control list is not updated.'), 'error');
+
                 drupal_set_message(t('Access control list is not updated.'), 'error');
-                //\Drupal::logger('error')->notice('Access control list is not updated: ' . $variables);
-                
+    
+            
                 $content .= "Error";
                 
             }

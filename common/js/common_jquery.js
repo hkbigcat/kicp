@@ -164,3 +164,19 @@ function add_access_control(module, record_id, group_type, group_id) {
     });   
     
 }
+
+function reloadCurrentAccessControlGroup(module, record_id) {
+    
+    jQuery.ajax({
+        type: 'POST',
+        url: 'get_current_access_control_group',
+        data: JSON.stringify({"this_module": module, "record_id": record_id}),
+        cache: false,
+        success: function (data) {
+            jQuery('#modal-body-left').html(data);
+        },
+        error: function (error) {
+            alert('Error: ' + error);
+        }
+    });
+}

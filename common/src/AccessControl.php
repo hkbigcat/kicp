@@ -22,5 +22,24 @@ class AccessControl {
         return $result;
     }    
 
+    public static function accessControlInfo($id="", $entryData=array()) {
+        
+        if($id != "") {
+            $sql = "SELECT id, module, record_id, group_type, group_id, user_id, allow_edit FROM kicp_access_control WHERE is_deleted=0 AND id=".$id;
+        } else if (count($entryData)>0) {
+            $cond = "";
+            foreach($entryData as $key=>$value) {
+                $cond .= " AND ".$key."='".$value."' ";
+            }
+            
+            $sql = "SELECT id, module, record_id, group_type, group_id, user_id, allow_edit FROM kicp_access_control WHERE is_deleted=0 ".$cond;
+        }
+        
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObjec();        
+        
+        return $result;
+    }
+
 
 }

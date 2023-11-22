@@ -66,17 +66,20 @@ function common_theme($existing, $type, $theme, $path) {
         'common-accesscontrol' =>[
             'variables' => [
 				'groups' => NULL,
+				'record_id' => NULL,
             ],
         ],
 		'common-accesscontrol-grouptype' =>[
             'variables' => [
                 'items' => NULL,
 				'search_str' => NULL,
+				'record_id' => NULL,
             ],
         ],
 		'common-accesscontrol-personal' =>[
             'variables' => [
                 'items' => NULL,
+				'record_id' => NULL,
             ],
         ],
 
