@@ -147,6 +147,7 @@ function add_access_control(module, record_id, group_type, group_id) {
                     cache: false,
                     success: function (data) {
                         // reload group member UI (member list)
+                        console.log(data);
                         reloadCurrentAccessControlGroup(module, record_id);
 
                     },

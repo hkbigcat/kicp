@@ -54,3 +54,22 @@ common.get_group_member_div:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+common.access_control_add_action:
+  path: '/access_control_add_action'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::AccessControlAddAction'
+    _title: 'Add Access Control'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+common.get_current_access_control_group:
+  path: '/get_current_access_control_group'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getCurrentAccessControlGroup'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

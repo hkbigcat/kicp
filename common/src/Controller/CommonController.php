@@ -282,12 +282,15 @@ class CommonController extends ControllerBase {
 
     public function AccessControlAddAction() {
         
+        /*
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass');
         
         $my_user_id = $authen->getUserId();
-        
+        */
+
+
         $request = \Drupal::request();   // Request from ajax call
         $content = $request->getContent();
         $params = array();
@@ -301,19 +304,24 @@ class CommonController extends ControllerBase {
         
         
         $content = "";
-        
+ /*       
         if($this_module == "" || $record_id == "") {
             $content .= "Missing data 1";
         } else if($group_type == "" || $group_id == "") {
             $content .= "Missing data 2";
         }
-        
+   */     
+
+        $content .= "CONTENT: ";
+
         // check whether the selected group already exist
-        $record = AccessControl::accessControlInfo("", array('module' => $this_module, 'user_id' => $my_user_id, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id, 'is_deleted' => 0));
-        $isRecordExist = (isset($record->id) && $record->id != "") ? true : false;
+        //$record = AccessControl::accessControlInfo("", array('module' => $this_module, 'user_id' => $my_user_id, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id, 'is_deleted' => 0));
+        //$isRecordExist = (isset($record->id) && $record->id != "") ? true : false;
         
         // record already exist
+/*        
         if($isRecordExist) {
+        
                    
             $content .= "Already exist.";
             
@@ -332,38 +340,23 @@ class CommonController extends ControllerBase {
                 $query = \Drupal::database()->insert('kicp_access_control')
                 ->fields($entry);
                 $entry_id = $query->execute();
+                $content .= "Updated";
 
-                if ($return) {
-                    $content .= "Updated";
-                }
-                else {
-
-                    
-                    $messenger = \Drupal::messenger(); 
-                    $messenger->addMessage( t('Access control list is not updated.'), 'error');
-                    
-                    $content .= "Error";
-                }
-        
             }
             catch (Exception $e) {
             
-                $variables = Error::decodeException($e);
+                //$variables = Error::decodeException($e);
 
                 $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Access control list is not updated.'), 'error');
+                $messenger->addMessage( t('Access control list is not updated.'));
 
-                drupal_set_message(t('Access control list is not updated.'), 'error');
-    
-            
                 $content .= "Error";
                 
             }
             
-            //exit;
             
         }
-        
+ */       
         $response = array($content);
         return new JsonResponse($response);
         

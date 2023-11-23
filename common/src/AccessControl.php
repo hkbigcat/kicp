@@ -36,7 +36,7 @@ class AccessControl {
         }
         
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchObjec();        
+        $result = $database-> query($sql)->fetchObject();        
         
         return $result;
     }
