@@ -55,6 +55,16 @@ common.get_group_member_div:
   options:
     no_cache: TRUE    
 
+common.access_control_delete_action:
+  path: '/access_control_delete_action'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::AccessControlDeleteAction'
+    _title: 'Delete Access Right'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
 common.access_control_add_action:
   path: '/access_control_add_action'
   defaults:

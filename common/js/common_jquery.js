@@ -74,7 +74,7 @@ function update_access_control_allow_edit(module, record_id, group_type, group_i
 function get_search_public_group(search_str, module, record_id) {
     
     jQuery("#div_public_group").html(loadingImg);
-    console.log("search_str: "+search_str+" module: "+module+" record_id: "+record_id);
+    console.log("get search - search_str: "+search_str+" module: "+module+" record_id: "+record_id);
     jQuery.ajax({
         type: 'POST',
         url: 'get_search_public_group',
@@ -140,6 +140,9 @@ function add_access_control(module, record_id, group_type, group_id) {
         modal: true,
         buttons: {
             "OK": function () {
+
+                console.log("add access control - module: "+module+" record_id: "+record_id + " group_type: "+group_type + " group_id: "+group_id );
+
                 jQuery.ajax({
                     type: 'POST',
                     url: 'access_control_add_action',
@@ -147,7 +150,6 @@ function add_access_control(module, record_id, group_type, group_id) {
                     cache: false,
                     success: function (data) {
                         // reload group member UI (member list)
-                        console.log(data);
                         reloadCurrentAccessControlGroup(module, record_id);
 
                     },
@@ -166,8 +168,44 @@ function add_access_control(module, record_id, group_type, group_id) {
     
 }
 
+function delete_access_control(module, record_id, group_type, group_id) {
+    
+    jQuery("#delete-access-control-confirm").dialog({
+        title: 'Access Control',
+        width: 400,
+        height: 225,
+        modal: true,
+        buttons: {
+            "OK": function () {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: 'access_control_delete_action',
+                    data: JSON.stringify({"this_module": module, "record_id": record_id, "group_type": group_type, "group_id": group_id}),
+                    cache: false,
+                    success: function (data) {
+                        // reload group member UI (member list)
+                        reloadCurrentAccessControlGroup(module, record_id);
+
+                    },
+                    error: function (error) {
+                        alert('Error: ' + error);
+                    }
+                });
+                jQuery(this).dialog("close");
+            },
+
+            Cancel: function () {
+                jQuery(this).dialog("close");
+            }
+        }
+    });
+       
+}
+
 function reloadCurrentAccessControlGroup(module, record_id) {
     
+    console.log("reload current group - module: "+module+" record_id: "+record_id );
+
     jQuery.ajax({
         type: 'POST',
         url: 'get_current_access_control_group',

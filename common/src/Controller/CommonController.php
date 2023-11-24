@@ -142,7 +142,7 @@ class CommonController extends ControllerBase {
         return $response;
     }   
     
-    
+   
     public function getAddGroupMemberUI() {
 
         $request = \Drupal::request();   // Request from ajax call
@@ -282,13 +282,13 @@ class CommonController extends ControllerBase {
 
     public function AccessControlAddAction() {
         
-        /*
+        
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass');
         
         $my_user_id = $authen->getUserId();
-        */
+        
 
 
         $request = \Drupal::request();   // Request from ajax call
@@ -304,22 +304,20 @@ class CommonController extends ControllerBase {
         
         
         $content = "";
- /*       
         if($this_module == "" || $record_id == "") {
             $content .= "Missing data 1";
         } else if($group_type == "" || $group_id == "") {
             $content .= "Missing data 2";
         }
-   */     
 
-        $content .= "CONTENT: ";
-
+        
         // check whether the selected group already exist
-        //$record = AccessControl::accessControlInfo("", array('module' => $this_module, 'user_id' => $my_user_id, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id, 'is_deleted' => 0));
-        //$isRecordExist = (isset($record->id) && $record->id != "") ? true : false;
+        $record = AccessControl::accessControlInfo("", array('module' => $this_module, 'user_id' => $my_user_id, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id, 'is_deleted' => 0));
+
+        $isRecordExist = (isset($record->id) && $record->id != "") ? true : false;
         
         // record already exist
-/*        
+  
         if($isRecordExist) {
         
                    
@@ -356,10 +354,116 @@ class CommonController extends ControllerBase {
             
             
         }
- */       
+       
         $response = array($content);
         return new JsonResponse($response);
         
+    }    
+
+
+    public function getCurrentAccessControlGroup() {
+
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+        $current_group = AccessControl::getMyAccessControl($this_module, $record_id);
+
+        $renderable = [
+            '#theme' => 'common-accesscontrol-modal-left',
+            '#groups' => $current_group,
+            '#record_id' => $record_id,
+        ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);        
+
+
+        $response = array($content);
+        return new JsonResponse($response); 
+
+ 
+    }    
+
+
+    public function AccessControlDeleteAction() {
+
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $author = CommonUtil::getSysValue('AuthorClass'); 
+        
+        $user_id = $authen->getUserId();
+        $isSiteAdmin = $author::isSiteAdmin($user_id);
+
+        /*
+        if (!$authen->isAuthenticated) {
+            $response = array('result' => '3');
+            return new JsonResponse($response);
+        }
+        */
+
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+        
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+        /*
+        if (!$isSiteAdmin) {
+            if (!$author::hasPermission($this_module, TRUE)) {
+                $response = array('result' => '3');
+                return new JsonResponse($response);
+            }
+            if (!$author::hasRight($this_module.'_maint', $authen->getUId(), 'D', true)) {
+                $response = array('result' => '3');
+                return new JsonResponse($response);
+            }
+        }
+        */
+        
+        // check whether the record is deleted        
+        $isDeleted = CommonUtil::isRecordDeleted('kicp_access_control', array('module' => $this_module, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id));
+        
+        //  if the blog entry already deleted
+        if ($isDeleted) {
+            $err_code = '2';
+        }
+        else {
+            try {
+                // delete record
+                $database = \Drupal::database();
+                $query = $database->update('kicp_access_control')->fields([
+                    'is_deleted'=>1, 
+                  ])
+                ->condition('module',$this_module)
+                ->condition('record_id', $record_id)
+                ->condition('group_type', $group_type)
+                ->condition('group_id', $group_id)
+                ->execute();
+
+                $response = array('result' => $query);
+                return new JsonResponse($response);
+        
+
+            }
+            catch (Exception $e) {
+                \Drupal::messenger()->addStatus(
+                    t('Unable to delete this record due to datbase error. Please try again. ' )
+                    );
+            }
+        }
+
     }    
 
 }

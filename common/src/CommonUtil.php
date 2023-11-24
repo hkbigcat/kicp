@@ -76,4 +76,44 @@ class CommonUtil {
     }
 
 
+    public static function isRecordDeleted($table_name, $fieldAry = array()) {
+
+        if ($table_name == "" || count($fieldAry) == 0) {
+            // if no table name or parameter provided, return empty array
+            return array();
+        }
+        else {
+
+            $and = ' AND ';
+            $cond = '';
+
+            foreach ($fieldAry as $key => $value) {
+                $cond .= $and . " " . $key . " = '" . $value . "' ";
+            }
+
+            $sql = 'SELECT 1 FROM ' . $table_name . ' WHERE is_deleted = 0 ' . $cond;
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchObject();
+            
+            
+            $j = 0;
+            foreach ($result as $record) {
+                $j++;
+                break;
+            }
+
+            if ($j == 0) {
+                \Drupal::messenger()->addStatus(
+                    t('Record is already deleted.'.$sql )
+                    );
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }    
+
+
 }

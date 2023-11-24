@@ -4,29 +4,7 @@
 <div class="modal-body" id="modal-body">
     <div style="display:flex;">
         <div id="modal-body-left" style="border:1px solid #EEEEEE;width:50%;height:600px;overflow-x:auto;max-height:600px;padding:5px;">
-{% if groups is empty  %}        
-            <div style="padding:5px;text-align:center;display:inline-block;width:98%;border:1px solid #ECECEC;">No record found.</div>
-{% else  %}
-            <div class="access_control_header">
-                <div style="width:1%;">&nbsp;</div>
-                <div style="width:5%;">&nbsp;</div>
-                <div style="width:59%;text-align:left;">Group Name</div>
-                <div style="width:23%;text-align:left;">Group Type</div>
-            </div>
-    {% for group in groups %}            
-            <div id="row_1 " class="DivContentTable_item  odd" style="width:100%;">
-                <div style="width:1%;float:left;display:block;">&nbsp;</div>
-                <div style="width:4%;float:left;display:block;">1</div>
-                <div style="width:64%;float:left;display:block;"><a href="javascript:;" onclick="displayGroupMember('group_member_P_{{ group['group_id'] }}', 'P',{{ group['group_id'] }})" style="border-bottom:0px;" id="group_member_link"><span id="group_member_P_{{ group['group_id'] }}">{{ group['group_name'] }}</span></a></div>
-                <div style="width:15%;float:left;display:block;">Public</div>
-                <div style="width:5%;float:left;display:block;"><a href="javascript:;" onclick="delete_access_control('blog','{{ record_id }}','P','{{ group['group_id'] }}')">x</a>
-                    <input type="hidden" name="this_module" id="this_module" value="blog">
-                    <input type="hidden" name="record_id" id="record_id" value="33">
-                    <input type="hidden" name="id" id="id" value="2761">
-                </div>
-            </div>
-    {% endfor %}            
- {% endif %}
+{% include '@common/common-accesscontrol-modal-left.html.twig' %}
         </div>
         <div id="modal-body-right" style="border:1px solid #EEEEEE;width:50%;height:600px;overflow-x:auto;max-height:600px;margin-left:10px;padding:5px;">
             <ul id="ul_group_type" style="list-style:none;padding:4px;position:relative;">
@@ -44,4 +22,9 @@
 <div class="modal-footer"><button type="button" class="modal-button" data-dismiss="modal" onclick="self.location.reload();jQuery.modal.close();">Close</button></div>
 <div id="add-access-control-confirm" style="display:none;">
     <p style="text-align:center">&emsp;Confirm add group?</p>
+</div>
+<div id="delete-access-control-confirm" style="display:none;">
+    <p style="text-align:center">
+        &emsp;Confirm delete group?
+    </p>
 </div>
