@@ -10,9 +10,11 @@ namespace Drupal\fileshare\Common;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Query\Condition;
 use \Drupal\Core\Routing;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\Controller\TagList;
+
 
 class FileShareDatatable extends ControllerBase {
 
@@ -21,13 +23,16 @@ class FileShareDatatable extends ControllerBase {
         $search_str = \Drupal::request()->query->get('search_str');
 
         try {
-          $database = \Drupal::database();
-          $query = $database-> select('kicp_file_share_folder', 'r');
-          $query->fields('r', ['folder_id', 'folder_name', 'user_id']);
-          $query->condition('folder_name', '', '<>');
-          $query->condition('is_deleted', '0');
+          $query = \Drupal::database()->select('kicp_file_share_folder', 'r');
+
+          $query->join('kicp_access_control', 'a', 'r.folder_id = a.record_id AND r.user_id = a.user_id AND a.module = :module AND a.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => 0]);
+
+          $query->fields('r');
+
+          $query->condition('r.folder_name', '', '<>');
+          $query->condition('r.is_deleted', '0');
           if ($folder_id != NULL) {
-            $query->condition('folder_id', $folder_id);
+            $query->condition('r.folder_id', $folder_id);
             $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($result as $row) {
               $entries = $row;
