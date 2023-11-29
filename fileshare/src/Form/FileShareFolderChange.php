@@ -42,7 +42,6 @@ class FileShareFolderChange extends FormBase {
         $folder_id = \Drupal::request()->query->get('folder_id');
         $folder = FileShareDatatable::load_folder($folder_id);
         
-
         $Taglist = new TagList();
         $tags = $Taglist->getTagListByRecordId('fileshare_folder', $folder_id);
 

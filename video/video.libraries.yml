@@ -1,0 +1,29 @@
+video_key:
+  version: 1.x
+  css:
+    theme:
+      css/video.css: {}
+  header: true
+  js:
+    js/video.js: {}
+    js/url.min.js: {}
+    js/wowzaplayer.min.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog
+    
+video_event_privilege:
+  version: 1.x
+  header: true
+  js:
+    js/video_event_privilege.js: {}
+  dependencies:
+    - core/jquery
+    
+video_home:
+  version: 1.x
+  header: true
+  js:
+    js/home.js: {}

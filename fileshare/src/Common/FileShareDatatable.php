@@ -18,19 +18,20 @@ use Drupal\common\Controller\TagList;
 
 class FileShareDatatable extends ControllerBase {
 
-    public static function load_folder() {
+    public static function load_folder($folder_id=NULL) {
 
         $search_str = \Drupal::request()->query->get('search_str');
 
         try {
           $query = \Drupal::database()->select('kicp_file_share_folder', 'r');
-
-          $query->join('kicp_access_control', 'a', 'r.folder_id = a.record_id AND r.user_id = a.user_id AND a.module = :module AND a.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => 0]);
-
-          $query->fields('r');
-
-          $query->condition('r.folder_name', '', '<>');
+          $query->leftJoin('kicp_access_control', 'a', 'r.folder_id = a.record_id AND a.module = :module AND a.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => 0]);
+          $query->leftJoin('xoops_users', 'c', 'r.user_id = c.user_id');
+          $query->fields('r', ['folder_id', 'folder_name','user_id']);
+          $query->fields('c', ['user_name']);
+          $query->addExpression('COUNT(a.id)', 'folder_access');
           $query->condition('r.is_deleted', '0');
+          $query->groupBy('r.folder_id');
+          $query->orderBy('r.folder_name');
           if ($folder_id != NULL) {
             $query->condition('r.folder_id', $folder_id);
             $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
@@ -51,7 +52,7 @@ class FileShareDatatable extends ControllerBase {
          catch (\Exception $e) {
    
           \Drupal::messenger()->addStatus(
-             t('Unable to load fileshare folder at this time due to datbase error. Please try again.')
+             t('Unable to load fileshare folder at this time due to datbase error. Please try again. '.$e)
            );
    
            return NULL;

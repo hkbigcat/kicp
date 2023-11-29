@@ -152,9 +152,11 @@ class CommonController extends ControllerBase {
             $params = json_decode($content, TRUE);  // Decode json input
         }
         $record_id = $params['record_id'];
+        $module = $params['module'];
         $current_group = AccessControl::getMyAccessControl($params['module'], $record_id);
 
         $renderable = [
+            '#module' => $module,
             '#groups' => $current_group,
             '#record_id' => $record_id,
             '#theme' => 'common-accesscontrol',
