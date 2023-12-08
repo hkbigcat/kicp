@@ -1,0 +1,100 @@
+<div style="float:right;margin-top:-40px; width:500px;text-align:right;">
+        <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
+        <button class="kicp_button" onclick="self.location.href='/activities_admin'"><i class="fa-solid fa-gear"></i>Admin</button>
+</div>        
+<div id="main_content" >
+    <div id="right_content">
+    <script type="text/javascript">
+                            jssor_1_slider_init = function() {
+
+                                var jssor_1_options = {
+                                    $AutoPlay: true,
+                                    $ArrowNavigatorOptions: {
+                                        $Class: $JssorArrowNavigator$
+                                    },
+                                    $ThumbnailNavigatorOptions: {
+                                        $Class: $JssorThumbnailNavigator$,
+                                        $Cols: 5,
+                                        $SpacingX: 4,
+                                        $SpacingY: 10,
+                                        $Orientation: 2,
+                                        $Align: 0,
+                                        $ActionMode: 2              // 1: trigger by "click", 2: trigger by "mouseover"
+                                    }
+                                };
+
+                                var jssor_1_slider = new $JssorSlider$("jssor_1", jssor_1_options);
+
+                                /*responsive code begin*/
+                                /*you can remove responsive code if you don\'t want the slider scales while window resizing*/
+                                function ScaleSlider() {
+                                    var refSize = jssor_1_slider.$Elmt.parentNode.clientWidth;
+                                    if (refSize) {
+                                                    refSize = Math.min(refSize, 840);
+                                                    jssor_1_slider.$ScaleWidth(refSize);
+                                    }
+                                    else {
+                                                    window.setTimeout(ScaleSlider, 30);
+                                    }
+                                }
+                                ScaleSlider();
+                                $Jssor$.$AddEvent(window, "load", ScaleSlider);
+                                $Jssor$.$AddEvent(window, "resize", ScaleSlider);
+                                $Jssor$.$AddEvent(window, "orientationchange", ScaleSlider);
+                                /*responsive code end*/
+                            };
+                        </script>
+        <div id="jssor_1" style="position:relative;margin:0 auto;top:0px;left:0px;width:840px;height:520px;overflow:hidden;visibility:hidden;">
+            <!-- Loading Screen -->
+            <div data-u="loading" style="position: absolute; top: 0px; left: 0px;">
+                <div style="filter: alpha(opacity=70); opacity: 0.7; position: absolute; display: block; top: 0px; left: 0px; width: 100%; height: 100%;"></div>
+                <div style="position:absolute;display:block;background:url(\'img/loading.gif\') no-repeat center center;top:0px;left:0px;width:100%;height:100%;"></div>
+            </div>
+            <div style="float:right;width:225px;font-weight:bold;font-size:14pt;border-bottom:1px solid #DDDDDD;padding-bottom:4px; margin-bottom:8px;">Latest 5 Events</div>
+            <div data-u="slides" style="cursor:default;position:relative;top:0px;left:0px;width:540px;height:400px;overflow:hidden;margin-left:10px;margin-top:35px;">
+
+
+  {% for item in items %}
+                <!-- event_display -->
+                <div>
+                    <!-- large image //-->
+                    <a href="video_list?media_event_id={{ item['media_event_id'] }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_name'] }}" >
+                        <img data-u="image" src="system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
+                    </a>
+                    <!-- Thumbnail //-->
+                    <div data-u="thumb">
+                        <img class="i" src="system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
+                        <div class="t" style="line-height:12pt;"><a href="video_list?media_event_id=56" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_image'] }}" >{{ item['media_event_name'] }}</a></div>                                               
+                    </div>
+                </div>
+                <!-- event_display -->
+   {% endfor %}                
+            </div>
+            <!-- Thumbnail Navigator -->
+            <div data-u="thumbnavigator" class="jssort11" style="position:absolute;right:5px;top:0px;font-family:Arial, Helvetica, sans-serif;margin-right:20px;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none;width:200px;height:350px;" data-autocenter="2">
+                <!-- Thumbnail Item Skin Begin -->
+                <div data-u="slides" style="cursor: default;">
+                    <div data-u="prototype" class="p">
+                        <div data-u="thumbnailtemplate" class="tp"></div>
+                    </div>
+                </div>
+                <!-- Thumbnail Item Skin End -->
+            </div>
+        </div>
+        <script type="text/javascript">jssor_1_slider_init();</script>
+    </div>
+
+    <div class="homepage_div2" style="min-height:525px;">
+    <div class="title">Past Events</div>
+    <div id="LeftVideolist" class="left_video_list" style="height:490px;">
+{% for item_right in items_right %}
+        <div id="Event_Item_{{ item_right['media_event_id'] }}" class="video_list_item">
+            <div class="video_list_image">
+                <a href="video_list?media_event_id={{ item_right['media_event_id'] }}" style="border-bottom:0px;"><img src="system/files/video/image/{{ "%06d" | format( item_right['media_event_id'] ) }}/{{ item_right['media_event_image'] }}" border="0" width="100" alt={{ item_right['media_event_name'] }}" title="{{ item_right['media_event_name'] }}"></a>
+            </div>
+            <div class="video_list_text"><a href="video_list?media_event_id={{ item_right['media_event_id'] }}">{{ item_right['media_event_name'] }}</a></div><br>
+        </div>
+{% endfor %}               
+    </div>
+</div>

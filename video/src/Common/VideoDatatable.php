@@ -15,7 +15,7 @@ class VideoDatatable {
         $outputAry = array();
 
         
-        //$this_limit = (isset($limit) && $limit != "") ? ' LIMIT ' . $limit : '';
+        $this_limit = (isset($limit) && $limit != "") ? ' LIMIT ' . $limit : '';
         if($start != "") {
             $start_cond = ' LIMIT '.$start.', 99999999';
         } else {
@@ -23,7 +23,7 @@ class VideoDatatable {
         }
 
         // Event list
-        $sql = 'SELECT media_event_id, media_event_name, LEFT(media_event_date,10) as media_event_date, media_event_image FROM kicp_media_event_name WHERE is_visible=1 AND is_deleted=0 ORDER BY media_event_sequence DESC, media_event_name' . $start_cond;
+        $sql = 'SELECT media_event_id, media_event_name, LEFT(media_event_date,10) as media_event_date, media_event_image FROM kicp_media_event_name WHERE is_visible=1 AND is_deleted=0 ORDER BY media_event_sequence DESC, media_event_name' . $start_cond .$this_limit;
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

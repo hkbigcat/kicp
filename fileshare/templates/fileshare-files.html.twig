@@ -15,7 +15,7 @@
      {% if item['title']   %}
       <div class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }}">
         
-          <div style="width:18%;float:left;display:block;"><a href="fileshare_view?id={{ item['file_id'] }}" style="border-bottom:0px;"><img src="/system/files/fileshare/image/{{ "%06d" | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200px;"></a></div>
+          <div style="width:18%;float:left;display:block;"><a href="fileshare_view/{{ item['file_id'] }}" style="border-bottom:0px;"><img src="/system/files/fileshare/image/{{ "%06d" | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200px;"></a></div>
           <div style="width:50%;float:left;display:block;">
                <div class="entry_title"><a href="/fileshare_view/{{ item['file_id'] }}">{{ item['title'] }}</a></div>
                <div class="entry_content">{{ item['description'] }}</div>

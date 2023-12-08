@@ -56,4 +56,21 @@ content_tags:
   js:
     js/tags.js: {}
 
-
+jssor_slider:
+  version: 1.x
+  css:
+    theme:
+      css/jssor_slider.css: {}
+  header: true
+  js:
+    js/jssor.slider-22.1.7.min.js: {}    
+  dependencies:
+    - core/jquery
+    
+jssor_slider_function2:
+  version: 1.x
+  header: true
+  js:
+    js/jssor_slider_function2.js: {}    
+  dependencies:
+    - core/jquery

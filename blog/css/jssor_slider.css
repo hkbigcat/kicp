@@ -1,0 +1,182 @@
+/* List Slider [Start] */
+/* Demo site: http://www.jssor.com/demos/list-slider.slider*/
+
+.jssora02l, .jssora02r {
+    display: block;
+    position: absolute;
+    /* size of arrow element */
+    width: 55px;
+    height: 55px;
+    cursor: pointer;
+    background: url('a02.png') no-repeat;
+    overflow: hidden;
+}
+
+.jssora02l { 
+    background-position: -3px -33px; 
+}
+
+.jssora02r { 
+    background-position: -63px -33px; 
+}
+
+.jssora02l:hover { 
+    background-position: -123px -33px; 
+}
+
+.jssora02r:hover { 
+    background-position: -183px -33px; 
+}
+
+.jssora02l.jssora02ldn { 
+    background-position: -3px -33px;
+}
+
+.jssora02r.jssora02rdn {
+    background-position: -63px -33px; 
+}
+
+.jssora02l.jssora02lds { 
+    background-position: -3px -33px; 
+    opacity: .3; 
+    pointer-events: none; 
+}
+
+.jssora02r.jssora02rds { 
+    background-position: -63px -33px;
+    opacity: .3; 
+    pointer-events: none; 
+}
+
+.jssort11 .p {    
+    position: absolute;    
+    top: 0;    left: 0;    
+    /*width: 250px;    */
+    width:270px;
+    height: 83px;    
+    background: #F6F6F6;
+    /*#BAD8EA*/
+}
+
+.jssort11 .tp {    
+    position: absolute;    
+    top: 0;    
+    left: 0;    
+    width: 100%;    
+    height: 100%;    
+    border: none;
+}
+
+.jssort11 .i, .jssort11 .pav:hover .i {    
+    position: absolute;    
+    top: 3px;    
+    left: 3px;    
+    width: 120px;    
+    /*height: 40px;*/
+    border: white 1px dashed;
+}
+
+* html .jssort11 .i {    
+    width : 62px;    
+    height : 32px;
+}
+
+.jssort11 .pav .i {    
+    border: white 1px solid;
+}
+
+.jssort11 .t, .jssort11 .pav:hover .t {
+    position: absolute;    
+    top: 3px;    
+    /*left: 68px;    
+    width: 129px;    */
+    left: 130px;    
+    width: 115px;    
+    height: 32px;    
+    line-height: 32px;    
+    text-align: center;    
+    color: #000000;    /* title color */
+    font-size: 13px;    
+    /*font-weight: 700;*/
+}
+
+.jssort11 .pav .t, .jssort11 .p:hover .t {    
+    color: #000000;
+}
+
+.jssort11 .c, .jssort11 .pav:hover .c {    
+    position: absolute;    
+    top: 38px;    
+    /*left: 3px;    
+    width: 194px;    */
+    left: 160px;    
+    width: 120px;    
+    height: 32px;    
+    line-height: 32px;    
+    color: #000000;    /* date color */
+    font-size: 11px;    
+    font-weight: 400;    
+    overflow: hidden;
+}
+
+.jssort11 .pav .c, .jssort11 .p:hover .c {    
+    color: #7A7A7A;  /* mouse over of title color*/
+}
+
+.jssort11 .t, .jssort11 .c {    
+    transition: color 2s;    
+    -moz-transition: color 2s;    
+    -webkit-transition: color 2s;    
+    -o-transition: color 2s;
+}
+
+.jssort11 .p:hover .t, .jssort11 .pav:hover .t, .jssort11 .p:hover .c, .jssort11 .pav:hover .c {    
+    transition: none;    
+    -moz-transition: none;    
+    -webkit-transition: none;    
+    -o-transition: none;
+}
+
+.jssort11 .p:hover, .jssort11 .pav:hover {    
+    background: #BAD8EA; /* mouse over of block color*/
+}
+
+.jssort11 .pav, .jssort11 .p.pdn {    
+    background: #BAD8EA;
+}
+/* List Slider [End] */
+
+
+/*######################################################################*/
+
+
+/* Image gallery with vertical thumbnail [Start] */
+/* Demo site: http://www.jssor.com/demos/image-gallery-with-vertical-thumbnail.slider */
+
+.jssora05l, .jssora05r {
+    display: block;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    background: url('../images/slider_arrow01.png') no-repeat;
+    overflow: hidden;
+}
+.jssora05l { background-position: -10px -40px; }
+.jssora05r { background-position: -70px -40px; }
+.jssora05l:hover { background-position: -130px -40px; }
+.jssora05r:hover { background-position: -190px -40px; }
+.jssora05l.jssora05ldn { background-position: -250px -40px; }
+.jssora05r.jssora05rdn { background-position: -310px -40px; }
+.jssora05l.jssora05lds { background-position: -10px -40px; opacity: .3; pointer-events: none; }
+.jssora05r.jssora05rds { background-position: -70px -40px; opacity: .3; pointer-events: none; }
+.jssort01-99-66 .p {    position: absolute;    top: 0;    left: 0;    width: 99px;    height: 66px;}
+.jssort01-99-66 .t {    position: absolute;    top: 0;    left: 0;    width: 100%;    height: 100%;    border: none;}
+.jssort01-99-66 .w {    position: absolute;    top: 0px;    left: 0px;    width: 100%;    height: 100%;}
+.jssort01-99-66 .c {    position: absolute;    top: 0px;    left: 0px;    width: 95px;    height: 62px;    border: #000 2px solid;    box-sizing: content-box;    background: url('../images/slider_enlarge.png') -800px -800px no-repeat;    _background: none;}
+.jssort01-99-66 .pav .c {    top: 2px;    _top: 0px;    left: 2px;    _left: 0px;    width: 95px;    height: 62px;    border: #000 0px solid;    _border: #fff 2px solid;    background-position: 50% 50%;}
+.jssort01-99-66 .p:hover .c {    top: 0px;    left: 0px;    width: 97px;    height: 64px;    border: #fff 1px solid;    background-position: 50% 50%;}
+.jssort01-99-66 .p.pdn .c {    background-position: 50% 50%;    width: 95px;    height: 62px;    border: #000 2px solid;}
+* html .jssort01-99-66 .c, * html .jssort01-99-66 .pdn .c, * html .jssort01-99-66 .pav .c {    width : 99px;    height : 66px;}
+
+/*  Image gallery with vertical thumbnail [End] */

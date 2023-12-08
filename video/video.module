@@ -12,43 +12,30 @@ function video_page_attachments_alter(&$page) {
         
         $page['#attached']['library'][] = 'video/video_key';
         $path = $current_path = \Drupal::service('path.current')->getPath();
-        if ( $path == '/video')  {
-            $page['#attached']['library'][] = 'video/video_home';
-        }        
+        $routeName = \Drupal::routeMatch()->getRouteName();
 
+        if($routeName === 'video.video_entrylist') {
+            $page['#attached']['library'][] = 'common/jssor_slider';
+        }
+    
 
 }
 
-/*
+
 function video_theme($existing, $type, $theme, $path) {
 
     return [
-        'blogs-home' =>[
+        'video-home' =>[
             'variables' => [
                 'items' => NULL,
+                'items_right' => NULL,
             ],
         ],
 
     ];
 
 }
-*/
 
-
-/*
-function fileshare_file_download($uri) {
-
-    $scheme = \Drupal\Core\StreamWrapper\StreamWrapperManager::getScheme($uri);
-    if ($scheme === 'private') {
-        $uri_target = array();
-        $uri_target = explode('/', \Drupal\Core\StreamWrapper\StreamWrapperManager::getTarget($uri));
-
-        return $uri;
-    } else {
-        return $uri;
-    }
-}
-*/
 
 /**
  * Implements hook_help().

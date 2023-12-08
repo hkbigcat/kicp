@@ -1,0 +1,7 @@
+video.video:
+  title: Video
+  description: KCIP Video
+  menu_name: main
+  route_name: video.video_entrylist
+  weight: 110
+
