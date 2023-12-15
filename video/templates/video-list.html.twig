@@ -1,0 +1,37 @@
+<div> 
+    <h2 class="video_title">Event Name: {{ event_info.media_event_name }}</h2>
+    <strong>Event Date: </strong> {{ event_info.media_event_date | date('d.m.Y') }}
+    <div id="DivFollower">Knowledge Management Unit <span id="DivFollow_3232"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ event_info.user_id }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+    {% include '@common/common-tags-list.html.twig' %}    
+    {% include '@common/common-tags.html.twig' %}
+     <input type="hidden" name="tag_page" id="tag_page" value="../video_tag">
+     <input type="hidden" name="notag_page" id="notag_page" value="../video">
+</div>
+<div id="video_content_div">
+{% for item in items %}
+    <div class="homepage_div">
+        <div id="Video_Item_{{ item['media_id']}}" class="video_list_item">
+            <div class="video_list_image">
+                 <a href="javascript:void(0);" onclick="var view_video=window.open('{{ item['media_file_path']}}');view_video.focus();" style="border-bottom:0px;">
+                 <img src="/system/files/video/video_image/{{ "%06d" | format( media_event_id ) }}/{{ item['media_img']}}" width="120" height="100" alt="{{ item['media_title']}}" title="{{ item['media_title']}}" border="0">
+                </a>
+            </div>
+            <div class="video_description_text">
+              <span class="video_list_title">
+                <a href="javascript:;" onclick="var view_video=window.open('{{ item['media_file_path']}}','view_video', 'width=930,height=755,status=no,menubar=no,resizable=yes,scrollbars=no,location=no,toolbar=no,directories=no');view_video.focus();" style="border-bottom:0px;">
+                  {{ item['media_title']}}
+                </a>
+              </span>
+                <div>{{ item['media_title']}}
+                    <div style="margin-top:10px;"><strong>Duration: </strong>{{ item['media_duration']}}</div>
+                </div>
+            </div>
+            <div class="video_list_text">
+                <div>
+                        {% include '@common/common-tags-list.html.twig' with {tags: item ['tags']} %} 
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}     
+</div>

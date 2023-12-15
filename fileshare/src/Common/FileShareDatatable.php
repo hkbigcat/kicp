@@ -114,12 +114,27 @@ class FileShareDatatable extends ControllerBase {
       $tags = json_decode($tagsUrl);
     }    
 
+    //dump($tagsUrl);
+   //dump($tags);
+
+
     try {
       //$sql = "SELECT a.*, b.folder_name FROM `kicp_file_share` a left join kicp_file_share_folder b on a.folder_id = b.folder_id where a.file_id in (select fid FROM `kicp_tags` b where module like 'fileshare' and lower(tag) like '$tags' and is_deleted = 0 ) and a.is_deleted = 0";
       $database = \Drupal::database();
       $query = $database-> select('kicp_file_share', 'a'); 
       $query -> join('kicp_file_share_folder', 'b', 'a.folder_id = b.folder_id');
       if ($tags && count($tags) > 0 ) {
+        $tags1 = $database-> select('kicp_tags', 't');
+        $tags1-> condition('tag', $tags, 'IN');
+        $tags1-> condition('t.module', 'fileshare');
+        $tags1-> condition('t.is_deleted', '0');
+        $tags1-> addField('t', 'fid');
+        $tags1-> groupBy('t.fid');
+        $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
+
+
+/*
+
         $query -> join('kicp_tags', 't', 'a.file_id = t.fid');
         $query-> condition('t.module', 'fileshare');
         $orGroup = $query->orConditionGroup();
@@ -131,10 +146,12 @@ class FileShareDatatable extends ControllerBase {
         $query-> groupBy('a.file_id', '0');
         $query->addExpression('COUNT(a.file_id)>='.count($tags) , 'occ');
         $query->havingCondition('occ', 1);        
-
+*/
+        $query-> condition('file_id', $tags1, 'IN');
       }
       $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime']);
       $query-> fields('b', ['folder_name']);
+      
       $query-> condition('a.is_deleted', '0');
       $query-> orderBy('modify_datetime', 'DESC');
       $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
@@ -150,7 +167,7 @@ class FileShareDatatable extends ControllerBase {
     }
     catch (\Exception $e) {
        \Drupal::messenger()->addStatus(
-          t('Unable to load fileshare by tags at this time due to datbase error. Please try again.')
+          t('Unable to load fileshare by tags at this time due to datbase error. Please try again. '.$e)
         );
       return  NULL;
     }

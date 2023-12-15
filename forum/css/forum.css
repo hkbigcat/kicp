@@ -1,0 +1,15 @@
+@charset "utf-8";
+
+.forum_mainpage_title {
+    font-size: 16pt;
+    margin-top:1em;
+    margin-bottom:1em;
+    display:inline-block;
+}
+
+.forum_navigation {
+    font-size: 13pt;
+    margin-top:1em;
+    margin-bottom:1em;
+    display:inline-block;
+}

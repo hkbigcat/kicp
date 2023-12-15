@@ -10,13 +10,21 @@ use Drupal\file\Entity\File;
 
 function video_page_attachments_alter(&$page) {
         
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    $routeName = \Drupal::routeMatch()->getRouteName();
+
+    if ( str_contains($path, '/video')  ) {
+
         $page['#attached']['library'][] = 'video/video_key';
-        $path = $current_path = \Drupal::service('path.current')->getPath();
-        $routeName = \Drupal::routeMatch()->getRouteName();
 
         if($routeName === 'video.video_entrylist') {
             $page['#attached']['library'][] = 'common/jssor_slider';
         }
+
+        if($routeName === 'video.video_list' || $routeName === 'video.video_tag') {
+            $page['#attached']['library'][] = 'common/content_table';
+        }
+    }
     
 
 }
@@ -29,6 +37,22 @@ function video_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'items' => NULL,
                 'items_right' => NULL,
+            ],
+        ],
+        'video-list' =>[
+            'variables' => [
+                'media_event_id'=> NULL,
+                'items' => NULL,
+                'tags' => NULL,
+                'event_info' => NULL,
+            ],
+        ],
+        'video-tags' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'tagsUrl' => NULL,
+                'pager' => NULL,
             ],
         ],
 

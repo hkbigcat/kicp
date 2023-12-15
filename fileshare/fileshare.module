@@ -10,13 +10,15 @@ use Drupal\file\Entity\File;
 
 function fileshare_page_attachments_alter(&$page) {
         
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    if (str_contains($path, '/fileshare')) {
         $page['#attached']['library'][] = 'fileshare/fileshare_key';
         $page['#attached']['library'][] = 'common/content_table';
         
         //$page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         //$page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
 
-        $path = $current_path = \Drupal::service('path.current')->getPath();
+        
         if (str_contains($path, '/fileshare_view')) {
             $page['#attached']['library'][] = 'fileshare/fileshare_slides';
         } 
@@ -25,7 +27,7 @@ function fileshare_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'common/content_tags';
         }
         
-    
+    }
 
 }
 

@@ -8,3 +8,22 @@ video.video_entrylist:
   options:
     no_cache: TRUE
 
+video.video_list:
+  path: '/video_list/{media_event_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::VideoContent'
+    _title: 'Video List'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+video.video_tag:
+  path: '/video_tag'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::VideoTagContent'
+    _title: 'Video'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE   

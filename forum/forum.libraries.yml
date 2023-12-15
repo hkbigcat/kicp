@@ -1,0 +1,13 @@
+forum_key:
+  version: 1.x
+  css:
+    theme:
+      css/forum.css: {}
+  header: true
+  js:
+    js/forum.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

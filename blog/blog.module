@@ -9,14 +9,15 @@ use Drupal\file\Entity\File;
 
 
 function blog_page_attachments_alter(&$page) {
-        
+
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    if ( str_contains($path, '/blog')) {
         $page['#attached']['library'][] = 'blog/blog_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/common_assets';   
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
 
-        $path = $current_path = \Drupal::service('path.current')->getPath();
         if ( str_contains($path, '/blog_add') || str_contains($path, '/blog_change') ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
@@ -24,7 +25,7 @@ function blog_page_attachments_alter(&$page) {
         if ( str_contains($path, '/blog_entry')  ) {
             $page['#attached']['library'][] = 'blog/blog_form';
         }	
-
+    }
 
 }
 

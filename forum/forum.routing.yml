@@ -1,0 +1,32 @@
+forum.forum:
+  path: '/forum'
+  defaults:
+    _controller: '\Drupal\forum\Controller\ForumController::content'
+    _title: 'Forum'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+forum.forum_view_forum:
+  path: '/forum_view_forum/{forum_id}'
+  defaults:
+    _controller: '\Drupal\forum\Controller\ForumController::viewTopicList'
+    _title: 'Forum'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+forum.forum_view_topic:
+  path: '/forum_view_topic/{topic_id}'
+  defaults:
+    _controller: '\Drupal\forum\Controller\ForumController::viewPostList'
+    _title: 'Forum'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

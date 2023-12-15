@@ -1,20 +1,15 @@
 @charset "utf-8";
 
-.BlogMainContainer {
-        /*width: 1240px;*/
-}
 
 .homepage_div {
         width: 20%;
         min-width:260px;
-        min-height: 600px;
-        float: left;
-        display: inline-block;
+        min-height: 1614px;
+        float:left;
         border: 1px solid #DDDDDD;
         padding: 15px;
         margin: 10px;
         border-radius: 10px;
-        /*box-shadow: 5px 5px 10px #C7C7C7;*/
         box-shadow: 2px 2px 5px #E6E6E6;
 }
 

@@ -1,0 +1,32 @@
+<div class="forum_navigation"><a href="../forum_view_forum/{{ forum_info.forum_id }}">{{ forum_info.forum_name }}</a> &gt; [KM Corner] Do you have any comment on application of QR Code</div>
+{% include '@common/common-tags-list.html.twig' %} 
+     <input type="hidden" name="tag_page" id="tag_page" value="../forum_tag">
+     <input type="hidden" name="notag_page" id="notag_page" value="../forum">   
+<div id="DivContentTable" style="display:table;">
+  {% for thread in threads %}
+    <div class="EntryContainer  {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%;">
+        <div class="forum_hightlight">
+            <div style="width:35%;float:left;">{{ thread['poster_name'] }}</div>
+            <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
+        </div>
+        <div class="forum_post_content">
+            <form method="post" name="form_{{ thread['post_id'] }}" action="forum_reply">
+            <div style="width:70%;float:left;padding-botton:20px; display:block;">
+                    {{ thread['content']  | raw }}
+                <span class="blog_subtitle">Posted on:</span> {{ thread['create_datetime'] }}
+            </div>
+            <div id="forum_post_87" style="width:23%;float:right;display:block;">
+                <div>
+                    <div style="width:35%;float:left;"><input type="submit" value="Quote" onclick="jQuery('#quotePost_{{ thread['post_id'] }}').val({{ thread['post_id'] }});jQuery('#form_{{ thread['post_id'] }}').submit();"></div>
+                    <div style="width:60%;float:left;"><input type="submit" value="Reply The Thread" onclick="jQuery('#form_{{ thread['post_id'] }}').submit();"></div>
+                </div>
+            </div>
+            <input type="hidden" name="post_id" id="post_id" value="{{ thread['post_id'] }}">
+            <input type="hidden" name="topic_id" id="topic_id" value="{{ thread['topic_id'] }}">
+            <input type="hidden" name="forum_id" id="forum_id" value="3">
+            <input type="hidden" name="quotePost" id="quotePost_{{ thread['post_id'] }}" value="">
+            </form>
+        </div>
+    </div>
+ {% endfor %}  
+</div>

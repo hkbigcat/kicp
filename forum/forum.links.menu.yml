@@ -1,0 +1,7 @@
+forum.forum:
+  title: Forum
+  description: KCIP Forum
+  menu_name: main
+  route_name: forum.forum
+  weight: 50
+

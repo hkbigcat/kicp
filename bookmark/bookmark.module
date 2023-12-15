@@ -10,23 +10,18 @@ use Drupal\file\Entity\File;
 function bookmark_page_attachments_alter(&$page) {
 
     
-    $page['#attached']['library'][] = 'bookmark/bookmark_key';
-    $page['#attached']['library'][] = 'common/common_key';
     $path = $current_path = \Drupal::service('path.current')->getPath();
-    if ( str_contains($path, '/bookmark_add') || str_contains($path, '/bookmark_change') ) {
-        $page['#attached']['library'][] = 'common/content_tags';
-    }            
 
-/*    
+    if ( str_contains($path, '/bookmark') ) {
 
-    $page['#attached']['library'][] = 'common/content_table';
+        $page['#attached']['library'][] = 'bookmark/bookmark_key';
+        $page['#attached']['library'][] = 'common/common_key';
+        
+        if ( str_contains($path, '/bookmark_add') || str_contains($path, '/bookmark_change') ) {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }            
+    }
 
-
-    if ( str_contains($path, '/blog_entry')  ) {
-        $page['#attached']['library'][] = 'blog/blog_form';
-    }	
-
-*/
 }
 
 

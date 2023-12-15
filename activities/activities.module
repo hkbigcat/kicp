@@ -10,21 +10,17 @@ use Drupal\file\Entity\File;
 
 function activities_page_attachments_alter(&$page) {
         
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    if ( str_contains($path, '/activities')) {
         $page['#attached']['library'][] = 'activities/activities_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
 
-        $path = $current_path = \Drupal::service('path.current')->getPath();
         if ( str_contains($path, '/activities_item_add') || str_contains($path, 'activities_item_change') ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
 
-        /*
-        if ( str_contains($path, '/blog_entry')  ) {
-            $page['#attached']['library'][] = 'blog/blog_form';
-        }	
-        */
-
+     }
 }
 
 
