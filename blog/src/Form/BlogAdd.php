@@ -215,88 +215,20 @@ class BlogAdd extends FormBase  {
             $origImageSrc = array();
 
             //new method
-            $PublicUri = 'public://inline-images';
             $BlogImageUri = 'private://blog/image';
             $BlogFileUri = 'private://blog/file';
             $file_system = \Drupal::service('file_system');    
 
             //New
-            $oldImagePath = base_path() . 'sites/default/files/public/inline-images';   // image pool once upload the image
-            $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image';
-            //$newAttachmentPath = base_path() . 'sites/default/files/private/' . $this->module . '/file';  // store in "Private" folder
-                       
-                    
-            if (!is_dir($file_system->realpath($BlogImageUri))) {
-                // Prepare the directory with proper permissions.
-                if (!$file_system->prepareDirectory($BlogImageUri, FileSystemInterface::CREATE_DIRECTORY)) {
-                  throw new \Exception('Could not create the blog image directory.');
-                }
-            }
-      
+            $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image';                       
             $newImagePathWebAccess .= '/' . $blog_owner_id . '/' . $this_entry_id_path;
 
-
             $createDir = $BlogImageUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
-            if (!is_dir($file_system->realpath($createDir ))) {
-                // Prepare the directory with proper permissions.
-                if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
-                  throw new \Exception('Could not create the blog image - entry id directory.');
-                }
-            }
+            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess  );
 
-            // read all image tags into an array
-            preg_match_all('/<img[^>]+>/i', $bContent['value'], $imgTags);
-
-            for ($i = 0; $i < count($imgTags[0]); $i++) {
-                // get the source string
-                preg_match('/src="([^"]+)/i', $imgTags[0][$i], $imgage);
-
-                // remove opening 'src=' tag, can`t get the regex right
-                $thisImgSrc = str_ireplace('src="', '', $imgage[0]);
-                $origImageSrc[] = $thisImgSrc;  // store the img "src" to  array (full path)
-
-                $_tempImgSrcAry = explode('/', $thisImgSrc);
-                $thisImgName = end($_tempImgSrcAry);   // image filename
-                $ImgNameAry[] = $thisImgName;
-
-                // move file from temp location to destination
-                $thisImgName = urldecode($thisImgName);                
-                
-                if (file_exists($file_system->realpath($PublicUri) . '/' . $thisImgName)) {    
-
-                    $sql = "select fid from `file_managed` WHERE uri = '".$PublicUri."/".$thisImgName."'";
-                    $database = \Drupal::database();
-                    $file_result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-                   
-                    // Move all the files to the private file area
-                    foreach ($file_result as  $record) {
-                        
-                        if (!file_exists($PublicUri . '/' .$thisImgName)) {
-                            break;
-                        }
-                    
-                        $source = $file_system->realpath($PublicUri . '/'. $thisImgName);
-                        $destination = $file_system->realpath( $createDir . '/'. $thisImgName);
-
-                        if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                            throw new \Exception('Could not copy the generic placeholder image to the destination directory.');
-                          }
-
-
-                        // update the "uri" in table "file_managed" (from "public" to "private" folder)
-                        $rs = CommonUtil::updateDrupalFileManagedUri("", 'private://' . $this->module . '/image/' . $blog_owner_id . '/' . $this_entry_id_path . '/' . $thisImgName, $record['fid']);
-                    }
-                    
-
-                }
-
-                $bContent['value'] = str_replace($oldImagePath, $newImagePathWebAccess, $bContent['value']);
-            }
-
-            if (count($imgTags[0]) > 0)  {
+            if ( strpos($bContent['value'], "<img ") > 0)  {
                 $query = \Drupal::database()->update('kicp_blog_entry')->fields([
-                    'entry_content'=>$bContent['value'] , 
+                    'entry_content'=>$content, 
                     'entry_modify_datetime' => date('Y-m-d H:i:s'),
                 ])
                 ->condition('entry_id', $entry_id)
@@ -305,34 +237,34 @@ class BlogAdd extends FormBase  {
 
 /////////// Handle image inside CKEditor [End] /////////////                            
 
-if ($hasAttach) {
-    /////////// Handle attachment [Start] /////////////
+            if ($hasAttach) {
+                /////////// Handle attachment [Start] /////////////
 
-    $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
-    if (!is_dir($file_system->realpath($createDir ))) {
-        // Prepare the directory with proper permissions.
-        if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
-          throw new \Exception('Could not create the blog image - entry id directory.');
-        }
-    }
+                $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
+                if (!is_dir($file_system->realpath($createDir ))) {
+                    // Prepare the directory with proper permissions.
+                    if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
+                    throw new \Exception('Could not create the blog image - entry id directory.');
+                    }
+                }
 
-    foreach ($files as $file1) {
+            foreach ($files as $file1) {
 
-        if ($file1) {
-            $NewFile = File::load($file1);
-            $uuid = $NewFile->uuid();
-            $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
-            $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
-            if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                throw new \Exception('Could not move the generic placeholder image to the destination directory.');
-            } else {
-                $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                if ($file1) {
+                    $NewFile = File::load($file1);
+                    $uuid = $NewFile->uuid();
+                    $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
+                    $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
+                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
+                        throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+                    } else {
+                        $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                    }
+                }
             }
-        }
-    }
 
     /////////// Handle attachment [End] /////////////
-  }
+        }
 
 //////////////  Handle Tags ///////////////////////////
         if ($tags != '') {

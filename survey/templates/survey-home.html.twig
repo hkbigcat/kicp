@@ -1,0 +1,18 @@
+<div id="DivContentTable" style="display:table;">
+  {% for item in items %}
+    <div id="row_{{ loop.index0 + 1 }} " class="EntryContainer  odd" style="width:100%;">
+        <div style="width:70%;float:left;display:block;margin-right:20px;">
+            <div class="entry_title"><a href="survey_view/{{ item['survey_id'] }}">{{ item['title'] }}</a></div>
+            <div class="entry_content">{{ item['description'] | raw }}</div>
+            <div>{% include '@common/common-tags-list.html.twig' with {tags: item ['tags'] }  %} </div>
+            <div style="margin-top:10px;"><span class="entry_subtitle">Uploaded by: </span>{{ item['user_displayname'] }} <span id="DivFollow_"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ item['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+            <div style="margin-top:5px;"><span class="entry_subtitle">Start Date: </span>{{ item['start_date'] | date('d.m.Y')  }}</div>
+            <div style="margin-top:5px;"><span class="entry_subtitle">Expiry Date: </span>{{ item['expiry_date'] | date('d.m.Y')  }}</div>
+        </div>
+        {% include '@common/common-like.html.twig'  with {module: 'survey', 'record_id':  item['survey_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
+        <div style="display:block;"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
+    </div>
+ {% endfor %}  
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>

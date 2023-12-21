@@ -1,0 +1,7 @@
+survey.survey:
+  title: Survey
+  description: KCIP Survey
+  menu_name: main
+  route_name: survey.survey_content
+  weight: 90
+

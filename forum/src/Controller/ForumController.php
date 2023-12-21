@@ -44,7 +44,7 @@ class ForumController extends ControllerBase {
 
         return [
             '#theme' => 'forum-forum',
-            '#forum_name' => $forumName,
+            '#forum_info' => [ 'forum_id' => $forum_id, 'forum_name' => $forumName, ],
             '#posts' => $forumPosts,
             '#empty' => t('No entries available.'),
             '#pager' => ['#type' => 'pager',
@@ -67,6 +67,33 @@ class ForumController extends ControllerBase {
             '#tags' => $taglist,
             '#empty' => t('No entries available.'),
         ];        
+
+    }
+
+    public function content_tag() {
+
+        $tags = array();
+        $tagsUrl = \Drupal::request()->query->get('tags');
+    
+        if ($tagsUrl) {
+          $tags = json_decode($tagsUrl);
+          if ($tags && count($tags) > 0 ) {
+            $tmp = $tags;
+          }
+        }  
+
+
+        $forumPosts = ForumDatatable::getForumListByTag($tags);
+        return [
+            '#theme' => 'forum-tags',
+            '#posts' => $forumPosts,
+            '#tags' => $tags,
+            '#tagsUrl' => $tmp,            
+            '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],
+        ];        
+
 
     }
 

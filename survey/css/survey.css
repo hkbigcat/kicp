@@ -1,0 +1,59 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Jun 23, 2017, 3:07:49 PM
+    Author     : hwhchow
+*/
+
+#RadioCheckbox {
+    display: none;
+}
+
+.greyBorderBottom{
+    border-bottom: 2px solid #babec4;
+    margin: 20px 0px;
+}
+
+td>div.form-radios>div.form-item{
+    display:inline;
+    padding:5px;
+}
+
+div.filter-wrapper{
+    display:none;
+}
+
+span.redstar{
+    color:red;
+}
+
+.invisible{
+    display:none;
+}
+
+.visible{
+    display:block;
+}
+
+table.tb_rate td:first-child { 
+    width: 60% ;
+}
+
+span.titleView{
+    
+font-size:20pt;
+font-weight: bold;
+
+}
+
+
+.messages--status {
+  display: none;
+}
+
+#edit-close {
+  display: none;
+}

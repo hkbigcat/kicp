@@ -16,6 +16,16 @@ function forum_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
+
+        if (str_contains($path, '/forum_topic_add')  ) {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }
+
+        if (str_contains($path, '/forum_tag') || str_contains($path,'/forum_view_topic')  ) {
+            $page['#attached']['library'][] = 'common/content_table';
+        }
+
+
     }
     
 }
@@ -33,10 +43,18 @@ function forum_theme($existing, $type, $theme, $path) {
         'forum-forum' =>[
             'variables' => [
                 'posts' => NULL,
-                'forum_name' => NULL,
+                'forum_info' => NULL,
                 'pager' => NULL,
             ],
         ],
+        'forum-tags' =>[
+            'variables' => [
+                'posts' => NULL,
+                'tags' => NULL,
+                'tagsUrl' => NULL,
+                'pager' => NULL,
+            ],
+        ],        
         'forum-post' =>[
             'variables' => [
                 'threads' => NULL,

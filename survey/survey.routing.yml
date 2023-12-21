@@ -1,0 +1,11 @@
+survey.survey_content:
+  path: '/survey'
+  defaults:
+    _controller: '\Drupal\survey\Controller\SurveyController::SurveyContent'
+    _title: 'Survey'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+    

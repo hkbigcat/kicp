@@ -27,3 +27,13 @@ video.video_tag:
     _permission: 'access content'
   options:
     no_cache: TRUE   
+
+forum.forum_reply:
+  path: '/forum_reply'
+  defaults:
+    _form: '\Drupal\forum\Form\ForumReply'
+    _title: 'Reply Post'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

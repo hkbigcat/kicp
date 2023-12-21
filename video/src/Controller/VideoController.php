@@ -84,7 +84,6 @@ class VideoController extends ControllerBase {
             '#tags' => $tags,
             '#tagsUrl' => $tmp,
             '#empty' => t('No entries available.'),
-            '#tagsUrl' => $tmp,
             '#pager' => ['#type' => 'pager',
                         ],
         ];    

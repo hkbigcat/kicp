@@ -239,74 +239,16 @@ class BlogChange extends FormBase  {
         $file_system = \Drupal::service('file_system');    
 
         //New
-        $oldImagePath = base_path() . 'sites/default/files/public/inline-images';   // image pool once upload the image
+        
         $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image/' . $blog_owner_id . '/' . $this_entry_id_path;
         
         $database = \Drupal::database();
+
         if ($bContent['value'] != $bContent_prev)  {      
-            if (!is_dir($file_system->realpath($BlogImageUri))) {
-                // Prepare the directory with proper permissions.
-                if (!$file_system->prepareDirectory($BlogImageUri, FileSystemInterface::CREATE_DIRECTORY)) {
-                throw new \Exception('Could not create the blog image directory.');
-                }
-            }
 
             $createDir = $BlogImageUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
-            if (!is_dir($file_system->realpath($createDir ))) {
-                // Prepare the directory with proper permissions.
-                if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
-                throw new \Exception('Could not create the blog image - entry id directory.');
-                }
-            }
+            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess  );
 
-            // read all image tags into an array
-            preg_match_all('/<img[^>]+>/i', $bContent['value'], $imgTags);
-
-            for ($i = 0; $i < count($imgTags[0]); $i++) {
-                // get the source string
-                preg_match('/src="([^"]+)/i', $imgTags[0][$i], $imgage);
-
-                // remove opening 'src=' tag, can`t get the regex right
-                $thisImgSrc = str_ireplace('src="', '', $imgage[0]);
-                $origImageSrc[] = $thisImgSrc;  // store the img "src" to  array (full path)
-
-                $_tempImgSrcAry = explode('/', $thisImgSrc);
-                $thisImgName = end($_tempImgSrcAry);   // image filename
-                $ImgNameAry[] = $thisImgName;
-
-                // move file from temp location to destination
-                $thisImgName = urldecode($thisImgName);                
-                
-                if (file_exists($file_system->realpath($PublicUri) . '/' . $thisImgName)) {    
-
-                    $sql = "select fid from `file_managed` WHERE uri = '".$PublicUri."/".$thisImgName."'";
-                    $file_result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-                
-                    // Move all the files to the private file area
-                    foreach ($file_result as  $record) {
-                        
-                        if (!file_exists($PublicUri . '/' .$thisImgName)) {
-                            break;
-                        }
-                    
-                        $source = $file_system->realpath($PublicUri . '/'. $thisImgName);
-                        $destination = $file_system->realpath( $createDir . '/'. $thisImgName);
-
-                        if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                            throw new \Exception('Could not copy the generic placeholder image to the destination directory.');
-                        }
-
-
-                        // update the "uri" in table "file_managed" (from "public" to "private" folder)
-                        $rs = CommonUtil::updateDrupalFileManagedUri("", 'private://' . $this->module . '/image/' . $blog_owner_id . '/' . $this_entry_id_path . '/' . $thisImgName, $record['fid']);
-                    }
-                    
-
-                }
-
-                $bContent['value'] = str_replace($oldImagePath, $newImagePathWebAccess, $bContent['value']);
-            } 
         }  // end content changed
        
 
@@ -358,13 +300,13 @@ class BlogChange extends FormBase  {
 
         $entry = array();
         // if any changes in content, update the timestamp
-        if($bTitle != $bTitle_prev || $bContent['value'] != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || !empty($files) ) {
+        if($bTitle != $bTitle_prev || $content != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || !empty($files) ) {
             $entry['entry_modify_datetime'] = date('Y-m-d H:i:s');
             if ($bTitle != $bTitle_prev) {
                 $entry['entry_title'] = $bTitle;
             }
-            if ($bContent['value'] != $bContent_prev) {
-                $entry['entry_content'] = $bContent['value'];
+            if ($content != $bContent_prev) {
+                $entry['entry_content'] = $content;
             }
             $entry['has_attachment'] = $hasAttach;
         }

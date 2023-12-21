@@ -10,6 +10,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
+use Drupal\common\Controller\TagList;
+
 
 
 class ForumDatatable {
@@ -56,7 +58,7 @@ class ForumDatatable {
         $database = \Drupal::database();
         $query = $database-> select('kicp_forum_topic', 'a');
         $query -> leftjoin('kicp_forum_forum', 'b', 'a.forum_id = b.forum_id');
-        $query -> leftjoin('kicp_forum_post', 'c', 'a.topic_id = a.topic_id AND c.is_deleted= :is_deleted1', [':is_deleted1' => 0]);
+        $query -> leftjoin('kicp_forum_post', 'c', 'c.topic_id = a.topic_id AND c.is_deleted= :is_deleted1', [':is_deleted1' => 0]);
         $query -> leftjoin('kicp_access_control', 'd', 'd.record_id = a.forum_id AND d.is_deleted= :is_deleted2 AND d.module= :module', [':is_deleted2' => 0, ':module' => 'forum']);
         $query -> leftjoin('xoops_users', 'x', 'x.user_id=a.user_id');
         $query -> leftjoin('xoops_users', 'x2', 'x2.user_id=c.user_id');
@@ -84,6 +86,57 @@ class ForumDatatable {
         }
         return $output;
         
+
+    }
+
+
+    public static function getForumListByTag($tags) {
+
+        $output=array();
+        $TagList = new TagList();
+        $database = \Drupal::database();
+
+        $query = $database-> select('kicp_forum_topic', 'a'); 
+        
+        if ($tags && count($tags) > 0 ) {
+            $tags1 = $database-> select('kicp_tags', 't');
+            $tags1-> condition('tag', $tags, 'IN');
+            $tags1-> condition('t.module', 'forum');
+            $tags1-> condition('t.is_deleted', '0');
+            $tags1-> addField('t', 'fid');
+            $tags1-> groupBy('t.fid');
+            $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
+
+            $query-> condition('a.topic_id', $tags1, 'IN');
+        }
+                
+        $query -> leftjoin('kicp_forum_forum', 'b', 'a.forum_id = b.forum_id');
+        $query -> leftjoin('kicp_forum_post', 'c', 'c.topic_id = a.topic_id AND c.is_deleted= :is_deleted1', [':is_deleted1' => 0]);
+        $query -> leftjoin('kicp_access_control', 'd', 'd.record_id = a.forum_id AND d.is_deleted= :is_deleted2 AND d.module= :module', [':is_deleted2' => 0, ':module' => 'forum']);
+        $query -> leftjoin('xoops_users', 'x', 'x.user_id=a.user_id');
+        $query -> leftjoin('xoops_users', 'x2', 'x2.user_id=c.user_id');
+        $query-> condition('a.is_deleted', '0');
+
+
+        $query-> fields('a', ['topic_id', 'title','counter','user_id','is_guest', 'create_datetime', 'poster_name', 'forum_id']);
+        $query-> fields('b', ['forum_name']);
+        $query-> fields('x', ['user_name']);
+        $query->addExpression('count(c.post_id)', 'total_reply');
+        $query->addExpression('count(d.id)', 'topic_access');
+
+        $query-> condition('a.is_deleted', '0');
+        $query-> groupBy('a.topic_id');
+        $query-> orderBy('a.create_datetime', 'DESC');            
+
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($result as $record) {
+            $record["tags"] = $TagList->getTagsForModule('forum', $record["topic_id"]);   
+            $output[] = $record;
+        }
+
+        return $output;
 
     }
 
@@ -119,6 +172,21 @@ class ForumDatatable {
         return $record;
     }
 
+    public static function getForumPostInfo($post_id) {
+        $sql = " SELECT subject, content, is_guest, poster_name, user_id, parent_id, topic_id, create_datetime FROM kicp_forum_post WHERE is_deleted=0 AND post_id=".$post_id;
+        $database = \Drupal::database();
+        $record = $database-> query($sql)->fetchObject();        
+        return $record;
+    }
+
+
+    public static function getForumTopic($topic_id) {
+        $sql = " SELECT title FROM kicp_forum_topic WHERE is_deleted=0 AND topic_id=".$topic_id;
+        $database = \Drupal::database();
+        $record = $database-> query($sql)->fetchObject();   
+        
+        return $record->title;
+    }
 
 }
 

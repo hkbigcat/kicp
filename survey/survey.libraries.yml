@@ -1,0 +1,15 @@
+survey_key:
+  version: 1.x
+  css:
+    theme:
+      css/survey.css: {}
+      css/calendar.css: {}
+      css/print.css: { media: print }
+  header: true
+  js:
+    js/survey.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

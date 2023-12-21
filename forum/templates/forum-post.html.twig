@@ -1,5 +1,8 @@
-<div class="forum_navigation"><a href="../forum_view_forum/{{ forum_info.forum_id }}">{{ forum_info.forum_name }}</a> &gt; [KM Corner] Do you have any comment on application of QR Code</div>
+ {% set threadTopic = threads|first %}
+
+<div class="forum_navigation"><a href="../forum_view_forum/{{ forum_info.forum_id }}">{{ forum_info.forum_name }}</a> &gt; {{ threadTopic.subject }}</div>
 {% include '@common/common-tags-list.html.twig' %} 
+{% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="../forum_tag">
      <input type="hidden" name="notag_page" id="notag_page" value="../forum">   
 <div id="DivContentTable" style="display:table;">
@@ -10,15 +13,17 @@
             <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
         </div>
         <div class="forum_post_content">
-            <form method="post" name="form_{{ thread['post_id'] }}" action="forum_reply">
+            <form method="post" name="form_{{ thread['post_id'] }}" action="{{ path('forum.forum_topic_add') }}">
             <div style="width:70%;float:left;padding-botton:20px; display:block;">
                     {{ thread['content']  | raw }}
-                <span class="blog_subtitle">Posted on:</span> {{ thread['create_datetime'] }}
+                    <div style="display:block;margin-top:10px;">
+                        <span class="blog_subtitle" >Posted on:</span> {{ thread['create_datetime'] }}
+                    </div>
             </div>
             <div id="forum_post_87" style="width:23%;float:right;display:block;">
                 <div>
-                    <div style="width:35%;float:left;"><input type="submit" value="Quote" onclick="jQuery('#quotePost_{{ thread['post_id'] }}').val({{ thread['post_id'] }});jQuery('#form_{{ thread['post_id'] }}').submit();"></div>
-                    <div style="width:60%;float:left;"><input type="submit" value="Reply The Thread" onclick="jQuery('#form_{{ thread['post_id'] }}').submit();"></div>
+                    <div style="float:left;"><button class="kicp_button" onClick="jQuery('#quotePost_{{ thread['post_id'] }}').val({{ thread['post_id'] }});jQuery('#form_{{ thread['post_id'] }}').submit();"></i> Quote </button>
+                    <div style="float:left;"><button class="kicp_button" onClick="jQuery('#form_{{ thread['post_id'] }}').submit();"> Reply this Thread </button>
                 </div>
             </div>
             <input type="hidden" name="post_id" id="post_id" value="{{ thread['post_id'] }}">
