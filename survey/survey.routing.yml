@@ -8,4 +8,25 @@ survey.survey_content:
     _permission: 'access content'
   options:
     no_cache: TRUE
-    
+  
+survey.survey_view:
+  path: '/survey_view'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyView'
+    _title: ''
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+survey.export_survey:
+  path: '/export_survey/{survey_id}'
+  defaults:
+    _controller:  '\Drupal\survey\Controller\SurveyController::exportSurvey'
+    _title: 'Survey Report'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+

@@ -111,6 +111,9 @@ class ActivitiesController extends ControllerBase {
         $events = ActivitiesDatatable::getAdminEvents($type_id);
         $events['type_id'] = $type_id;
 
+        $search_str = \Drupal::request()->query->get('search_str');
+        $events['search_str'] =  $search_str;
+
         return [
             '#theme' => 'activities-admin-events',
             '#items' => $events,

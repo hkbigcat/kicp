@@ -35,11 +35,37 @@ class VideoDatatable {
         
     }
 
-    public static function getVideoListByEventId($media_event_id) {
+    public static function getVideoListByEventId($media_event_id, $admin="") {
 
-        $sql = 'SELECT media_id, media_title, media_description, media_duration, LEFT(media_postdate,10) as media_postdate, media_file_path, media_img FROM kicp_media_info WHERE media_event_id=' . $media_event_id . ' AND is_visible=1 AND is_deleted=0 ORDER BY sort_field DESC, media_title';
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $query = $database-> select('kicp_media_info', 'a'); 
+        $query-> fields('a', ['media_id', 'media_title', 'media_duration', 'media_postdate']);
+        if ($admin==1)  {
+            $search_str = \Drupal::request()->query->get('search_str');
+            if ($search_str && $search_str !="") {
+                $orGroup = $query->orConditionGroup();
+                $orGroup->condition('a.media_title', '%' . $search_str . '%', 'LIKE');
+                $orGroup->condition('a.media_description', '%' . $search_str . '%', 'LIKE');
+                $query->condition($orGroup);
+            }  
+
+            $query->addField('a', 'sort_field');
+            $query->addField('a','is_visible');
+            $query->addField('a', 'is_banned');
+        } else {
+            $query->addField('a', 'media_description');
+            $query->addField('a','media_file_path');
+            $query->addField('a', 'media_img');
+        }
+        $query-> condition('a.media_event_id', $media_event_id);
+        $query-> condition('a.is_deleted', '0');
+        $query-> orderBy('sort_field', 'DESC');
+        $query-> orderBy('media_title');
+
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($admin==1)  return $result;
 
         $entries=array();
         $TagList = new TagList();
@@ -130,6 +156,41 @@ class VideoDatatable {
           return $output;
 
     }
+
+    public static function getVideoEventAdminList() {
+
+        $database = \Drupal::database();
+        $query = $database-> select('kicp_media_event_name', 'a'); 
+        $query -> leftjoin('kicp_media_event_privilege', 'c', 'a.media_event_id = c.media_event_id AND c.is_deleted= :is_deleted', [':is_deleted' => 0] );
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        if ($search_str && $search_str !="") {
+            $query->condition('a.media_event_name', '%' . $search_str . '%', 'LIKE');
+        }  
+
+        $query-> condition('a.is_deleted', '0');
+        $query-> fields('a', ['media_event_id', 'media_event_name', 'media_event_sequence', 'media_event_date', 'is_visible']);
+        $query-> addExpression('count(c.id)', 'eventprivilege');
+        $query-> groupBy('a.media_event_id');
+        $query-> orderBy('media_event_sequence', 'DESC');
+        $query-> orderBy('media_event_name');
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+
+    }
+
+    public static function getVideoPrivilege($media_event_id="") {
+
+        $sql = "SELECT a.media_event_id, a.pub_group_id, b.pub_group_name FROM kicp_media_event_privilege a INNER JOIN kicp_public_group b ON (a.pub_group_id=b.pub_group_id)  WHERE a.media_event_id=" . $media_event_id . " AND b.is_deleted = 0 AND a.is_deleted=0 ";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+        
+    }    
 
 
 }

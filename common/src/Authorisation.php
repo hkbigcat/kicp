@@ -211,26 +211,6 @@ class Authorisation {
         $domain_name = CommonUtil::getSysValue('domain_name');
         $delay = CommonUtil::getSysValue('delay_time_to_portal');
         $output = "";
-        // if go back to "Portal", then no need to check the access right of module
-        /* 	
-          $output =
-          '<script type="text/javascript">
-          window.onload = function() {';
-
-          $userModulePermissionList = self::userUnauthorizedModuleList();
-          foreach ($userModulePermissionList as $module) {
-          $output .=
-          'jQuery("a[href=\'' . $config->get('app_path') . '/' . $module . '\']").parent().remove();';
-          }
-          $output .=
-          '
-          setTimeout(
-          function() { window.open(\''.$domain_name.'\',\'_self\'); }, '.
-          $delay.
-          ');
-          };
-          </script>';
-         */
         $userModulePermissionList = self::userUnauthorizedModuleList();
         header("Location: " . $domain_name);
         exit;

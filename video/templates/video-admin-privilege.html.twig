@@ -1,0 +1,18 @@
+<div id="DivContentTable">
+    <div class="common_table_header">
+        <div style="width:75%;text-align:left;margin-left:6px;">Group Name</div>
+        <div style="width:10%;">&nbsp;</div>
+    </div>
+{% if items is empty %}
+    <div style="padding:5px;text-align:center;display:inline-block;width:98%;border:1px solid #ECECEC;">No record found.</div>
+{% else %}        
+    {% for item in items %}    
+        <div id="row_1 " class="DivContentTable_item  odd" style="width:100%">
+            <div style="width:75%;float:left;display:block;margin-left:6px;">{{ item['pub_group_name'] }}</div>
+            <div style="width:20%;float:left;display:block;">
+                <button class="kicp_button size-2" onclick="module_item_delete('video','{{ item['pub_group_id'] }},{{ item['media_event_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            </div>
+        </div>
+    {% endfor %}  
+{% endif %}  
+</div>

@@ -10,12 +10,20 @@ use Drupal\file\Entity\File;
 function survey_page_attachments_alter(&$page) {
     
     $path = $current_path = \Drupal::service('path.current')->getPath();
+    $routeName = \Drupal::routeMatch()->getRouteName();
 
-    if (str_contains($path, '/survey')) {
+    if (explode(".", $routeName)[0] === 'survey') {
         $page['#attached']['library'][] = 'survey/survey_key';
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
+
+        if ($routeName== 'survey.survey_view') {
+            $page['#attached']['library'][] = 'survey/survey_form';
+        }
+        if ($routeName== 'survey.survey_content') {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }
 
     }
     
@@ -28,6 +36,7 @@ function survey_theme($existing, $type, $theme, $path) {
         'survey-home' =>[
             'variables' => [
                 'items' => NULL,
+                'tagsUrl' => NULL,
                 'pager' => NULL,
             ],
         ],

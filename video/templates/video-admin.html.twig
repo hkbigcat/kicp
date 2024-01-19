@@ -1,0 +1,37 @@
+<div id="DivContentTable">
+    <form id="search_form" name="search_form" method="get">
+    <div style="width:100%;text-align:right;float:right;margin:5px;">
+        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Event Name">
+    </div>
+    </form>
+    <div class="common_table_header">
+		<div style="width:26%;text-align:left;margin-left:5px;">Event Name</div>
+		<div style="width:9%;">Sort Order</div>
+		<div style="width:12%;">Event Date</div>
+		<div style="width:5%;">Visible</div>
+		<div style="width:10%;">Access Control</div>
+		<div style="width:12%;">Video List</div>
+		<div style="width:21%;">&nbsp;</div>
+	</div>
+
+{% for item in items %}
+    {% if item['media_event_name'] is not empty %}
+    <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item  {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%">
+		<div style="width:30%;float:left;display:block;;margin-left:5px;">{{ item['media_event_name'] }}</div>
+		<div style="width:10%;float:left;display:block;">{{ item['media_event_sequence'] }}</div>
+		<div style="width:10%;float:left;display:block;">{{ item['evt_date'] | date('d.m.Y') }}</div>
+		<div style="width:5%;float:left;display:block;">{{ item['is_visible']?'Yes':'No' }}</div>
+		<div style="width:12%;float:left;display:block;"><a href="javascript:void(0);" onclick="self.location.href='video_event_privilege/{{ item['media_event_id'] }}'">{{ item['eventprivilege']?'Restricted':'Public' }}</a></div>
+		<div style="width:10%;float:left;display:block;"><a href="./video_list_admin/{{ item['media_event_id'] }}">Video List</a></div>
+		<div style="width:20%;float:left;display:block;">
+            <button class="kicp_button size-2" onclick="self.location.href='/update_videoevent/{{ item['media_event_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
+            <button class="kicp_button size-2" onclick="module_item_delete('video_event','{{ item['media_event_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+		</div>
+	</div>
+   {% endif %}      
+{% endfor %}      
+
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'event'}  %}

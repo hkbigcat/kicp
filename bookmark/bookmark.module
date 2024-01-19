@@ -18,10 +18,7 @@ function bookmark_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'bookmark/bookmark_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
-        
-        if ( str_contains($path, '/bookmark_add') || str_contains($path, '/bookmark_change') ) {
-            $page['#attached']['library'][] = 'common/content_tags';
-        }            
+        $page['#attached']['library'][] = 'common/content_tags';
     }
 
 }

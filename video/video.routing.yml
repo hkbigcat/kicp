@@ -28,12 +28,52 @@ video.video_tag:
   options:
     no_cache: TRUE   
 
-forum.forum_reply:
-  path: '/forum_reply'
+video.admin_content:
+  path: '/video_admin'
   defaults:
-    _form: '\Drupal\forum\Form\ForumReply'
-    _title: 'Reply Post'
+    _controller: '\Drupal\video\Controller\VideoController::AdminContent'
+    _title: 'Event List Management'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+video.admin_video_content:
+  path: '/video_list_admin/{media_event_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::AdminVideoContent'
+    _title: 'Event Video Management'
   requirements:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+video.delete_event_data:
+  path: '/video_event_delete/{media_event_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::VideoEventDelete'
+    _title: 'Delete Event'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+video.delete_video_data:
+  path: '/video_delete/{media_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::VideoDelete'
+    _title: 'Delete Video'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE        
+
+video.video_event_privilege:
+  path: '/video_event_privilege/{media_event_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilege'
+    _title: 'Event Privilege'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

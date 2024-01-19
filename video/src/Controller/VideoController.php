@@ -17,6 +17,7 @@ use Drupal\Core\Database\Query\PagerSelectExtender;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class VideoController extends ControllerBase {
@@ -61,6 +62,8 @@ class VideoController extends ControllerBase {
             '#event_info' => $EventInfo,
             '#tags' => $taglist,
             '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],
         ];         
 
     }
@@ -89,4 +92,124 @@ class VideoController extends ControllerBase {
         ];    
 
     }
+
+
+    public function AdminContent() {
+
+        $video_events = VideoDatatable::getVideoEventAdminList();
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        $video_events['search_str'] =  $search_str;
+        
+        return [
+                '#theme' => 'video-admin',
+                '#items' => $video_events,
+                '#empty' => t('No entries available.'),
+                '#pager' => ['#type' => 'pager',
+                            ],
+        ];    
+    }
+
+    public function AdminVideoContent($media_event_id="") {
+
+        $videolist = VideoDatatable::getVideoListByEventId($media_event_id, 1); //Admin has different fields
+        $EventInfo = VideoDatatable::getVideoEventInfo($media_event_id);
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        $videolist['search_str'] =  $search_str;
+     
+
+        return [
+                '#theme' => 'video-admin-video',
+                '#items' => $videolist,
+                '#eventname' => $EventInfo->media_event_name,
+                '#empty' => t('No entries available.'),
+                '#pager' => ['#type' => 'pager',
+                            ],
+        ];       
+
+
+    }
+
+    public function VideoEventDelete($media_event_id="") {
+
+        $current_time =  \Drupal::time()->getRequestTime();
+
+        // delete record
+        $err_code = 0;
+
+        try {
+          $database = \Drupal::database();
+          $query = $database->update('kicp_media_event_name')->fields([
+            'is_deleted'=>1 , 
+            'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+          ])
+          ->condition('media_event_id', $media_event_id)
+          ->execute();
+
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Event has been deleted'));
+
+          $err_code = 1;
+
+          $response = array('result' => $err_code);
+          return new JsonResponse($response);
+  
+  
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete event at this time due to datbase error. Please try again. ' )
+                );
+
+            }	
+    }    
+
+    public function VideoDelete($media_id="") {
+
+        $err_code = 0;
+
+        try {
+            $database = \Drupal::database();
+            $query = $database->update('kicp_media_info')->fields([
+              'is_deleted'=>1 , 
+              'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+            ])
+            ->condition('media_id', $media_id)
+            ->execute();
+     
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Video has been deleted'));
+    
+            $err_code = 1;
+
+            $response = array('result' => $err_code);
+            return new JsonResponse($response);
+
+          }
+          catch (\Exception $e) {
+              \Drupal::messenger()->addStatus(
+                  t('Unable to delete video at this time due to datbase error. Please try again. ' )
+                  );
+  
+              }	        
+
+    }
+    
+
+    public function AdminVideoEventPrivilege($media_event_id="") {
+
+        $video_privilege = VideoDatatable::getVideoPrivilege($media_event_id);
+
+        return [
+                '#theme' => 'video-admin-privilege',
+                '#items' => $video_privilege,
+                '#empty' => t('No entries available.'),
+                '#pager' => ['#type' => 'pager',
+                            ],
+        ];         
+
+
+    }
+
 }

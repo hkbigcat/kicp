@@ -13,11 +13,17 @@ function module_item_delete(module, item_id) {
     case 'blog':
         msgtitle = 'Blog';
       break;          
-   case 'blog_elegate':
+    case 'blog_elegate':
         msgtitle = 'Blog delegrate users';
       break;          
-   case 'activities_item':
+    case 'activities_item':
         msgtitle = 'KM Activities';
+      break;          
+    case 'video_event':
+        msgtitle = 'Video Event';
+      break;          
+    case 'video':
+        msgtitle = 'Video';
       break;          
 
     default:

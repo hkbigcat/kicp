@@ -1,0 +1,37 @@
+<div style="width: 35%; float:right; text-align:right;margin-top:-20px;">
+    <button class="kicp_button size-1" onclick="self.location.href='/video_admin'"><i class="fa fa-calendar" aria-hidden="true"></i> Event List Management</button> 
+</div>
+<h2 style="display:inline;">{{ eventname }}</h2>
+<div id="DivContentTable">
+    <form id="search_form" name="search_form" method="get">
+    <div style="width:100%;text-align:right;float:right;margin:5px;">
+        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Title / Description">
+    </div>
+    </form>
+
+    <div class="common_table_header">
+        <div style="width:23%; text-align:left;margin-left:5px;">Video Title</div>
+        <div style="width:8%;">Duration</div>
+        <div style="width:10%;">Date</div>
+        <div style="width:8%;">Sort Order</div>
+        <div style="width:12%;">Visible</div>
+        <div style="width:15%;">Banned in Main Page</div>
+        <div style="width:10%;">&nbsp;</div>
+    </div>
+{% for item in items %}
+    <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%">
+        <div style="width:25%;float:left;display:block;margin-left:5px;">{{ item['media_title'] }}</div>
+        <div style="width:10%;float:left;display:block;">{{ item['media_duration']}}</div>
+        <div style="width:10%;float:left;display:block;">{{ item['media_postdate'] | date('d.m.Y') }}</div>
+        <div style="width:10%;float:left;display:block;">{{ item['sort_field'] }}</div>
+        <div style="width:7%;float:left;display:block;">{{ item['is_visible']?'Yes':'No' }}</div>
+        <div style="width:15%;float:left;display:block;text-align:center;">{{ item['is_banned']?'Yes':'No' }}</div>
+    	<div style="width:20%;float:left;display:block;">
+            <button class="kicp_button size-2" onclick="self.location.href='/update_videoevent/{{ item['media_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
+            <button class="kicp_button size-2" onclick="module_item_delete('video','{{ item['media_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+		</div>
+    </div>
+{% endfor %}   
+</div>
+<div style="float:right; margin:20px;">{{ pager }}</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'video'}  %}

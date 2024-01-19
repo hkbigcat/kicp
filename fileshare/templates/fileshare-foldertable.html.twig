@@ -5,16 +5,16 @@
  <div class="common_table_header">
 
 	<div style="width:10%;">&nbsp;</div>
-	<div style="width:50%;text-align:left;">Folder Name</div>
+	<div style="width:39%;text-align:left;">Folder Name</div>
 	<div style="width:20%;">Access Control</div>
-	<div style="width:10%;">&nbsp;</div>
+	<div style="width:20%;">&nbsp;</div>
 </div>
   {% for item in items %}
    {% if  item['folder_name'] %}
      <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item  {{ loop.index0 is odd ? 'odd' : 'even' }}">
                <div style="width:9%;float:left;display:block;text-align:center;">{{ loop.index0 + 1 }}</div>
                <div style="width:48%;float:left;display:block;">{{ item['folder_name'] }} "{{ item['user_name'] }}"</div>
-               <div style="width:8%;float:left;display:block;text-align:center;"><a href="#add-record" onclick="getAddGroupMemberUI('fileshare',{{ item['folder_id'] }});"> {% if  item['folder_access'] == 0  %}Public{% else %} Restricted {% endif %}</a></div>
+               <div style="width:10%;float:left;display:block;text-align:center;"><a href="#add-record" onclick="getAddGroupMemberUI('fileshare',{{ item['folder_id'] }});"> {{ item['folder_access']?'Restricted':'Public' }}</a></div>
                <div style="width:30%;float:right;display:block;margin-left:20px;">
                     <span><button class="kicp_button size-2" onclick="self.location.href='/fileshare_folder_change/?folder_id={{ item['folder_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                     <span><button class="kicp_button size-2" onClick="module_item_delete('fileshare_folder',{{ item['folder_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
@@ -23,5 +23,5 @@
    {% endif %}
  {% endfor %}
   <div style="float:right; margin:20px;">{{ pager }}</div>
-{% include '@common/common-confirm-delete.html.twig'  with {module: 'folder'}  %}
 {% include '@common/common-accesscontrol-modal.html.twig' %}
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'folder'}  %}

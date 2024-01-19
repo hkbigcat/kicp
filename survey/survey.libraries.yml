@@ -13,3 +13,9 @@ survey_key:
     - core/drupalSettings
     - core/drupal
     - core/drupal.dialog
+
+survey_form:
+  version: 1.x
+  css:
+    theme:
+      css/form.css: {}
