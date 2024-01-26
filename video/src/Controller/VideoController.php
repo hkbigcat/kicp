@@ -200,15 +200,81 @@ class VideoController extends ControllerBase {
     public function AdminVideoEventPrivilege($media_event_id="") {
 
         $video_privilege = VideoDatatable::getVideoPrivilege($media_event_id);
+        $EventInfo = VideoDatatable::getVideoEventInfo($media_event_id);
+        $video_privilege['media_event_id'] = $media_event_id;
+        $video_privilege['media_event_name'] = $EventInfo->media_event_name;
+        $search_str = \Drupal::request()->query->get('search_str');
+        $video_privilege['search_str'] =  $search_str;
+        if ($search_str && $search_str!="") {
+            $privilege_group = VideoDatatable::getVideoPrivilegeGroup($search_str);
+        }
+
 
         return [
                 '#theme' => 'video-admin-privilege',
                 '#items' => $video_privilege,
+                '#privilege_group' => $privilege_group,
                 '#empty' => t('No entries available.'),
                 '#pager' => ['#type' => 'pager',
                             ],
         ];         
 
+
+    }
+    
+    public function AdminVideoEventPrivilegeAddAction($media_event_id="", $pub_group_id="") {
+
+        try {
+          $database = \Drupal::database();
+          $query = $database->insert('kicp_media_event_privilege')->fields([
+            'media_event_id' => $media_event_id,
+            'pub_group_id' => $pub_group_id,
+            'is_deleted'=>0 , 
+          ])
+          ->execute();
+
+          $search_str = \Drupal::request()->query->get('search_str');
+
+          $url = Url::fromUserInput('/video_event_privilege/'.$media_event_id.'?search_str='.$search_str);
+          return new RedirectResponse($url->toString());
+
+        } 
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to add privilege at this time due to datbase error. Please try again. ' )
+                );
+            }	
+
+    }
+
+    public function EventPrivilegeDelete($media_event_id="",$pub_group_id="") {
+
+        $err_code = 0;
+        try {
+            $database = \Drupal::database();
+            $query = $database->update('kicp_media_event_privilege')->fields([
+                'is_deleted' => 1,
+                ])
+                ->condition('media_event_id', $media_event_id)
+                ->condition('pub_group_id', $pub_group_id)
+                ->execute();
+
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Event Privilege has been deleted'));
+        
+                $err_code = 1;
+    
+
+    
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete privilege at this time due to datbase error. Please try again. ' )
+                );
+            }
+
+        $response = array('result' => $err_code);
+        return new JsonResponse($response);  
 
     }
 

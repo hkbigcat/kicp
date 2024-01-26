@@ -77,3 +77,23 @@ video.video_event_privilege:
     _permission: 'access content'
   options:
     no_cache: TRUE
+
+video.video_event_privilege_add_action:
+  path: '/video_event_privilege_add_action/{media_event_id}/{pub_group_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilegeAddAction'
+    _title: 'Event Privilege'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+video.delete_event_privilege_data:
+  path: '/video_event_privilege_delete/{media_event_id}/{pub_group_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::EventPrivilegeDelete'
+    _title: 'Delete Event Privilege'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE        

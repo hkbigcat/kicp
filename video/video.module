@@ -73,6 +73,7 @@ function video_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'items' => NULL,
                 'eventname' => NULL,
+                'privilege_group' => NULL,
                 'pager' => NULL,
             ],
         ],

@@ -1,0 +1,13 @@
+profile_key:
+  version: 1.x
+  css:
+    theme:
+      css/profile.css: {}
+  header: true
+  js:
+    js/profile.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

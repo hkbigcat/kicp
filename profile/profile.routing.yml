@@ -1,0 +1,58 @@
+profile.profile_cop:
+  path: '/profile_cop'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileCop'
+    _title: 'CoP Subscription'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+
+profile.profile_join_cop_membership:
+  path: '/profile_join_cop_membership'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileJoinCopMembership'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_reload_cop_membership:
+  path: '/profile_reload_cop_membership'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::reloadCopJoinMemberTable'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_group:
+  path: '/profile_group'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileGroupContent'
+    _title: 'Group Maintenance'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_group_add:
+  path: '/profile_group_add'
+  defaults:
+    _form: '\Drupal\profile\Form\ProfileAddGroup'
+    _title: 'Add Group'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+profile.profile_group_delete:
+  path: '/profile_group_delete/{type}/{group_id}'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileGroupDelete'
+    _title: 'Delete Group'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

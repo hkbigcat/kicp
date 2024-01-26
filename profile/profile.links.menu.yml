@@ -1,0 +1,6 @@
+profile.profile:
+  title: Profile
+  description: KCIP Profile
+  menu_name: main
+  route_name: profile.profile_cop
+  weight: 120

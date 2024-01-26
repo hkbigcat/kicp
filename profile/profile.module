@@ -1,0 +1,59 @@
+<?php
+
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\file\Entity;
+use Drupal\file\Entity\File;
+
+function profile_page_attachments_alter(&$page) {
+    
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    $routeName = \Drupal::routeMatch()->getRouteName();
+
+    if (explode(".", $routeName)[0] === 'profile') {
+        $page['#attached']['library'][] = 'profile/profile_key';
+        $page['#attached']['library'][] = 'common/content_table';
+
+        
+    }
+    
+}
+
+
+function profile_theme($existing, $type, $theme, $path) {
+
+    return [
+        'profile-cop' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],
+        'profile-coptable' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],        
+        'profile-groups' =>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],       
+    ];
+
+}
+
+
+
+/**
+ * Implements hook_help().
+ */
+function profile_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.profile':
+        return '<p>' . t('Profile module that provides KICP profile.') . '</p>';
+        break;
+    }
+  }  

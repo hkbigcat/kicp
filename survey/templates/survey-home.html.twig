@@ -4,7 +4,7 @@
 
 <div id="DivContentTable" style="display:table;">
   {% for item in items %}
-    <div id="row_{{ loop.index0 + 1 }} " class="EntryContainer  odd" style="width:100%;">
+    <div id="row_{{ loop.index0 + 1 }} " class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
         <div style="width:65%;float:left;display:block;margin-right:20px;">
             <div class="entry_title"><a href="../survey_view?survey_id={{ item['survey_id'] }}">{{ item['title'] }}</a></div>
             <div class="entry_content">{{ item['description'] | raw }}</div>

@@ -192,5 +192,17 @@ class VideoDatatable {
         
     }    
 
+    public static function getVideoPrivilegeGroup($search_str="") {
+
+        $sql="SELECT pub_group_id, pub_group_name FROM kicp_public_group WHERE is_deleted = 0 AND pub_group_name LIKE '%".$search_str."%'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+
+
+    }
+
+
 
 }

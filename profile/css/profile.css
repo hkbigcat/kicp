@@ -1,0 +1,103 @@
+@charset "utf-8";
+
+.homepage_div {
+    width: 30%;
+    min-width:220px;
+    min-height: 600px;
+    float: left;
+    display: inline-block;
+    border: 1px solid #DDDDDD;
+    padding: 8px;
+    margin: 8px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px #C7C7C7;
+}
+
+.homepage_div:hover {
+    background: #F6F6F6;
+    box-shadow: 5px 5px 10px #888888;
+}
+
+.homepage_div .title {
+    font-weight: bold;
+    font-size: 12pt;
+    border-bottom: 1px solid #DDDDDD; 
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+#MainEntryContainer {
+        float:left;
+        width:70%;
+        margin:8px;
+        display:inline-block;
+}
+
+.ProfileName {
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+#RightContainer {
+    float:left;
+    width:78%;
+    margin:8px;
+    display:inline-block;
+}
+
+.submenu_container {
+    background-color: #F7F7F7;
+    list-style-type: none;
+    padding-bottom: 0px !important;
+    overflow: hidden;
+}
+
+.submenu_item {
+    background-color: #B4B4B4;
+    float: left;
+    margin-top: 10px;
+    margin-left: 2px;
+    margin-bottom: 0px;
+    border-radius: 8px 8px 0 0;
+    border: 0;
+}
+
+.submenu_item a:link {
+    display: block;
+    color: #000;
+    padding: 5px 20px;
+    text-align: center;
+    text-decoration: none;
+    border: 0;
+}
+
+.submenu_item a:visited {
+    color: #000;
+}
+
+.submenu_item a:hover:not(.active) {
+    background-color: #D2D2D2;
+    border-radius: 8px 8px 0 0;
+    text-decoration: none;
+}
+
+.submenu_item a.active {
+    background-color: #ffffff;
+    border-radius: 8px 8px 0 0;
+    text-decoration: none;
+}
+
+.hidden {
+ display:none;
+}
+
+.joinCopTable {
+    width:75%;
+    display:inline-block;
+    margin:10px;
+}
+
+.joinCopTable > .joinCopTableHeader {
+    width: 100%;
+    padding:5px;
+}

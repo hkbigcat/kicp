@@ -1,3 +1,4 @@
+<h3>{{ items['media_event_name'] }}</h3>
 <div id="DivContentTable">
     <div class="common_table_header">
         <div style="width:75%;text-align:left;margin-left:6px;">Group Name</div>
@@ -7,12 +8,44 @@
     <div style="padding:5px;text-align:center;display:inline-block;width:98%;border:1px solid #ECECEC;">No record found.</div>
 {% else %}        
     {% for item in items %}    
+        {% if item['pub_group_name'] !="" %}
         <div id="row_1 " class="DivContentTable_item  odd" style="width:100%">
             <div style="width:75%;float:left;display:block;margin-left:6px;">{{ item['pub_group_name'] }}</div>
             <div style="width:20%;float:left;display:block;">
-                <button class="kicp_button size-2" onclick="module_item_delete('video','{{ item['pub_group_id'] }},{{ item['media_event_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                <button class="kicp_button size-2" onclick="module_item_delete('video_event_privilege','{{ item['media_event_id'] }},{{ item['pub_group_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
             </div>
         </div>
-    {% endfor %}  
+        {% endif %}  
+    {% endfor %} 
+    {% include '@common/common-confirm-delete.html.twig'  with {module: 'Group'}  %} 
 {% endif %}  
 </div>
+<div style="width:100%;float:right;margin-top:20px;">
+    <form name="" id="" method="GET">
+        <div style="display:block;width:100%;text-align:right;"><b>Search Group(s) to add:</b> 
+        <input type="text" name="search_str" id="search_str" value="{{  items['search_str'] }}" placeholder="Group Name" size="40">
+        </div>
+    </form>
+</div>
+
+{% if privilege_group is not empty %}
+<fieldset>
+    <legend>&nbsp;<b>Please Select Group</b>&nbsp;</legend>
+    <div id="DivContentTable" style="display:inline-block;">
+        <div class="common_table_header">
+            <div style="width:6%;">&nbsp;</div>
+            <div style="width:75%;text-align:left;">Group Name</div>
+            <div style="width:10%;">&nbsp;</div>
+        </div>
+
+        {% for group in privilege_group %}    
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:97.7%;">
+            <div style="width:75%;float:left;display:block; margin-left:10px">{{ group['pub_group_name'] }}</div>
+            <div style="width:20%;float:left;display:block;">
+                <button class="kicp_button size-2" onClick="self.location.href='../video_event_privilege_add_action/{{ items['media_event_id'] }}/{{ group['pub_group_id'] }}?search_str={{  items['search_str'] }}'"><i class="fa-solid fa-circle-plus "></i> Add </button>
+            </div>
+        </div>        
+        {% endfor %} 
+    </div>
+</fieldset>
+{% endif %}  

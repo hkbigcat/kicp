@@ -24,12 +24,21 @@ function module_item_delete(module, item_id) {
       break;          
     case 'video':
         msgtitle = 'Video';
-      break;          
+      break;       
+    case 'video_event_privilege':
+       msgtitle = 'Group';
+       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+      break;     
+    case 'profile_group':
+       msgtitle = 'Profile Group';
+       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+    break;     
 
     default:
       msgtitle = module;        
   }
 
+  console.log('msgtitle: '+msgtitle);
   console.log('module: '+module);
   console.log('page_url: '+page_url);
 
