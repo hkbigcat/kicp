@@ -1,0 +1,144 @@
+		<script type="text/javascript">
+                function loadLightGallery(){
+                    $(function() {
+                        animThumb = $('#animated-thumbnials');
+                        if (animThumb.length) {
+                            animThumb.justifiedGallery({
+                                    border: 6
+                            }).on('jg.complete', function() {
+                                    animThumb.lightGallery({
+                                            thumbnail: true,
+                                            animateThumb: true
+                                    });
+                            });
+                        };
+                        console.log('Loaded Light Gallery');
+                    });
+                }
+                
+                function changePage(page, PhotoPerPage, totalPages){
+                    $('#gallery_page').val(page);
+                    
+                    $('#animated-thumbnials').html('');
+                   
+                    PhotoIndexMin=PhotoPerPage*(page-1);
+                    PhotoIndexMax=PhotoPerPage*page-1;
+                    
+                    var photohtml;
+                    photohtmlAry = new Array();
+                    
+                    
+                    $.get("../photos.html", function(data) {
+                        htmldata = data;
+                    }, 'html').done(function(){
+                       //console.log(photohtml); 
+                       //photohtml = htmldata;
+                       
+                        //$lg.lightGallery();
+                        photohtml = '';
+                        for(var i=0; i<photosAry.length; i++){
+                            if(i>=PhotoIndexMin && i<=PhotoIndexMax){
+
+                                photohtmlAry[i] = htmldata;
+                                photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoPath}}", photosAry[i]['downloadPhotoPath']);
+                                photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoName}}", photosAry[i]['downloadPhotoName']);
+                                photohtmlAry[i] = photohtmlAry[i].replace("{{galPhotoPath}}", photosAry[i]['galPhotoPath']);
+
+                                /*
+                                console.log('i=' + i);
+                                
+                                console.log('downloadPhotoPath=' + photosAry[i]['downloadPhotoPath']);
+                                console.log('downloadPhotoName=' + photosAry[i]['downloadPhotoName']);
+                                console.log('galPhotoPath=' + photosAry[i]['galPhotoPath']);
+                                
+
+                                console.log(photohtmlAry[i]);
+
+                                console.log('');
+                                */
+                                photohtml = photohtml + photohtmlAry[i];
+                                
+                            }
+                        }
+                        
+                        
+                        //$('#animated-thumbnials').html(photohtml);
+                        
+                        var gallery = $("#animated-thumbnials");
+                        gallery.lightGallery();
+                        gallery.data('lightGallery').destroy(true);
+                        gallery.html(photohtml);
+                        //gallery.lightGallery();
+                        gallery.justifiedGallery({
+                                border: 6
+                        }).on('jg.complete', function() {
+                                gallery.lightGallery({
+                                        thumbnail: true,
+                                        animateThumb: true
+                                });
+                        });
+                        
+                        
+                        PreviousPage = page-1;
+                        NextPage = page+1;
+                        FirstPage = 1;
+                        LastPage =  totalPages;
+
+                        if(PreviousPage<FirstPage){
+                            PreviousPage = FirstPage;
+                        }
+                        
+                        if(NextPage>LastPage){
+                            NextPage = LastPage;
+                        }
+                        
+                        $('#album_pagePrevious').attr("onclick","changePage(" + PreviousPage.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        $('#album_pageNext').attr("onclick","changePage(" + NextPage.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        
+                        if(PreviousPage == page){
+                            $('#album_pagePrevious').css('display','none');
+                        }
+                        else{
+                            $('#album_pagePrevious').css('display','');
+                        }
+                        
+                        if(NextPage == page){
+                            $('#album_pageNext').css('display','none');
+                        }
+                        else{
+                            $('#album_pageNext').css('display','');
+                        }
+                        
+                        if(FirstPage == page){
+                            $('#album_pageFirst').css('display','none');
+                        }
+                        else{
+                            $('#album_pageFirst').css('display','');
+                        }
+                        
+                        if(LastPage == page){
+                            $('#album_pageLast').css('display','none');
+                        }
+                        else{
+                            $('#album_pageLast').css('display','');
+                        }
+                        
+                        for(var j=1; j<=totalPages; j++){
+                            $('#album_page' + j).attr("href","#animated-thumbnials");
+                            $('#album_page' + j).attr("onclick","changePage(" + j.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        }
+                        
+                        $('#album_page' + page).removeAttr('href');
+                        $('#album_page' + page).removeAttr('onclick');
+                        
+                        $('.btn_page_selector').css("font-weight", "");
+                        $('.btn_page_selector').css("color", "");
+                        
+                        $('#album_page' + page).css('font-weight', 'bold');
+                        $('#album_page' + page).css("color", "black");
+                        
+                        
+                    });
+                }
+                </script>
+                

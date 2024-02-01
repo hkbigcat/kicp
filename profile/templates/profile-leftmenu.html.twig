@@ -1,17 +1,17 @@
 <div class="homepage_div">
     <div class="title">Profile</div>
     <ul>
-        <li><a href="profile_cop">COP Subscription</a></li>
+        <li><a href="{{ path('profile.profile_cop') }}">COP Subscription</a></li>
     </ul>
     <div class="title">
         Group Maintenance
     </div>
     <ul>
-        <li><a href="profile_group">Group Maintenance</a></li>
+        <li><a href="{{ path('profile.profile_group') }}">Group Maintenance</a></li>
         {% if type=='group' %}
         <ul>
-            <li><a href="profile_group?type=B">Personal Group</a></li>
-            <li><a href="profile_group?type=P">Personal Public Group</a></li>
+            <li><a href="{{ path('profile.profile_group') }}?type=B">Personal Group</a></li>
+            <li><a href="{{ path('profile.profile_group') }}?type=P">Personal Public Group</a></li>
         </ul>            
         {% endif %}
     </ul>

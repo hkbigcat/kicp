@@ -1,0 +1,19 @@
+kicp_lightgallery.content:
+  path: '/album'
+  defaults:
+    _controller: '\Drupal\kicp_lightgallery\Controller\kicp_lightgalleryController::content'
+    _title: 'Light Gallery'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+   
+kicp_lightgallery.download:
+  path: '/kicp_lightgallery_get_photo'
+  defaults:
+    _controller: '\Drupal\kicp_lightgallery\Controller\kicp_lightgalleryController::photoDownload'
+    _title: 'Download Photo'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

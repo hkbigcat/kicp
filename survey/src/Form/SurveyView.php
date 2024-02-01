@@ -233,7 +233,7 @@ class SurveyView extends FormBase {
                         foreach ($surveyInfoChoice as $recordchoice) {
                             $form['hiddenchoice' . $i . '_' . $k] = array(
                               '#type' => 'hidden',
-                              '#default_value' => $recordchoice->id,
+                              '#value' => $recordchoice->id,
                               '#attributes' => array('id' => 'hiddenchoice'),
                             );
 
@@ -302,7 +302,7 @@ class SurveyView extends FormBase {
   
           $form['survey_id'] = array(
             '#type' => 'hidden',
-            '#default_value' => $survey_id,
+            '#value' => $survey_id,
           );        
 
         return $form;

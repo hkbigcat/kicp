@@ -11,6 +11,8 @@ use Drupal\profile\Common\ProfileDatatable;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Url;
 use Drupal\common\CommonUtil;
 
 
@@ -133,8 +135,120 @@ class ProfileController extends ControllerBase {
         $response = array('result' => $err_code);
         return new JsonResponse($response);  
 
+    }
+
+    public function ProfileGroupMemberContent($type="",$group_id="") {
+
+        if($type == "P") {
+            $field_text = "Personal Public Group Name";
+            $groupInfo = ProfileDatatable::getPublicGroupByGroupId($group_id);
+        } else  {
+            $field_text = "Personal Group Name";
+            $groupInfo = ProfileDatatable::getBuddyGroupByGroupId($group_id);
+        } 
+
+        $members = ProfileDatatable::getMembersGroupId($type,$group_id);
+        $members["type"] = $type;
+        $members["group_name"] = $groupInfo->group_name;
+        $members["group_id"] = $group_id;
+        $search_str = \Drupal::request()->query->get('search_str');
+        if ($search_str && $search_str!="") {
+            $users = ProfileDatatable::getUsers();
+        }
+        $members['search_str'] =  $search_str;        
+
+        return [
+            '#theme' => 'profile-members',
+            '#items' => $members,
+            '#search_users' => $users,
+            '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],            
+        ];  
 
     }
+
+    public function ProfileGroupMemberAddAction($type="", $group_id="", $user_id="") {
+
+        $userInGroup = ProfileDatatable::checkUserInGroup($type, $group_id, $user_id);
+        $search_str = \Drupal::request()->query->get('search_str');
+
+        if(!$userInGroup) {
+            $userInfo = ProfileDatatable::getUserInfoByUserId($user_id);
+
+            if ($type === "B") {
+                $entry = array(
+                    'buddy_group_id' => $group_id,
+                    'buddy_user_id' => $user_id,
+                    'buddy_user_name' => $userInfo,
+                    'is_deleted' => 0,
+                    );
+
+                    $query = \Drupal::database()->insert('kicp_buddy_user_list')
+                    ->fields($entry);
+        
+            } else if($type == 'P') {
+                $entry = array(
+                    'pub_group_id' => $group_id,
+                    'pub_user_id' => $user_id,
+                    'pub_user_name' => $userInfo,
+                    'is_deleted' => 0,
+                    );
+
+                    $query = \Drupal::database()->insert('kicp_public_user_list')
+                    ->fields($entry);    
+            }
+            $return_value = $query->execute();
+
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('User has been added.'.$return_value));
+
+
+            $url = Url::fromUserInput('/profile_group_member/'.$type.'/'.$group_id.'?search_str='.$search_str);
+            return new RedirectResponse($url->toString());  
+
+        }
+
+    }
+
+    public function ProfileGroupMemberDelete($type="",$group_id="", $user_id="") {
+
+        $err_code = 0;
+        try {
+            $database = \Drupal::database();
+
+            if ($type=="P") {
+                $query = $database->update('kicp_public_user_list')->fields([
+                    'is_deleted' => 1,
+                    ])
+                    ->condition('pub_group_id', $group_id)
+                    ->condition('pub_user_id', $user_id)
+                    ->execute();
+            } else {
+                    $query = $database->update('kicp_buddy_user_list')->fields([
+                        'is_deleted' => 1,
+                        ])
+                    ->condition('buddy_group_id', $group_id)
+                    ->condition('buddy_user_id', $user_id)
+                    ->execute();
+            }
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Member has been deleted'));
+        
+                $err_code = 1;
+    
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete member at this time due to datbase error. Please try again. ' )
+                );
+            }
+
+        $response = array('result' => $err_code);
+        return new JsonResponse($response);  
+
+    }
+
 
 
 }

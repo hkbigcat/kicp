@@ -56,3 +56,53 @@ profile.profile_group_delete:
     _permission: 'access content'
   options:
     no_cache: TRUE
+
+profile.profile_group_change:
+  path: '/profile_group_change/{type}/{group_id}'
+  defaults:
+    _form: '\Drupal\profile\Form\ProfileChangeGroup'
+    _title: 'Edit Group'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_group_member:
+  path: '/profile_group_member/{type}/{group_id}'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileGroupMemberContent'
+    _title: 'Group Maintenance'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_group_member_change:
+  path: '/profile_group_member_change/{type}/{group_id}/{user_id}'
+  defaults:
+    _form: '\Drupal\profile\Form\ProfileChangeMember'
+    _title: 'Edit Member Name'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+profile.profile_group_member_add_action:
+  path: '/profile_group_member_add_action/{type}/{group_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileGroupMemberAddAction'
+    _title: 'Add Group Member'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+profile.profile_group_member_delete:
+  path: '/profile_group_member_delete/{type}/{group_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\profile\Controller\ProfileController::ProfileGroupMemberDelete'
+    _title: 'Delete Group Member'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

@@ -41,6 +41,14 @@ function profile_theme($existing, $type, $theme, $path) {
                 'pager' => NULL,
             ],
         ],       
+        'profile-members' =>[
+            'variables' => [
+                'items' => NULL,
+                'search_users' => NULL,
+                'pager' => NULL,
+            ],
+        ],       
+
     ];
 
 }

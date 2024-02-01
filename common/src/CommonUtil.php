@@ -193,5 +193,55 @@ class CommonUtil {
         $result = $database-> query($sql)->fetchObject();
         return $result;   
     }
+
+
+    public static function getDirectoryList($path) {
+        $dirFile = array();
+        $returnAry = array();
+
+        $ignoreList = array(".", "..", "Thumbs.db");
+
+        if (is_dir($path)) {
+            $dirFile = scandir($path);
+        }
+
+        for ($i = 0; $i < count($dirFile); $i++) {
+            if (in_array($dirFile[$i], $ignoreList)) {
+                continue;
+            }
+
+            $returnAry[] = $dirFile[$i];
+        }
+
+        return $returnAry;
+    }    
     
+    static function getModuleDetail($module, $field) {
+        $output = NULL;
+        if (isset($field) and $field != '') {
+            $sql = "SELECT ";
+            if ($field == 'ALL') {
+                $sql .= "* ";
+            }
+            else {
+                $sql .= $field;
+            }
+            $sql .= " from kicp_module where module_name = '" . $module . "'";
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchObject();
+            foreach ($result as $record) {
+                if ($field == 'ALL') {
+                    $output = array('allow_rating' => intval($record->allow_rating), 'allow_tag' => intval($record->allow_rating), 'upload_folder' => $record->upload_folder);
+                }
+                else {
+                    foreach ($record as $k => $v) {
+                        $output = $v;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return $output;
+    }    
 }

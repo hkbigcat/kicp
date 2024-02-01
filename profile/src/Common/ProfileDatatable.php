@@ -86,4 +86,90 @@ class ProfileDatatable {
 
     }
 
+    public static function getBuddyGroupByGroupId($group_id) {
+         if ($group_id == "")
+            return null;
+        
+        $sql = "SELECT buddy_group_id AS group_id, buddy_group_name AS group_name, user_id AS owner FROM kicp_buddy_group ";
+        $sql .= " WHERE buddy_group_id ='" . $group_id ."' AND is_deleted = 0";
+        $database = \Drupal::database();
+        $record = $database-> query($sql)->fetchObject();
+        return $record;
+        
+    }
+
+    public static function getPublicGroupByGroupId($group_id) {
+        $record = array();
+        if ($group_id == "") {
+            return $record;
+        } else {
+            $sql = "SELECT pub_group_id AS group_id, pub_group_name AS group_name, pub_group_owner AS owner FROM kicp_public_group ";
+            $sql .= " WHERE pub_group_id ='" . $group_id  ."' AND is_deleted = 0";
+            $database = \Drupal::database();
+            $record = $database-> query($sql)->fetchObject();
+            return $record;
+        }
+    }
+
+    public static function getMembersGroupId($type="", $group_id="", $user_id="") {
+
+        
+        
+        if ($type == 'P') {
+            $and_user = ($user_id !="")?" and a.pub_user_id ='".$user_id."'":"";
+            $sql = "SELECT a.pub_user_name AS user_name, a.pub_user_id AS user_id FROM kicp_public_user_list a LEFT JOIN kicp_public_group b ON (a.pub_group_id=b.pub_group_id AND b.is_deleted = 0) LEFT JOIN xoops_users c ON (a.pub_user_id=c.user_id) WHERE a.is_deleted=0 AND a.pub_group_id='" . $group_id . "' ".$and_user." ORDER BY a.pub_user_name" ;
+        } else if ($type == 'B') {
+            $and_user = ($user_id !="")?" and a.buddy_user_id ='".$user_id."'":"";
+            $sql = "SELECT a.buddy_user_name AS user_name, a.buddy_user_id AS user_id FROM kicp_buddy_user_list a LEFT JOIN kicp_buddy_group b ON (a.buddy_group_id=b.buddy_group_id AND b.is_deleted = 0) LEFT JOIN xoops_users c ON (a.buddy_user_id=c.user_id) WHERE a.is_deleted=0 AND a.buddy_group_id='" . $group_id . "' ".$and_user." ORDER BY a.buddy_user_name";
+        }
+
+        $database = \Drupal::database();
+
+        if ($and_user=="" )
+           $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        else
+            $result = $database-> query($sql)->fetchObject();
+        return $result;
+
+    }
+
+    public static function getUsers() {
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        if ($search_str !=null && $search_str !="") {
+            $sql = "SELECT user_id, user_name FROM xoops_users WHERE user_name LIKE '%" . $search_str . "%' AND user_is_inactive=0 ORDER BY user_name";
+
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            return $result;
+        } else 
+            return null;
+
+    }
+
+    public static function checkUserInGroup($type, $group_id, $user_id) {
+        
+        $GroupUserAry = self::getMembersGroupId($type, $group_id);
+        
+        if (in_array($user_id, array_column($GroupUserAry,'user_id'))) {
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+    
+    public static function getUserInfoByUserId($user_id) {
+        
+        if($user_id == "") {
+            return array();
+        }
+       
+       $sql = "SELECT user_full_name from xoops_users WHERE user_id='".$user_id."' AND user_is_inactive=0";
+       $database = \Drupal::database();
+       $record = $database-> query($sql)->fetchObject();
+       return $record ->user_full_name;
+
+   }
+
 }

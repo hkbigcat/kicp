@@ -1,0 +1,93 @@
+<?php
+
+use Drupal\common\CommonUtil;
+
+function kicp_lightgallery_page_attachments_alter(&$page) {
+    
+    $routeName = \Drupal::routeMatch()->getRouteName();
+    if (explode(".", $routeName)[0] === 'kicp_lightgallery') {
+        $page['#attached']['library'][] = 'kicp_lightgallery/kicp_lightgallery_key';
+    }
+	
+
+}
+
+
+function kicp_lightgallery_file_download($uri) {
+
+    $InModule =  'kicp_lightgallery';
+
+    // get target folder name from request string
+    $uri_target = array();
+    $uri_target = explode('/', \Drupal\Core\StreamWrapper\StreamWrapperManager::getTarget($uri));
+
+    // get default target folder name
+    $target_folder = CommonUtil::getModuleDetail($InModule, 'upload_folder');
+
+    if ($uri_target[0] != $target_folder) {
+        return;
+    }
+
+    $output = NULL;
+    $AuthClass = CommonUtil::getSysValue('AuthClass');  // get the Authentication class name from database
+    $authen = new $AuthClass();
+    $author = CommonUtil::getSysValue('AuthorClass');
+    $error = false;
+
+    if (!$authen->isAuthenticated) {
+            $output .= $author::removeAllModuleMenuTabs();
+            $error = true;
+    } else {
+        if ( !$author::isSiteAdmin($authen->getUserId()) ) {
+            $output .= $author::setMenuTabsByModulePermission();
+            if (!$author::hasPermission($InModule, TRUE)) {
+                $error = true;
+            }
+        }
+    }
+
+    if ($error) {
+        $output .=
+            '<script type="text/javascript">
+                    window.onload = function() {
+                            showMsg("' .$InModule. '");
+                    };
+            </script>';
+        echo $output;
+        return -1;
+    }
+
+    //Load file from db by $uri
+    $files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(array('uri' => $uri));
+
+    if (count($files)) {
+        foreach ($files as $item) {
+            // Since some database servers sometimes use a case-insensitive comparison
+            // by default, double check that the filename is an exact match.
+            if ($item->getFileUri() === $uri) {
+                $file = $item;
+                break;
+            }
+        }
+    }
+    if (!isset($file)) {
+        return;
+    }
+
+    ob_end_clean();
+    return file_get_content_headers($file);
+
+}
+
+function kicp_lightgallery_theme($existing, $type, $theme, $path) {
+
+    return [
+        'kicplightgallery-album' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],     
+
+    ];
+
+}

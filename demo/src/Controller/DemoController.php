@@ -18,6 +18,7 @@ class DemoController extends ControllerBase {
     }
     
     public function content() {
+        
 
         return [
             '#theme' => 'demo-box',

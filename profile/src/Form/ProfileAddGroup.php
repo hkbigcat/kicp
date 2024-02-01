@@ -40,6 +40,7 @@ class ProfileAddGroup extends FormBase {
         
         if($_REQUEST['type'] == "B") {
             $field_text = "Personal Group Name";
+            $groupInfo = ProfileDatatable::getBuddyGroupByGroupId($_REQUEST['group_id']);
         } else  {
             $field_text = "Personal Public Group Name";
         } 
@@ -53,7 +54,7 @@ class ProfileAddGroup extends FormBase {
         
         $form['type'] = array(
           '#type' => 'hidden',
-          '#default_value' => $_REQUEST['type'],
+          '#value' => $_REQUEST['type'],
         );
         
         $form['actions']['submit'] = array(

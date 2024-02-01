@@ -1,0 +1,68 @@
+{% set type0 = items['type']=="P"?'P':'B' %}
+<div class="ProfileMainContainer">
+    <div class="clear"></div>
+    <div style="float:left; display:inline-block;">
+    {% include '@profile/profile-leftmenu.html.twig' with {type: 'group'}  %}
+    </div>
+    <div id="RightContainer">
+        <div class="ProfileName">Member List</div>
+        <h2>Group Name: {{ items['group_name'] }}</h2>
+        <div style="width: 55%; text-align: right; margin-top: -30px; float: right;">
+            <button class="kicp_button size-2" onClick="location.href='{{ path('profile.profile_group', {'type': type0 }) }}';"><i class="fa-solid fa-user-group"></i> {{ type0 == "P"?"Public Personal Group":"Personal Group" }} </button>
+        </div>
+        <div id="DivContentTable">
+            <div class="common_table_header">
+                <div style="width:70%;text-align:left;margin-left:38px;">User Name</div>
+                <div style="width:25%;">&nbsp;</div>
+            </div>
+            {% for item in items %}
+            {% if  item['user_name'] is not null %}
+            <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
+                <div style="width:2%;float:left;display:block;margin-left:5px;">{{ loop.index0 + 1 }}</div>
+                <div style="width:70%;float:left;display:block;">{{ item['user_name'] }}</div>
+                <div style="width:25%;float:left;display:block;">
+                    <span><button class="kicp_button size-2" onClick="location.href='{{ path('profile.profile_group_member_change', {'type': items['type']=="P"?'P':'B' , 'group_id': items['group_id'], 'user_id':  item['user_id'] } ) }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
+                    <span><button class="kicp_button size-2" onclick="module_item_delete('profile_group_member','{{  items['type']=="P"?'P':'B' }},{{ items['group_id'] }},{{ item['user_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+               </div>
+            </div>
+            {% endif %} 
+            {% endfor %} 
+        </div>
+
+        <div style="width:100%;float:right;margin-top:10px;">
+        <form id="search_form" name="search_form" method="get">
+            <div style="width:100%;text-align:right;float:right;margin:5px;">
+                <strong>Search User to add: </strong><input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="User Name">
+            </div>
+        </form>
+
+        {% if search_users is not empty %}
+
+        <fieldset>
+            <legend>&nbsp;<b>Please Select User</b>&nbsp;</legend>
+            <div class="DivContentTable" style="display:inline-block;" id="user_table">
+                <div class="common_table_header">
+                    <div style="width:70%;text-align:left;margin-left:98px">User Name</div>
+                    <div style="width:10%;">&nbsp;</div>
+                </div>
+                    {% for user in search_users %}
+                <div id="row_row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}">
+                    <div style="width:10%;float:left;display:block; margin-left:5px">{{ loop.index0 + 1 }}</div>
+                    <div style="width:60%;float:left;display:block;">{{ user['user_name'] }}</div>
+                    <div style="width:25%;float:left;display:block;"><button class="kicp_button size-2" onClick="self.location.href='{{ path('profile.profile_group_member_add_action', {'type': items['type']=="P"?'P':'B' , 'group_id': items['group_id'], 'user_id':  user['user_id'] } ) }}?search_str={{  items['search_str'] }}'"><i class="fa-solid fa-user-plus"></i> Add to Member List</button></div>
+                </div>
+                {% endfor %} 
+            </div>
+        </fieldset>
+    <script>
+       const element = document.getElementById("user_table");
+      element.scrollIntoView();
+    </script>
+
+        {% endif %}     
+        </div>
+    </div>
+</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'member'}  %}
+
+

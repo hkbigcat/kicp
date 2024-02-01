@@ -33,7 +33,10 @@ function module_item_delete(module, item_id) {
        msgtitle = 'Profile Group';
        page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
     break;     
-
+    case 'profile_group_member':
+       msgtitle = 'Profile Group Member';
+       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+    break;     
     default:
       msgtitle = module;        
   }

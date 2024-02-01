@@ -1,0 +1,49 @@
+        <script type="text/javascript">
+		
+			$.urlParam = function(name){
+				var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+				if (results==null){
+				   return null;
+				}
+				else{
+				   return decodeURI(results[1]) || 0;
+				}
+			}
+
+        </script>
+        <script src="../js/lightgallery-all.min.js"></script>
+        <script src="../js/prettify.js"></script>
+        <script src="../js/jquery.justifiedGallery.min.js"></script>
+        <script src="../js/transition.js"></script>
+        <script src="../js/collapse.js"></script>
+        <script src="../js/lightgallery.js"></script>
+        <script src="../js/lg-fullscreen.js"></script>
+        <script src="../js/lg-thumbnail.js"></script>
+        <script src="../js/lg-video.js"></script>
+        <script src="../js/lg-autoplay.js"></script>
+        <script src="../js/lg-zoom.js"></script>
+		<script src="../js/lg-pager.js"></script>
+		
+        <script src="../js/jquery.mousewheel.min.js"></script>
+        <script src="../js/demos.js"></script>
+        <script type="text/javascript">
+
+        $(".page").css('display', 'none');
+
+        console.log($.urlParam('Page'))
+/*
+        if($.urlParam('Page') == null){
+                window.location.href = "index.html?Page=1";
+        }
+        else{
+                Page = $.urlParam('Page')
+        }
+
+        $("#page" + Page).css('display', 'block');
+*/
+        </script>
+
+{{js.html}}
+ 
+</body>
+</html>
