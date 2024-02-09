@@ -37,27 +37,50 @@ body, table, tr, td, div, span {
 /* override the oroginal layout CSS [End] */
 
 .cpRateStarOn {
-    background-image: url(../../../../modules/custom/common/images/icon_star_on.gif);
+/*    background-image: url(../../../../modules/custom/common/images/icon_star_on.gif); 
     background-repeat: no-repeat;
-    padding-left: 16px;
+    padding-left: 16px;*/
     height: 20px;
     display: inline-block;
+}
+.cpRateStarOn:before {
+    position: absolute;
+    font-family: 'FontAwesome';
+    top: 0;
+    left: 10px;
+    content: "\f005";    
 }
 
 .cpRateStarHalf {
-    background-image: url(../../../../modules/custom/common/images/icon_star_half.gif);
+/*    background-image: url(../../../../modules/custom/common/images/icon_star_half.gif);
     background-repeat: no-repeat;
-    padding-left: 16px;
+    padding-left: 16px;*/
     height: 20px;
     display: inline-block;
 }
 
+.cpRateStarHalf:before {
+    position: absolute;
+    font-family: 'FontAwesome';
+    top: 0;
+    left: 10px;
+    content: "\f5c0";    
+}
+
 .cpRateStarOff {
-    background-image: url(../../../../modules/custom/common/images/icon_star_off.gif);
+/*    background-image: url(../../../../modules/custom/common/images/icon_star_off.gif);
     background-repeat: no-repeat;
-    padding-left: 16px;
+    padding-left: 16px;*/
     height: 20px;
     display: inline-block;
+}
+
+.cpRateStarOff::before {
+    position: absolute;
+    font-family : 'FontAwesome';
+    top: 0;
+    left: 10px;
+    content: "\f005";    
 }
 
 .noDisplay{
@@ -66,6 +89,7 @@ body, table, tr, td, div, span {
 
 .cpRateWording{
     padding-left:5px;
+    display:inline-block;
 }
 
 .small{
@@ -279,6 +303,11 @@ table.row_table {
 }
 
 
+.fa-star {
+    color:#27a931
+}
+
+
 .kicp_button {
     
     background-image: linear-gradient(to bottom,rgb(158,195,207),rgb(71 103 145));
@@ -300,6 +329,8 @@ table.row_table {
     color:rgb(209 205 225);
     margin: 0 10px;
 }
+
+
 
 #DivFollower {
     border: 1px solid #DBDBDB;

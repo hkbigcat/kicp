@@ -14,6 +14,7 @@ function survey_page_attachments_alter(&$page) {
 
     if (explode(".", $routeName)[0] === 'survey') {
         $page['#attached']['library'][] = 'survey/survey_key';
+        $page['#attached']['library'][] = 'common/content_key';
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"

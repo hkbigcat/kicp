@@ -1,0 +1,242 @@
+@charset "utf-8";
+
+.mainpage_div {
+    width: 98%;
+    min-width:220px;
+    /*float: left;*/
+    display: inline-block;
+    border: 1px solid #DDDDDD;
+    padding: 20px;
+    margin: 8px 8px 15px 8px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px #E6E6E6;
+}
+
+.mainpage_div:hover {
+    background: #F6F6F6;
+    box-shadow: 2px 2px 5px #BDBDBD;
+}
+
+.mainpage_div .mainpage_date {
+    font-size: 10pt;
+    color: #A3A3A3;
+}
+
+.mainpage_div .mainpage_image img{
+    
+    width: 100px;
+}
+
+.mainpage_div .title {
+    font-family: Gerorgia;
+    font-size: 14pt;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.mainpage_div .title2 {
+    font-weight: bold;
+    font-size: 14pt;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+.mainpage_div .title2_2 {
+    /*font-family: Gerorgia;*/
+    font-size: 14pt;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.mainpage_div .mainpage_highlight {
+    color: #A3A3A3;
+    font-style: italic;
+}
+
+.mainpage_div .mainpage_highlight2 {
+    color: #777777;
+   /* font-style: italic;*/
+}
+
+.mainpage_div .mainpage_tag {
+    /* color: #A3A3A3;*/
+    font-size: 10pt;
+    font-style: italic;
+}
+
+.mainpage_div .author {
+    font-size: 10pt;
+}
+
+.mainpage_div .author_name {
+    color: #07ba01;
+}
+
+.mainpage_fieldset {
+    border:1px solid #CCCCCC;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    /*padding-top: 0px;*/
+    position:relative;
+    padding:15px;
+}
+
+.mainpage_legend {
+    width: 99%;
+    background-color: #DBDBDB;
+    padding: 9px;
+    margin-left: -3px;
+    position:relative;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+#DivFollower {
+    border: 1px solid #DBDBDB;
+    float:right; 
+    text-align:right;
+    padding: 7px;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+#DivFollower:hover {
+    border-color: #DBDBDB;
+    background-color:#F2F2F2;
+}
+
+#DivConnection {
+    border: 1px solid #DBDBDB;
+    float:right; 
+    text-align:right;
+    padding: 7px;
+    border-radius: 10px;
+    margin-left: 10px;
+}
+
+#DivConnection:hover {
+    border-color: #DBDBDB;
+    background-color:#F2F2F2;
+}
+
+.highlight_icon {
+    padding:7px;
+    border-radius:5px;
+    background-color:#62C1FC;
+    color:#FFFFFF;
+    
+    float:right; margin-top:7px; margin-left:10px;
+}
+
+.highlight_icon:hover {
+    background-color: #449ACF;
+    color: #FFFFFF;
+    text-decoration: none;
+} 
+
+.highlight_icon:focus {
+    color: #FFFFFF;
+}
+
+.follower_name {
+    font-size: 9pt;
+    display: inline-block;
+    float:left;
+    width:92%;
+    padding-left:3px;
+}
+
+#DivAggregatedTagDetail li {
+    font-size:9pt;
+}
+
+#DivTopContributorsDetail li {
+    font-size:9pt;
+}
+
+#DivTopNoOfFollowerDetail {
+    display:none;
+    position:absolute;
+    width:200px;
+    background-color:#EEEEEE;
+    border:1px solid #CCCCCC; 
+    border-radius:5px;
+    padding:15px;
+}
+
+#DivTopNoOfFollowerDetail li {
+    font-size:9pt;
+    line-height:2em;
+}
+
+#DivTagGroupDetail {
+    display:none;
+    position:absolute;
+    width:240px;
+    background-color:#EEEEEE;
+    border:1px solid #CCCCCC; 
+    border-radius:5px;
+    padding:12px;
+    margin-left:10px;
+    margin-top:40px;
+    line-height:1.75em;
+}
+
+#DivTagGroupDetail span {
+    font-size:9pt;
+}
+
+#DivNoOfMyFollower {
+    float:right;
+    margin-top:50px;
+    /*margin-right:-515px;*/
+    margin-bottom:0px;
+    padding:0px;
+}
+
+#topContent {
+    margin-top:-15px;
+    float:right;
+    margin-right:-200px;
+    width:800px;
+}
+
+#disclaimer {
+    font-size: 11pt;
+    text-align: justify;
+}
+
+#disclaimer li {
+    padding-bottom:15px;
+}
+
+.disclaimer_title {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.disclaimer_subtitle {
+    font-weight: bold;
+}
+
+
+table {
+    font-family: "Lucida Grande","Lucida Sans Unicode",Verdana,sans-serif;
+    font-size: 0.857em;
+}
+
+
+tr {
+    padding: 0.1em 0.6em;
+    border-bottom: 1px solid #ccc;
+    background: rgba(0,0,0,0.063);
+}
+
+tr td, tr th {
+    padding: 4px 9px;
+    text-align: left;
+    border: 1px solid #fff;
+}

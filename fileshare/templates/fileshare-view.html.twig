@@ -10,6 +10,7 @@
 
           <div><span class="entry_subtitle">Folder: </span><a href="/fileshare/?folder_id={{ items['folder_id'] }}">{{ items['folder_name'] }} </a></div>
           <div><span class="entry_subtitle">Date: </span> {{ items['modify_datetime'] }}</div>
+          <div style="width:100%">{% include '@common/common-rating.html.twig' %}</div>
           {% include '@common/common-tags-list.html.twig' %}    
           <div style="margin:20px;"><button class="kicp_button" onclick="window.open('/download/fileshare/{{ items['file_id'] }}');"><i class="fa-solid fa-file-arrow-down"></i> Download</button></div>
 
@@ -52,3 +53,4 @@
      </div>
      
 </div>
+

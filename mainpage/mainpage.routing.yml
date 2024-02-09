@@ -1,0 +1,21 @@
+mainpage.main:
+  path: '/main'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::contentByView'
+    _title: 'Home'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+mainpage.mainpage_tag:
+  path: '/tag'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::GeneralTagContent'
+    _title: 'Tag'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

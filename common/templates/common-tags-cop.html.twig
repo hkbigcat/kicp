@@ -1,0 +1,17 @@
+<div style="margin-bottom:15px;">
+<span style='font-style:italic'><strong>COP Tags:</strong></span>
+{% for cop_tag in cop_tags %}
+<span class="tagBullet">
+    <a style="font-size:107%; font-style: italic; text-decoration:none" href="javascript:;" onClick="addTagUrl('{{cop_tag}}')" class="tagHighlight">{{cop_tag}}</a>
+</span>
+{% endfor %}
+</div>
+
+<span style='font-style:italic'><strong>Other Tags:</strong></span>
+
+{% include '@common/common-tags-other.html.twig'  %}
+
+<span id="DivLoadMore"><a href="javascript:void(0);" onClick="loadMoreTag('mainpage')" id="IconLoadMore"><span id="textMore">more...</span></a></span>
+<input type="hidden" name="current_no_of_loaded_tag" id="current_no_of_loaded_tag" value="{{ other_tags['interval'] }}">
+<input type="hidden" name="total_tag" id="total_tag" value="{{ other_tags['count'] }}">
+<input type="hidden" name="default_interval" id="default_interval" value="{{ other_tags['interval'] }}">

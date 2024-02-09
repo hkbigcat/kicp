@@ -83,3 +83,21 @@ common.get_current_access_control_group:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+common.load_more_tag:
+  path: '/load_more_tag'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getMoreTag'
+    _title: 'Load More Tags'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+common.confirmratingbox:
+  path: '/cpProcess'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::showCpRateBox'
+    _title: 'confirm add rating'
+  requirements:
+    _permission: 'access content'

@@ -1,4 +1,5 @@
 var loadingImg = '<img src="modules/custom/common/images/loader.gif" border="0" width="40">';
+console.log("common_jquery");
 
 function getAddGroupMemberUI(module, record_id) {
     jQuery("ul.menu").css("display","none");
@@ -218,4 +219,168 @@ function reloadCurrentAccessControlGroup(module, record_id) {
             alert('Error: ' + error);
         }
     });
+}
+
+
+
+
+function cpRateShow(x, y) {
+
+        console.log("Y: X "+x);
+
+        for (i = 1; i <= 5; i++) {
+            
+            if (i <= x)
+                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star' aria-hidden='true'></i>";
+            else
+            if (x + 1 - i >= 0.75)
+                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star' aria-hidden='true'></i>";
+            else
+            if (x + 1 - i >= 0.25)
+                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star-half-o' aria-hidden='true'></i>";
+            else
+                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star-o' aria-hidden='true'></i>"
+        }
+        return 1;
+}
+
+function cpRateShowBox(rateId, userId, rating, divName, module, type) {
+    var newRateDiv = newDisplayBox('newRateDiv', divName.parentNode);
+    try {
+        xmlHttp = getXmlHttpObject(newRateDiv, 1);
+        var ModulePath = document.getElementById("module_path").textContent;
+        var url = ModulePath + '/cpProcess';
+        
+
+        jQuery.ajax({
+            type: 'POST',
+            url: url,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({"module": module, "type": type, "rateId": rateId, "userId": userId, "rating": rating}),
+            dataType: "html",
+            cache: false,
+            success: function (data, status, xhr) {
+                document.getElementById('newRateDiv').innerHTML = data;
+            },
+            error: function (error) {
+                alert('error, ' + error.status + ':' + error.statusText);
+            }
+        });
+
+    } catch (e) {
+        alert(getMessage(10109));
+    }
+}
+
+function newDisplayBox(boxName, pNode) {
+    if (pNode == undefined) {
+        pNode = document.body;
+    } else {
+        pNode = pNode.parentNode;
+    }
+    var layerBox = document.getElementById(boxName);
+    if (layerBox != undefined) {
+        layerBox.parentNode.removeChild(layerBox);
+    }
+    layerBox = createEle(
+            'div',
+            {'id': boxName, 'class': 'acBox'},
+            {margin: '0 auto', border: '3px solid #808080', padding: '3px 3px 3px 3px', backgroundColor: '#FFFFFF'},
+            ''
+            );
+    layerBox.style.zIndex = 10000;
+    layerBox.style.position = 'absolute';
+    pNode.appendChild(layerBox);
+    layerBox.style.visibility = 'visible';
+
+    return layerBox;
+}
+
+createEle = function (t, a, y, x) {
+    var e = document.createElement(t);
+    if (a) {
+        for (var k in a) {
+            if (k == 'class')
+                e.className = a[k];
+            else if (k == 'id')
+                e.id = a[k];
+            else
+                e.setAttribute(k, a[k]);
+        }
+    }
+    if (y) {
+        for (var k in y)
+            e.style[k] = y[k];
+    }
+    if (x) {
+        e.appendChild(document.createTextNode(x));
+    }
+    return e;
+}
+
+function getXmlHttpObject(handler, type) {
+    var objXmlHttp = null;
+    if (navigator.userAgent.indexOf('Opera') >= 0) {
+        alert(getMessage(10106));
+        return null;
+    }
+    if (navigator.userAgent.indexOf('MSIE') >= 0) {
+        var strName = 'Msxml2.XMLHTTP';
+
+        if (navigator.appVersion.indexOf('MSIE 5.5') >= 0) {
+            strName = 'Microsoft.XMLHTTP';
+        }
+        try {
+            objXmlHttp = new ActiveXObject(strName);
+        } catch (e) {
+            alert(getMessage(10108));
+            return null;
+        }
+    } else {
+        if (navigator.userAgent.indexOf('Mozilla') >= 0)
+        {
+            objXmlHttp = new XMLHttpRequest();
+        }
+    }
+
+    if (objXmlHttp != null) {
+        if (type) {
+            objXmlHttp.onreadystatechange = function () {
+                ajaxDivHandler(objXmlHttp, handler)
+            };
+        } else {
+            objXmlHttp.onreadystatechange = handler;
+        }
+        return objXmlHttp;
+    } else {
+        alert(getMessage(10105));
+        return n
+    }
+}
+
+function ajaxDivHandler(xmlHttp, divName) {
+    if (xmlHttp.readyState == 4 || xmlHttp.readyState == 'complete') {
+        if (!checkXmlHttpStatus(xmlHttp.status)) {
+            document.getElementById('loading').style.visibility = 'hidden';
+            return;
+        }
+        var reptext = xmlHttp.responseText;
+        if (reptext.match('error:')) {
+            alert(reptext);
+        } else if (reptext.match('redirect::')) {
+            ary = reptext.split("::");
+            window.location = ary[1];
+        } else if (reptext.match('alert::')) {
+            ary = reptext.split("::");
+            alert(ary[1]);
+        } else if (reptext.match('js::')) {
+            ary = reptext.split("::");
+            eval(ary[1]);
+        } else {
+            if (typeof (divName) == "object")
+                divName.innerHTML = reptext;
+            else
+                document.getElementById(divName).innerHTML = reptext;
+        }
+    }
 }

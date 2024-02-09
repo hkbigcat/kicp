@@ -14,6 +14,7 @@ use Drupal\Core\Database\Query\Condition;
 use \Drupal\Core\Routing;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\Controller\TagList;
+use Drupal\common\RatingData;
 
 
 class FileShareDatatable extends ControllerBase {
@@ -83,8 +84,10 @@ class FileShareDatatable extends ControllerBase {
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
           $entries=array();
           $TagList = new TagList();
+          $RatingData = new RatingData();
           foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('fileshare', $record["file_id"]);   
+            $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
             $entries[] = $record;
           }
         }
@@ -113,9 +116,6 @@ class FileShareDatatable extends ControllerBase {
     if ($tagsUrl) {
       $tags = json_decode($tagsUrl);
     }    
-
-    //dump($tagsUrl);
-   //dump($tags);
 
 
     try {

@@ -1,0 +1,6 @@
+mainpage_key:
+  version: 1.x
+  css:
+    theme:
+      css/mainpage.css: {}
+  header: true

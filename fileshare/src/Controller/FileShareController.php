@@ -20,7 +20,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\File;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\common\RatingData;
 
 class FileShareController extends ControllerBase {
 
@@ -157,14 +157,23 @@ class FileShareController extends ControllerBase {
   $TagList = new TagList();
   $taglist = $TagList->getTagsForModule('fileshare', $file_id);
   $tagURL = http_build_query($taglist);
+  $RatingData = new RatingData();
+  $rating = $RatingData->getList('fileshare', $file_id);
   
   $table_rows_file = FileShareDatatable::getSharedFile($file_id);
   $table_rows_file['tagURL'] = $tagURL;
-    
+  
+  $AuthClass = "\Drupal\common\Authentication";
+  $authen = new $AuthClass();
+  $my_user_id = $authen->getUserId();
+
+  
     return [
         '#theme' => 'fileshare-view',
+        '#user_id' => $my_user_id,
         '#items' => $table_rows_file,
         '#tags' => $taglist,
+        '#rating' => $rating,
         '#slides' => $slideContent,
         '#empty' => t('No entries available.'),
     ];

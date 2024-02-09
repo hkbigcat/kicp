@@ -1,0 +1,44 @@
+<div class="mainpage_div" style="background-color:#DBF8FF; border: 1px solid #7A9ACC;">
+    <div style="width:99%;text-align:justify;margin-top:20px;"> 
+    {{ editor_choice | raw }}
+    </div>
+</div>
+
+<h2 style="font-size:16pt;margin-top:3em;margin-bottom:1em;">The Latest Updates </h2>
+
+ {% for item in items %}
+<div class="mainpage_div {{ loop.index0 is odd ? 'even' : 'odd' }}">
+    <div style="display:inline-block;width:65%">
+        <table>
+            <tbody>
+                <tr style="background-color:transparent;border:0">
+                    <td style="width: 15%;border:none; position:absolute"><div class="mainpage_image"><a href="{{item['link']}}" style="border-bottom:0px;"><img src="{{item['img_path']}}" border="0" width="100"></a></div> </td>
+                    <td style="width: 85%;border:none">
+                        <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_date'] | date('j F, Y, g:i') }}</span>
+                        <span class="title2"><strong>[{{ item['module'] | capitalize  }}]</strong></span>
+                        <span class="title2_2"> <a href="{{item['link']}}">{{ item['Title'] }}</a></span>
+                        <div class="author">Created By: <span class="author_name">{{item['user_displayname']}}</span> <span id="{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+                         <div class="mainpage_tag">{% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] }  %} </div>
+                        <div class="mainpage_highlight2"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="width:8%;display:inline-block;float:right;">
+        {% if item['module'] in ['blog', 'forum'] %}
+        {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<input type="hidden" name="tag_page" id="tag_page" value="tag">
+<div style="width:100%;">
+<fieldset class="mainpage_fieldset">
+<legend class="mainpage_legend">&nbsp;All Tags&nbsp;</legend>
+{% include '@common/common-tags-cop.html.twig'  %}
+</fieldset>
+</div>
+

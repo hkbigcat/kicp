@@ -89,8 +89,11 @@ function common_theme($existing, $type, $theme, $path) {
 				'record_id' => NULL,
             ],
         ],
-
-
+		'common-tags-other' =>[
+            'variables' => [
+				'cop_tags' => NULL,
+				'other_tags' => NULL,            ],
+        ],
 	];
 }
   

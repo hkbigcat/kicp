@@ -57,6 +57,8 @@ function fileshare_theme($existing, $type, $theme, $path) {
                 'items' => NULL,
                 'tags' => NULL,
                 'slides' => NULL,
+                'rating'  => NULL,
+                'user_id'  => NULL,
             ],
 
         ],        

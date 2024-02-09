@@ -12,10 +12,12 @@ use Drupal\blog\Common\BlogDatatable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\common\CommonUtil;
 use Drupal\common\AccessControl;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
+use Drupal\common\Controller\TagList;
 use Drupal\common\Common\CommonDatatable;
 
 class CommonController extends ControllerBase {
@@ -467,5 +469,28 @@ class CommonController extends ControllerBase {
         }
 
     }    
+
+    public function getMoreTag() {
+
+        $current_no_of_loaded_tag = \Drupal::request()->query->get('current_no_of_loaded_tag');
+        $start = (isset($current_no_of_loaded_tag) && $current_no_of_loaded_tag != "") ? $current_no_of_loaded_tag : 0;
+
+        $interval = \Drupal::request()->query->get('$interval');
+        $interval = (isset($interval) && $interval != "") ? $interval : 0;
+
+        $taglist = new TagList();
+        $other_tags = $taglist->getOtherTagList($start, $interval);
+
+        $renderable = [
+            '#theme' => 'common-tags-other',
+            '#other_tags' => $other_tags,
+        ];
+        $allTags = \Drupal::service('renderer')->renderPlain($renderable);        
+
+        $response = new Response();
+        $response->setContent($allTags);
+        return $response;
+    }
+
 
 }

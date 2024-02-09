@@ -4,6 +4,7 @@ namespace Drupal\common\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
+use Drupal\common\CommonUtil;
 
 class TagList extends ControllerBase {
 	
@@ -25,7 +26,6 @@ class TagList extends ControllerBase {
     $output = "";
 
         $result = self::getCopTag();
-        //$result = ['item1', 'item2', 'item3'];
         foreach ($result as $record) {
             
 
@@ -168,6 +168,65 @@ class TagList extends ControllerBase {
         return $taglist;
 
     }    
+
+    public function getCOPTagList() {
+
+        $output = array();
+        $copTag = self::getCopTag();
+        foreach($copTag as $cop) {
+            $output[] = $cop->cop_name;
+        }
+
+        return $output;
+
+    }
+
+    public function getOtherTagList($start=0, $interval=0) {
+
+        $output = array();
+        $interval = ($interval==0)?$this->default_interval:$interval;
+
+        $sql = "SELECT COUNT(1) AS AMOUNT, tag FROM kicp_tags WHERE tag NOT LIKE 'system:%' and is_deleted = 0 GROUP BY tag ORDER BY AMOUNT DESC, tag ";
+        
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $count = 0;
+        foreach ($result as $record)  {
+            if($count >= $start && $count < ($start+$interval) ) {
+                switch ($record['AMOUNT']) {
+                    case 1:
+                    case 2:
+                        $fontsize = '90';
+                        break;
+                    case 3:
+                        $fontsize = '107';
+                        break;
+                    case 4:
+                    case 5:
+                        $fontsize = '124';
+                        break;
+                    case 6:
+                    case 7:
+                        $fontsize = '141';
+                        break;
+                    default:
+                        $fontsize = '158';
+                }
+
+                $record['fontsize']  = $fontsize;
+                $output[] = $record;
+            }
+            $count++;
+        }
+
+        $output['interval'] = $interval;
+        $output['count'] = $count;
+
+        return $output;
+
+        
+    }
 
     
 }

@@ -94,7 +94,11 @@ function AddLike(module, record_id) {
 
 
 function addTagUrl(thisTag) {
-  var selected_tag = document.getElementById('selected_tag').value;
+
+  var selected_tag = "";
+  if (document.getElementById("selected_tag")) 
+    selected_tag = document.getElementById('selected_tag').value;
+      
   let tag_page = document.getElementById('tag_page').value;
   
 
@@ -163,6 +167,51 @@ function RemoveAttachment(this_id) {
   return document.getElementsByName('upload_files')[0].value;
 
 }
+
+
+function loadMoreTag(module) {
+
+  var current_no_of_loaded_tag = parseInt(jQuery("#current_no_of_loaded_tag").val());
+  var total_tag = parseInt(jQuery("#total_tag").val());
+
+  if (current_no_of_loaded_tag != 'undefined' && current_no_of_loaded_tag >= 90) {
+      var interval = 9999999999;
+  } else {
+      var interval = parseInt(jQuery("#default_interval").val());
+  }
+
+  // get more tag
+  jQuery.ajax({
+      type: "POST",
+      url: 'load_more_tag',
+      data: {
+          module: module,
+          current_no_of_loaded_tag: current_no_of_loaded_tag,
+          interval: interval
+      },
+      success: function (data)
+      {
+          // load 20 more tags
+          current_no_of_loaded_tag += parseInt(interval);
+          // assign the no. of loaded tag to hidden field
+          jQuery("#current_no_of_loaded_tag").val(current_no_of_loaded_tag);
+          //load data
+          jQuery("#DivLoadMore").before(data);
+          // hide the "more" icon when reach the total no. of records
+          if (current_no_of_loaded_tag >= total_tag) {
+              jQuery("#IconLoadMore").hide();
+          }
+          if (current_no_of_loaded_tag >= 90) {
+              jQuery('#textMore').html('all');
+          }
+      },
+      error: function (data) {
+          alert("No more tag");
+      }
+  });
+
+}
+
 
 
 if (jQuery) {
