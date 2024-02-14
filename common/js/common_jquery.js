@@ -224,32 +224,35 @@ function reloadCurrentAccessControlGroup(module, record_id) {
 
 
 
-function cpRateShow(x, y) {
+function cpRateShow(x) {
 
-        console.log("Y: X "+x);
+        //console.log("Y: X "+x);
 
         for (i = 1; i <= 5; i++) {
             
             if (i <= x)
-                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star' aria-hidden='true'></i>";
+                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
             else
             if (x + 1 - i >= 0.75)
-                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star' aria-hidden='true'></i>";
+                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
             else
             if (x + 1 - i >= 0.25)
-                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star-half-o' aria-hidden='true'></i>";
+                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-half-solid.svg)";
             else
-                document.getElementById('star_'+i).innerHTML = "<i class='fa fa-star-o' aria-hidden='true'></i>"
+                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-regular.svg)";
         }
-        return 1;
+        //return 1;
 }
 
 function cpRateShowBox(rateId, userId, rating, divName, module, type) {
+    console.log("cpRateShowBox");
     var newRateDiv = newDisplayBox('newRateDiv', divName.parentNode);
+    console.log("newRateDiv: " + newRateDiv);
     try {
         xmlHttp = getXmlHttpObject(newRateDiv, 1);
-        var ModulePath = document.getElementById("module_path").textContent;
-        var url = ModulePath + '/cpProcess';
+        //var ModulePath = document.getElementById("module_path").textContent;
+        //var url = ModulePath + '/cpProcess';
+        var url = '/cpProcess';
         
 
         jQuery.ajax({
@@ -384,3 +387,8 @@ function ajaxDivHandler(xmlHttp, divName) {
         }
     }
 }
+
+
+
+
+

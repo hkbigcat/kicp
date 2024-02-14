@@ -1,9 +1,13 @@
+<span class='cpRateComment' style='float:right;text-align:right; width:50%'>
+    Overall rating: <span style='color:#CC6600'>Excellent</span>
+    <span class="small" style="color:#CC6600;">(5 out of 5)</span>
+</span>
 {% set rates = [1,2,3,4,5] %}
 <div class="divCpRate" onmouseout="cpRateShow({{ rating['overall_rating'] }},1)">
     <span style="display:none">{{ rating['overall_rating'] }}</span> 
     {% for rate in rates %} 
-        {% set star = ( (rating['overall_rating'] + 1  - rate) >= 0.75 )?'star': ( (rating['overall_rating'] + 1  - rate) >= 0.25 )?'star-half-o':'star-o' %}
-        <span id="star_{{rate}}"  onclick="cpRateShowBox({{ rating['rate_id'] }},'{{user_id}}',{{ rate }},this, 'fileshare', '')" alt="Please Rate" onmouseover="cpRateShow({{ rate }})"  ><i class="fa fa-{{star}}" aria-hidden="true"></i></span>
+        {% set star_class = ( (rating['overall_rating'] + 1  - rate) >= 0.75 )?'cpRateStarOn': ( (rating['overall_rating'] + 1  - rate) >= 0.25 )?'cpRateStarHalf ':'cpRateStarOff' %}
+        <span id="star_{{rate}}" class="{{ star_class}}" onclick="cpRateShowBox({{ rating['rate_id'] }},'{{user_id}}',{{ rate }},this, 'fileshare', '');" alt="Please Rate" onmouseover="cpRateShow({{ rate }});" >&nbsp;</span>
     {% endfor %}
 </div>
 

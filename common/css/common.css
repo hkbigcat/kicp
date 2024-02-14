@@ -37,50 +37,34 @@ body, table, tr, td, div, span {
 /* override the oroginal layout CSS [End] */
 
 .cpRateStarOn {
-/*    background-image: url(../../../../modules/custom/common/images/icon_star_on.gif); 
+
+    background-image: url(../../../../modules/custom/common/images/star-solid.svg); 
     background-repeat: no-repeat;
-    padding-left: 16px;*/
+    padding-left: 16px;
     height: 20px;
     display: inline-block;
-}
-.cpRateStarOn:before {
-    position: absolute;
-    font-family: 'FontAwesome';
-    top: 0;
-    left: 10px;
-    content: "\f005";    
+    text-decoration: none;
 }
 
 .cpRateStarHalf {
-/*    background-image: url(../../../../modules/custom/common/images/icon_star_half.gif);
+
+    background-image: url(../../../../modules/custom/common/images/star-half-solid.svg);
     background-repeat: no-repeat;
-    padding-left: 16px;*/
+    padding-left: 16px;
     height: 20px;
     display: inline-block;
+    text-decoration: none;
 }
 
-.cpRateStarHalf:before {
-    position: absolute;
-    font-family: 'FontAwesome';
-    top: 0;
-    left: 10px;
-    content: "\f5c0";    
-}
 
 .cpRateStarOff {
-/*    background-image: url(../../../../modules/custom/common/images/icon_star_off.gif);
+
+    background-image: url(../../../../modules/custom/common/images/star-regular.svg);
     background-repeat: no-repeat;
-    padding-left: 16px;*/
+    padding-left: 16px;
     height: 20px;
     display: inline-block;
-}
-
-.cpRateStarOff::before {
-    position: absolute;
-    font-family : 'FontAwesome';
-    top: 0;
-    left: 10px;
-    content: "\f005";    
+    text-decoration: none;
 }
 
 .noDisplay{

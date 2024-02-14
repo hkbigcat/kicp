@@ -493,4 +493,34 @@ class CommonController extends ControllerBase {
     }
 
 
+    public function showCpRateBox(Request $request) {
+        $Wording = array('N/A', 'Poor', 'Nothing special', 'Worth watching', 'Pretty cool', 'Excellent');
+
+        $content = $request->getContent();   // Get request content, this should be JSON params as this is specified in the ajax call param "dataType: JSON"
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+        ////var_dump($params);
+
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+        $strHTML = "<div class='cpRateBoxDiv'>" .
+            "<form name='cpRateBox_$rateId' id='cpRateBox_$rateId' onsubmit='return false'>";
+        $strHTML .= 'Your Rating is ';
+        for ($j = 0; $j < $rating; $j++) {
+            $strHTML .= "<span class='cpRateStarOn'>&nbsp;</span>";
+        }
+        $strHTML .= '&nbsp;' . $Wording[$rating] . '<br/><br/>' .
+            '<center><button style="font:14px arial,sans-serif" onclick="cpRating(' . $rateId . ',\'' . $userId . '\',' . $rating . ',this.parentNode.parentNode.parentNode.parentNode,\'' . $module . '\',\'' . $type . '\')" >Submit</button>&emsp;&emsp;' .
+            '<button style="font:14px arial,sans-serif" onclick="this.parentNode.parentNode.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode.parentNode.parentNode)" >Cancel</button></center>';
+
+        $strHTML .= "<input type=hidden name=rating />" .
+            "</form></div>";
+
+        return new Response($strHTML);
+    }    
+
 }
