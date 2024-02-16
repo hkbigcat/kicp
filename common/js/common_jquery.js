@@ -224,23 +224,30 @@ function reloadCurrentAccessControlGroup(module, record_id) {
 
 
 
-function cpRateShow(x) {
+function cpRateShow(x,y, rateID) {
 
-        //console.log("Y: X "+x);
+    const Wording = ['N/A', 'Poor', 'Nothing special', 'Worth watching', 'Pretty cool', 'Excellent'];
 
-        for (i = 1; i <= 5; i++) {
-            
-            if (i <= x)
-                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
-            else
-            if (x + 1 - i >= 0.75)
-                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
-            else
-            if (x + 1 - i >= 0.25)
-                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-half-solid.svg)";
-            else
-                document.getElementById('star_'+i).style.backgroundImage = "url(/modules/custom/common/images/star-regular.svg)";
-        }
+    for (i = 1; i <= 5; i++) {
+        
+        if (i <= x)
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
+        else
+        if (x + 1 - i >= 0.75)
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
+        else
+        if (x + 1 - i >= 0.25)
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-half-solid.svg)";
+        else
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-regular.svg)";
+    }
+
+    if (y!=1) {
+        document.getElementById('cpRateWording_'+rateID).innerHTML = Wording[x];
+    } else {
+        document.getElementById('cpRateWording_'+rateID).innerHTML = "";
+    }
+
         //return 1;
 }
 
@@ -386,6 +393,100 @@ function ajaxDivHandler(xmlHttp, divName) {
                 document.getElementById(divName).innerHTML = reptext;
         }
     }
+}
+
+function cpRating(rateId, userId, rating, divName, module, type) {
+    if (module != null && rateId != null) {
+        //var ModulePath = document.getElementById("module_path").textContent;
+        var url =  '/updateCpRate';
+
+        jQuery.ajax({
+            type: 'POST',
+            url: url,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({"module": module, "type": type, "id": rateId, "user": userId, "rating": rating}),
+            dataType: "json",
+            cache: false,
+            success: function (data, status, xhr) {
+                showResult(module, data.result);
+                var x = 'cpRate_' + module + '_' + rateId;
+                document.getElementById(x).innerHTML = data.ratingpic;
+            },
+            error: function (error) {
+                jQuery("<div id='addrating-error'>Error, status:" + error.status + ", text:" + error.statusText + " </div>").appendTo("body");
+                jQuery("#addrating-error").dialog({
+                    title: msgtitle,
+                    width: 400,
+                    height: 225,
+                    modal: true,
+                    buttons: {
+                        "OK": function () {
+                            page_url = ModulePath + "/" + module;
+                            if (type != '') {
+                                page_url = page_url + "?type=" + type;
+                            }
+                            window.open(page_url, "_self");
+                        }
+                    }
+                });
+            }
+        });
+    }
+}
+
+
+function showResult(module, result) {
+    var x = result.toString();
+    var msg = null;
+    switch (x) {
+        case '0':
+            msg = 'Error, rating is not added.';
+            break;
+        case '1':
+            msg = 'Rating is submitted.';
+            break;
+        case '2':
+            msg = 'Rating was already added.';
+            break;
+        default:
+    }
+
+    var msgtitle = '';
+    
+    switch (module) {
+        case 'bookmark':
+            msgtitle = 'Bookmark';
+            break;
+        case 'ppc':
+            msgtitle = 'PPC publication';
+            break;
+        case 'blog':
+            msgtitle = 'Blog';
+            break;
+        case 'video':
+            msgtitle = 'Video';
+            break;
+        case 'fileshare':
+            msgtitle = 'File Share';
+            break;
+        default:
+            msgtitle = module;
+    }
+
+    var message = jQuery('<div id="dialog">' + msg + "</div>").appendTo('body');
+    Drupal.dialog(message, {
+        title: msgtitle,
+        width: 400,
+        height: 225,
+        buttons: [
+            {
+                text: "Close",
+                click: function () {
+                    jQuery(this).dialog("close");
+                }
+            }
+        ]
+    }).showModal();
 }
 
 

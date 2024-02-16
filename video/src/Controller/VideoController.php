@@ -10,6 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
+use Drupal\common\RatingData;
 use Drupal\video\Common\VideoDatatable;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Pager\PagerManagerInterface;
@@ -54,6 +55,12 @@ class VideoController extends ControllerBase {
         $VideoList = VideoDatatable::getVideoListByEventId($media_event_id);
         $TagList = new TagList();
         $taglist = $TagList->getTagsForModule('video', $media_event_id);        
+        $RatingData = new RatingData();
+        $rating = $RatingData->getList('video', $media_event_id);
+        $rsHadRate = $RatingData->checkUserHadRate('kicp_media_event_name', $media_event_id, $my_user_id);
+        $rating['rsHadRate'] = $rsHadRate;
+        $rating['module'] = "video";        
+
     
         return [
             '#theme' => 'video-list',
@@ -61,6 +68,7 @@ class VideoController extends ControllerBase {
             '#items' => $VideoList,
             '#event_info' => $EventInfo,
             '#tags' => $taglist,
+            '#rating' => $rating,
             '#empty' => t('No entries available.'),
             '#pager' => ['#type' => 'pager',
             ],

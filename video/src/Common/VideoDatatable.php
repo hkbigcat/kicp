@@ -6,6 +6,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
+use Drupal\common\RatingData;
 use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Database\Query\PagerSelectExtender;
 
@@ -147,12 +148,15 @@ class VideoDatatable {
 
           foreach ($result as $record) {
             if ($record["is_event"]) {
-                $record["tags"] = $TagList->getTagsForModule('video', $record["id"]);   
+                $record["tags"] = $TagList->getTagsForModule('video', $record["id"]);
             } else {
                 $record["tags"] = $TagList->getTagsForModule('video_video', $record["id"]);   
             }
+
+
             $output[] = $record;
           }
+
           return $output;
 
     }

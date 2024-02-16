@@ -20,12 +20,14 @@
                <div class="entry_title"><a href="/fileshare_view/{{ item['file_id'] }}">{{ item['title'] }}</a></div>
                <div class="entry_content">{{ item['description'] }}</div>
                <div><span class="entry_subtitle">Folder: </span><a href="fileshare?folder_id={{ item['folder_id'] }}">{{ item['folder_name'] }}</a></div>
+               <div><span class="entry_subtitle">Uploaded by: </span> {{ item['user_displayname'] }} <span id="DivFollow_{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{items['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
                <div><span class="entry_subtitle">Date: </span>{{ item['modify_datetime'] }}</div>
                {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
           </div>
           <div style="width:27%;float:right;display:block;margin-left:20px;">
                <span><button class="kicp_button" onclick="self.location.href='/fileshare_change/{{ item['file_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
-               <span><button class="kicp_button" onClick="module_item_delete('fileshare',{{ item['file_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+               <span style="margin-bottom:15px;"><button class="kicp_button" onClick="module_item_delete('fileshare',{{ item['file_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+               <div id="cpRate_fileshare_{{ item['file_id'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}</div>
           </div>
           
       </div>

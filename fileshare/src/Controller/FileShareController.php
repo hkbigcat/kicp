@@ -159,6 +159,7 @@ class FileShareController extends ControllerBase {
   $tagURL = http_build_query($taglist);
   $RatingData = new RatingData();
   $rating = $RatingData->getList('fileshare', $file_id);
+
   
   $table_rows_file = FileShareDatatable::getSharedFile($file_id);
   $table_rows_file['tagURL'] = $tagURL;
@@ -167,6 +168,9 @@ class FileShareController extends ControllerBase {
   $authen = new $AuthClass();
   $my_user_id = $authen->getUserId();
 
+  $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $my_user_id);
+  $rating['rsHadRate'] = $rsHadRate;
+  $rating['module'] = 'fileshare';
   
     return [
         '#theme' => 'fileshare-view',

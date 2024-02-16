@@ -19,6 +19,12 @@ use Drupal\common\RatingData;
 
 class FileShareDatatable extends ControllerBase {
 
+  public function __construct() {
+
+    $this->module = 'fileshare';
+   
+  }  
+
     public static function load_folder($folder_id=NULL) {
 
         $search_str = \Drupal::request()->query->get('search_str');
@@ -64,13 +70,19 @@ class FileShareDatatable extends ControllerBase {
 
       $folder_id = \Drupal::request()->query->get('folder_id');
       
+      $AuthClass = "\Drupal\common\Authentication";
+      $authen = new $AuthClass();
+      $my_user_id = $authen->getUserId();
+    
 
       try {
         $database = \Drupal::database();
         $selected_query = $database-> select('kicp_file_share', 'a'); 
-        $selected_query -> join('kicp_file_share_folder', 'b', 'a.folder_id = b.folder_id');
-        $selected_query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime']);
+        $selected_query -> leftjoin('kicp_file_share_folder', 'b', 'a.folder_id = b.folder_id');
+        $selected_query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
+        $selected_query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
         $selected_query-> fields('b', ['folder_name']);
+        $selected_query-> fields('u', ['user_displayname']);
         $selected_query-> condition('a.is_deleted', '0', '=');
         if ($folder_id != NULL) {
           $selected_query-> condition('a.folder_id', $folder_id, '=');
@@ -88,8 +100,12 @@ class FileShareDatatable extends ControllerBase {
           foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('fileshare', $record["file_id"]);   
             $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
+            $rsHadRate = $RatingData->checkUserHadRate('fileshare', $record["file_id"], $my_user_id);
+            $record["rating"]['rsHadRate'] = $rsHadRate;
+            $record["rating"]['module'] = 'fileshare';          
             $entries[] = $record;
           }
+          
         }
         if ($entries)  {
           return $entries;
@@ -97,7 +113,7 @@ class FileShareDatatable extends ControllerBase {
      }
      catch (\Exception $e) {
         \Drupal::messenger()->addStatus(
-           t('Unable to load fileshare folder at this time due to datbase error. Please try again.')
+           t('Unable to load fileshare at this time due to datbase error. Please try again.'.$e)
          );
        return  NULL;
      }
@@ -111,7 +127,8 @@ class FileShareDatatable extends ControllerBase {
 
     $output=array();
     $TagList = new TagList();
-
+    $RatingData = new RatingData();
+    
     $tagsUrl = \Drupal::request()->query->get('tags');
     if ($tagsUrl) {
       $tags = json_decode($tagsUrl);
@@ -159,6 +176,11 @@ class FileShareDatatable extends ControllerBase {
 
       foreach ($result as $record) {
         $record["tags"] = $TagList->getTagsForModule('fileshare', $record["file_id"]);   
+        $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
+        $rsHadRate = $RatingData->checkUserHadRate('fileshare', $record["file_id"], $my_user_id);
+        $record["rating"]['rsHadRate'] = $rsHadRate;
+        $record["rating"]['module'] = 'fileshare';          
+
         $output[] = $record;
       }
 

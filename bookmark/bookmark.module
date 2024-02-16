@@ -19,6 +19,7 @@ function bookmark_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/content_tags';
+        $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
     }
 
 }

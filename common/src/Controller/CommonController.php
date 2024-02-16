@@ -18,6 +18,7 @@ use Drupal\common\AccessControl;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
 use Drupal\common\Controller\TagList;
+use Drupal\common\RatingData;
 use Drupal\common\Common\CommonDatatable;
 
 class CommonController extends ControllerBase {
@@ -521,6 +522,69 @@ class CommonController extends ControllerBase {
             "</form></div>";
 
         return new Response($strHTML);
+    }
+    
+    
+    public function addRatingRecord() {
+     
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();   // Get request content, this should be JSON params as this is specified in the ajax call param "dataType: JSON"
+
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+
+        foreach ($params as $key => $value) {
+            $$key = $value;
+        }
+
+ 
+        // add record
+        $entry = array(
+            'module' => $module,
+            'rate_id' => $id,
+            'user_id' => strtoupper($user),
+            'rating' => $rating
+        );
+        
+
+        try {
+            $database = \Drupal::database();
+            $return = $database-> insert('kicp_rate')
+                ->fields($entry)
+                ->execute();
+        }
+        catch (\Exception $e) {
+            drupal_set_message(
+                t(
+                    'db_insert failed. Message = %message, query= %query', array('%message' => $e->getMessage(), '%query' => $e->query_string)
+                ), 'error'
+            );
+        }
+
+        if ($return) {
+            $err_code = '1';
+        }
+        else {
+            $err_code = '0';
+        }
+
+        $RatingData = new RatingData();
+        $rating = $RatingData->getList('fileshare', $id);
+        
+        $renderable = [
+            '#theme' => 'common-rating',
+            '#rating' => $rating,
+            '#user_id' => strtoupper($user),
+          ];
+          $rendered = \Drupal::service('renderer')->renderPlain($renderable);
+                  
+
+
+        //Construct json for output
+        $response = array('result' => $err_code, 'ratingpic' => $rendered);
+        return new JsonResponse($response);
     }    
 
 }

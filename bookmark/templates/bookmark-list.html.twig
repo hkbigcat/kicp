@@ -19,7 +19,8 @@
         </div>
         <div style="display:inline;">
                <span><button class="kicp_button" onClick="location.href='/bookmark_change/{{ item['bid'] }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
-               <span><button class="kicp_button" onClick="module_item_delete('bookmark',{{ item['bid'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+               <span style="margin-bottom:15px;"><button class="kicp_button" onClick="module_item_delete('bookmark',{{ item['bid'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+               <div id="cpRate_bookmark_{{ item['bid'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}</div>
         </div>
     </div>
    {% endfor %}

@@ -12,6 +12,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
 use \Drupal\Core\Routing;
 use Drupal\common\Controller\TagList;
+use Drupal\common\RatingData;
 
 
 class BookmarkDatatable extends ControllerBase {
@@ -24,6 +25,10 @@ class BookmarkDatatable extends ControllerBase {
     } 
 
     //dump($tags);
+
+    $AuthClass = "\Drupal\common\Authentication";
+    $authen = new $AuthClass();
+    $my_user_id = $authen->getUserId();
 
     try {
         $database = \Drupal::database();
@@ -58,8 +63,13 @@ class BookmarkDatatable extends ControllerBase {
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);  
         }
         $TagList = new TagList();
+        $RatingData = new RatingData();
         foreach ($result as $record) {
           $record["tags"] = $TagList->getTagsForModule('bookmark', $record["bid"]);
+          $record["rating"] = $RatingData->getList('bookmark', $record["bid"]);
+          $rsHadRate = $RatingData->checkUserHadRate('bookmark', $record["bid"], $my_user_id);
+          $record["rating"]['rsHadRate'] = $rsHadRate;          
+          $record["rating"]['module'] = "bookmark";          
 
           if ($bid!=null) {
             return $record;
@@ -76,7 +86,7 @@ class BookmarkDatatable extends ControllerBase {
         catch (\Exception $e) {
   
         \Drupal::messenger()->addStatus(
-            t('Unable to load Bookmarks at this time due to datbase error. Please try again.')
+            t('Unable to load Bookmarks at this time due to datbase error. Please try again.').$e
           );
   
           return NULL;

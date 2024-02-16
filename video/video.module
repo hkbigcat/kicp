@@ -21,6 +21,9 @@ function video_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'common/jssor_slider';
         }
 
+        if($routeName === 'video.video_list' || $routeName === 'video.video_tag' ) 
+           $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
+
         if($routeName === 'video.video_list' || $routeName === 'video.video_tag' || $routeName === 'video.admin_content' || $routeName === 'video.admin_video_content' || $routeName === 'video.video_event_privilege') {
             $page['#attached']['library'][] = 'common/content_table';
         }
@@ -43,6 +46,7 @@ function video_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'media_event_id'=> NULL,
                 'items' => NULL,
+                'rating' => NULL,
                 'tags' => NULL,
                 'event_info' => NULL,
                 'pager' => NULL,
