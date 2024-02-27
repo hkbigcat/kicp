@@ -172,4 +172,130 @@ class ActivitiesDatatable {
         return $output;
     }
 
+    public static function getEventDeliverableByEventId($evt_id) {
+        $record = array();
+        $output = array();
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+
+        if($evt_id == "") {
+            return $record;
+        } else {
+            $sql = 'SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_km_event_deliverable WHERE evt_id='.$evt_id.' AND is_deleted = 0 ORDER BY evt_deliverable_url';
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
+
+            $TagList = new TagList();
+            foreach ($result as $record) {
+                $record["tags"] = $TagList->getTagsForModule('activities_deliverable', $record["evt_deliverable_id"]);
+                $record["countlike"] = LikeItem::countLike('activities_deliverable', $record["evt_deliverable_id"]);
+                $record["liked"] = LikeItem::countLike('activities_deliverable', $record["evt_deliverable_id"],$my_user_id); 
+                $output[] = $record;
+            }
+            return $output;
+        }
+    }
+
+    public static function getEnrollmemtRecord($evt_id) {
+        
+        $record = array();
+        if(empty($evt_id)) {
+            return $record;
+        } 
+        
+        $sql = "SELECT  b.user_full_name, b.user_rank, b.user_post_unit, b.user_dept, b.user_phone, b.user_lotus_email, a.evt_reg_datetime, b.user_id, a.is_enrol_successful, a.is_showup, b.user_int_email 
+                         FROM kicp_km_event_member_list a INNER JOIN xoops_users b ON (a.user_id=b.user_id)
+                         WHERE a.is_portal_user=1 AND a.evt_id=".$evt_id." AND a.evt_reg_datetime IS NOT NULL AND a.is_deleted = 0 AND (a.cancel_enrol_datetime IS NULL OR (a.is_reenrol = 1 AND a.cancel_reenrol_datetime IS NULL))
+                    
+                        UNION
+                    
+                    SELECT CONCAT (d.user_surname,' ', d.user_givenname) AS user_full_name, d.user_rank AS user_rank, d.user_post AS user_post_unit, d.user_dept, d.user_office_tel AS user_phone, d.user_lotus_email AS user_lotus_email, c.evt_reg_datetime, c.user_id, c.is_enrol_successful, c.is_showup, d.user_int_email 
+                    FROM kicp_nonportal_users d 
+                    INNER JOIN kicp_km_event_member_list c ON (d.uid=c.uid) 
+                    WHERE c.is_deleted = 0 AND c.is_portal_user=0 AND d.uid IN (SELECT uid FROM kicp_km_event_member_list WHERE evt_id=".$evt_id." AND evt_reg_datetime IS NOT NULL)
+                        AND c.evt_id=".$evt_id."
+                            
+                    ORDER BY evt_reg_datetime DESC";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+    
+    
+    public static function getActivitiesTags($tags) {
+
+        $output=array();
+        $TagList = new TagList();
+        $database = \Drupal::database();
+
+        $query = $database-> select('kicp_km_event', 'a');
+        $query->addField('a', 'evt_id','id');
+        $query->addField('a', 'evt_name','name');
+        $query->fields('a', ['evt_id']);
+        $query->addField('a', 'modify_datetime','record_time');
+        $query->addField('a', 'evt_description','highlight');
+        $query->fields('a', ['evt_start_date', 'evt_end_date']);
+        $query->addExpression('1', 'is_activity');
+        $query->condition('a.is_deleted', '0');
+
+        if ($tags && count($tags) > 0 ) {
+            $tags1 = $database-> select('kicp_tags', 't');
+            $tags1-> condition('tag', $tags, 'IN');
+            $tags1-> condition('t.module', 'activities');
+            $tags1-> condition('t.is_deleted', '0');
+            $tags1-> addField('t', 'fid');
+            $tags1-> groupBy('t.fid');
+            $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
+            $query-> condition('evt_id', $tags1, 'IN');
+      }
+      
+        $table2 = $database-> select('kicp_km_event_deliverable', 'b'); 
+        $table2->addField('b', 'evt_deliverable_id','id');
+        $table2->addField('b', 'evt_deliverable_name','name');
+        $table2->fields('b', ['evt_id']);
+        $table2->addField('b', 'modify_datetime','record_time');
+        $table2->addExpression("CONCAT('File name: ', evt_deliverable_url)",'highlight');
+        $table2->addExpression('null', 'evt_start_date');
+        $table2->addExpression('null', 'evt_end_date');
+        $table2->addExpression('0', 'is_activity');
+        $table2->condition('b.is_deleted', '0');
+        
+        if ($tags && count($tags) > 0 ) {
+            $tags2 = $database-> select('kicp_tags', 't2');
+            $tags2-> condition('tag', $tags, 'IN');
+            $tags2-> condition('t2.module', 'activities_deliverable');
+            $tags2-> condition('t2.is_deleted', '0');
+            $tags2-> addField('t2', 'fid');
+            $tags2-> groupBy('t2.fid');
+            $tags2-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
+
+            $table2-> condition('evt_deliverable_id', $tags2, 'IN');
+        }
+        
+
+
+        $query->union($table2);
+        $query-> orderBy('record_time', 'DESC');          
+
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(5);
+        //$pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->union($table2)->limit(10);
+
+
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        
+        foreach ($result as $record) {
+            if ($record["is_activity"]) {
+                $record["tags"] = $TagList->getTagsForModule('activities', $record["id"]);
+            } else {
+                $record["tags"] = $TagList->getTagsForModule('activities_deliverable', $record["id"]);   
+            }
+
+
+            $output[] = $record;
+        }
+
+        return $output;
+
+    }
 }

@@ -1,7 +1,7 @@
 <div id="video_content_div">
     {% include '@common/common-tags.html.twig' %}
-     <input type="hidden" name="tag_page" id="tag_page" value="../video_tag">
-     <input type="hidden" name="notag_page" id="notag_page" value="../video">
+     <input type="hidden" name="tag_page" id="tag_page" value="{{ path('video.video_tag') }}">
+     <input type="hidden" name="notag_page" id="notag_page" value="{{ path('video.video_entrylist') }}">
      <div style="clear:both"></div>
      <div id="DivContentTable" style="display:table;">
     {% for item in items %}
@@ -16,12 +16,12 @@
             {% set titledesc = 'Video Clip' %}
             {% endif %}
 
-                <img src="system/files/video/{{ imgpath }}/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_img']}}" border="0" width="120" alt="{{ item['media_title']}}">
+                <img src="{{ url('<front>') }}/system/files/video/{{ imgpath }}/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_img']}}" border="0" width="120" alt="{{ item['media_title']}}">
             </div>
             <div style="float:left;width:86%">
                 <span class="my_title">
                     <strong>[{{titledesc}}]</strong> 
-                    <a href="video_list/{{ item['id'] }}" target="_blank">{{ item['media_title']}}</a>
+                    <a href="{{ path('video.video_list', { 'media_event_id': item['id'] }) }}" target="_blank">{{ item['media_title']}}</a>
                 </span>
                 <div style="margin-top:15px">Date: {{ item['evt_date'] | date('d.m.Y') }}</div>
                 <div>

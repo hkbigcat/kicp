@@ -119,8 +119,7 @@
 }
 
 .event_column_enroll_status {
-    float: right;
-    display: inline-table;
+    text-align: right;
 }
 
 .div_inline {
@@ -190,6 +189,8 @@
     border-radius: 8px 8px 0 0;
     text-decoration: none;
 }
+
+li.submenu_item {padding:0}
 /*--------------- Sub-menu [End]--------------------------*/
 
 

@@ -1,7 +1,7 @@
 <div style="float:right;margin-top:-40px; width:500px;text-align:right;">
         <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
-        <button class="kicp_button" onclick="self.location.href='/video_admin'"><i class="fa-solid fa-gear"></i>Admin</button>
+        <button class="kicp_button" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
 </div>        
 <div id="main_content" >
     <div id="right_content">
@@ -59,12 +59,12 @@
                 <!-- event_display -->
                 <div>
                     <!-- large image //-->
-                    <a href="video_list/{{ item['media_event_id'] }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_name'] }}" >
-                        <img data-u="image" src="system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
+                    <a href="{{ path('video.video_list', { 'media_event_id': item['media_event_id']  }) }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_name'] }}" >
+                        <img data-u="image" src="{{ url('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
                     </a>
                     <!-- Thumbnail //-->
                     <div data-u="thumb">
-                        <img class="i" src="system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
+                        <img class="i" src="{{ url('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
                         <div class="t" style="line-height:12pt;"><a href="video_list/{{ item['media_event_id'] }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_image'] }}" >{{ item['media_event_name'] }}</a></div>                                               
                     </div>
                 </div>

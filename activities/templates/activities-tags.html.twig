@@ -1,0 +1,21 @@
+{% include '@common/common-tags.html.twig' %}
+<input type="hidden" name="tag_page" id="tag_page" value="{{path('activities.activities_tag')}}">
+<input type="hidden" name="notag_page" id="notag_page" value="{{path('activities.content')}}">
+<div id="DivContentTable" style="display:table;">
+    {% for item in act_items %}
+    <div class="homepage_div {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%; min-width:auto; min-height:auto;">
+        <div style="float:left; padding-right:20px;"></div>
+        <div style="float:left;padding:6px;">
+            <span class="activities_title">[<strong>{{ item['is_activity'] == 1?'Activities':'Deliverable' }}</strong>]
+                {% set act_path = item['is_activity'] == 1 ? path('activities.activities_detail', {'evt_id': item['evt_id'] } ):  '/system/files/activities/deliverable/' ~ "%06d" | format(item['evt_id'])  ~ '/' ~ item['name']  %}
+                <a href="{{act_path}}" target="_blank">{{ item['name']}}</a>
+            </span>
+            {% if  item['is_activity'] == 1 %} <div>Date: {{ item['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ item['evt_end_date'] | date('H:i:s')  }} ({{ item['evt_start_date'] | date('l')  }})</div>{% endif %}
+            <div class="entry_highlight">{{item['highlight'] | length > 200 ? item['highlight'] | slice(0,200) | raw ~'...' : item['highlight'] | raw }}</div>
+            {% include '@common/common-tags-list.html.twig' with {tags: item ['tags']} %} 
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div style="float:right; margin:20px;">{{ pager }}</div>
+

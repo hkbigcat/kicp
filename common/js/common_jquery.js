@@ -231,15 +231,15 @@ function cpRateShow(x,y, rateID) {
     for (i = 1; i <= 5; i++) {
         
         if (i <= x)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-solid.svg)";
         else
         if (x + 1 - i >= 0.75)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-solid.svg)";
         else
         if (x + 1 - i >= 0.25)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-half-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-half-solid.svg)";
         else
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(/modules/custom/common/images/star-regular.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-regular.svg)";
     }
 
     if (y!=1) {

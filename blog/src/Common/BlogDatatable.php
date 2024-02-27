@@ -6,6 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
 use Drupal\common\Controller\TagList;
 use Drupal\common\LikeItem;
+use Drupal\common\CommonUtil;
 
 class BlogDatatable {
 
@@ -73,7 +74,7 @@ class BlogDatatable {
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         foreach ($result as $record) {
-            $record["attachment"] = self::getAttachments($record["blog_id"], $entry_id);
+            $record["attachment"] = self::getAttachments($record["user_id"], $entry_id);
             $record["countlike"] = LikeItem::countLike('blog', $record["entry_id"]);
             $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);
             return $record;
@@ -190,12 +191,15 @@ class BlogDatatable {
     }
 
 
-    public static function getAttachments($blog_id, $entry_id="")  {
+    public static function getAttachments($user_id, $entry_id="")  {
         
         
         $BlogFileUri = 'private://blog/file';
         $file_system = \Drupal::service('file_system');
-        $blog_owner_id = str_pad($blog_id, 6, "0", STR_PAD_LEFT);
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $UserInfo = $authen->getKICPUserInfo($user_id);
+        $blog_owner_id = str_pad($UserInfo['uid'], 6, "0", STR_PAD_LEFT);
         $dirFile = array();
         $output = array();
         
@@ -264,7 +268,7 @@ class BlogDatatable {
           $TagList = new TagList();
           foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('blog', $record["entry_id"]);
-            $record["attachment"] = self::getAttachments($record["blog_id"], $entry_id);
+            $record["attachment"] = self::getAttachments($record["user_id"], $entry_id);
             $record["countlike"] = LikeItem::countLike('blog', $record["entry_id"]);
             $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);               
             $output[] = $record;

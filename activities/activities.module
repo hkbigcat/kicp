@@ -15,8 +15,9 @@ function activities_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'activities/activities_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
+        
 
-        if ( str_contains($path, '/activities_item_add') || str_contains($path, 'activities_item_change') ) {
+        if ( str_contains($path, 'activities_item_add') || str_contains($path, 'activities_item_change')  || str_contains($path, 'activities_detail') || str_contains($path, 'activities_tag')  ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
 
@@ -63,12 +64,29 @@ function activities_theme($existing, $type, $theme, $path) {
                 'items' => NULL,
                 'groups' => NULL,
                 'types' => NULL,
+                'evt_id' => NULL,
+            ],
+        ],
+        'activities-deliverable' =>[
+            'variables' => [
+                'items' => NULL,
+                'evt_id' => NULL,
             ],
         ],        
-
-        
-
-
+        'activities-enrollment-status' =>[
+            'variables' => [
+                'items' => NULL,
+                'event' => NULL,
+            ],
+        ],
+        'activities-tags' =>[
+            'variables' => [
+                'act_items' => NULL,
+                'tags' => NULL,
+                'tagsUrl' => NULL,                
+                'pager' => NULL,
+            ],
+        ],        
     ];
 
 }

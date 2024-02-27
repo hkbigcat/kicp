@@ -1,6 +1,6 @@
 {% include '@common/common-tags.html.twig' %}
-     <input type="hidden" name="tag_page" id="tag_page" value="../forum_tag">
-     <input type="hidden" name="notag_page" id="notag_page" value="../forum">        
+     <input type="hidden" name="tag_page" id="tag_page" value="{{ path('forum.forum_tag') }}">
+     <input type="hidden" name="notag_page" id="notag_page" value="{{ path('forum.forum') }}">       
 <div id="DivContentTable" style="display:table;">
     <div class="common_table_header">
         <div style="width:30%;text-align:left;">Topics</div>
@@ -11,8 +11,8 @@
  
   {% for post in posts %}
     <div class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:100%;">
-        <div style="width:30%;float:left;display:block;"><a href="forum_view_topic?topic_id=89&amp;forum_id=3">{{ post['title'] }}</a></div>
-        <div style="width:17%;float:left;display:block;"><a href="forum_view_forum?forum_id={{ post['forum_id'] }}">{{ post['forum_name'] }}</a></div>
+        <div style="width:30%;float:left;display:block;"><a href="{{ path('forum.forum_view_topic', {'topic_id': post['topic_id'] }) }}">{{ post['title'] }}</a></div>
+        <div style="width:17%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': post['forum_id'] }) }}">{{ post['forum_name'] }}</a></div>
         <div style="width:20%;float:left;display:block;">{{ post['user_name'] }} 
             <span id="DivFollow_{{ post['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ post['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span>
         </div>

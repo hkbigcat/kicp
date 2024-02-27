@@ -24,8 +24,6 @@ class BookmarkDatatable extends ControllerBase {
       $tags = json_decode($tagsUrl);
     } 
 
-    //dump($tags);
-
     $AuthClass = "\Drupal\common\Authentication";
     $authen = new $AuthClass();
     $my_user_id = $authen->getUserId();
@@ -34,7 +32,7 @@ class BookmarkDatatable extends ControllerBase {
         $database = \Drupal::database();
 
         $query = $database-> select('kicp_bookmark', 'a');
-        $query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
+        //$query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
 
         if ($tags && count($tags) > 0 ) {
           $query -> join('kicp_tags', 't', 'a.bid = t.fid');
@@ -52,7 +50,7 @@ class BookmarkDatatable extends ControllerBase {
         }
 
         $query->fields('a', ['bid', 'user_id', 'bTitle', 'bAddress', 'bDescription', 'bModified']);
-        $query->fields('b', ['user_name']);
+        //$query->fields('b', ['user_name']);
         if ($bid!=null) {
           $query->condition('a.bid', $bid);  
           $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);  
@@ -62,6 +60,7 @@ class BookmarkDatatable extends ControllerBase {
           $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);  
         }
+        
         $TagList = new TagList();
         $RatingData = new RatingData();
         foreach ($result as $record) {

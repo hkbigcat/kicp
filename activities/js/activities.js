@@ -4,6 +4,7 @@ jQuery(document).ready(function () {
 
 
 function getEventData(type, evt_id) {
+
     // re-assign the active button
     jQuery("a[id^='submenu_link']").each(function (index, item) {
         jQuery(item).removeClass("active");
@@ -12,13 +13,14 @@ function getEventData(type, evt_id) {
 
     jQuery.ajax({
         type: "POST",
-        url: 'activities_event_data',
+        url: '/activities_event_data',
         data: {
             evt_id: evt_id,
             type: type
         },
         success: function (data)
         {
+            
             var content = "";
             if (type == 'photo') {
                 link = 'activities_event_data?evt_id=' + evt_id + '&type=' + type
@@ -27,13 +29,15 @@ function getEventData(type, evt_id) {
                 content = data;
             }
             jQuery("#description_content").html(content);
-            $("#lightgallery").load(link);
+
+            if (type == 'photo')
+                jQuery("#lightgallery").load(link);
             
             if (type == 'photo' || type == 'deliverable') {
-                $("#event_detail").hide()
+                jQuery("#event_detail").hide()
             }
             else{
-                $("#event_detail").show()
+                jQuery("#event_detail").show()
             }
             
         }

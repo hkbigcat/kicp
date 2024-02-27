@@ -49,7 +49,7 @@ activities.activities_detail:
     no_cache: TRUE
 
 activities.event_data:
-  path: '/activities_event_data/{evt_id}'
+  path: '/activities_event_data'
   defaults:
     _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityEventData'
     _title: 'Get Event Data'
@@ -97,3 +97,33 @@ activities.admin_item_delete:
     _permission: 'access content'
   options:
     no_cache: TRUE  
+
+activities.enroll_status:
+  path: '/activities_enroll_status/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::EventEnrollStatus'
+    _title: 'Activities Enrollment Status'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+activities.enroll_status_export:
+  path: '/activities_enroll_status_export/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::EventEnrollStatusExport'
+    _title: 'Activities Enrollment Status'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+activities.activities_tag:
+  path: '/activities_tag'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::getTagContent'
+    _title: 'KM Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

@@ -1,13 +1,14 @@
 
 <div class="homepage_div">
     {% for type in types %}
-    <div class="title"><a href="/activities/{{ type['evt_type_id'] }}">{{ type['evt_type_name'] }}</a></div>
+    <div class="title"><a href="{{ path('activities.content.type', {'type_id': type['evt_type_id'] }) }}">{{ type['evt_type_name'] }}</a></div>
     {% if type['evt_type_id'] == 1 %}
     <div>
         <ul>
         {% for group in groups %}
-            <li><a href="/activities/{{ type['evt_type_id'] }}/{{ group['group_id'] }}">{{ group['group_name'] }}</a></li>
-        {% endfor %}            
+            <li><a href="{{ path('activities.content.cop', {'type_id': type['evt_type_id'], 'cop_id': group['group_id'] }) }}">{{ group['group_name'] }}</a></li>
+        {% endfor %}
+        </ul>            
     </div>
     {% endif %}
     {% endfor %}            

@@ -1,0 +1,19 @@
+<html>
+<head>
+</head>
+<body>
+
+    {% for item in items %}
+    {% if item != "." and item != ".." %}
+    <div class="inline_row">
+        <div class="homepage_div">
+            <a href="album?spgmGal={{item}}">
+                <img src="modules/custom/common/images/icon_album.jpg" border="0" style="vertical-align:middle">
+                <div style="margin-top: -30px; margin-left: 50px;">{{item}}</div>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</body>
+</html>

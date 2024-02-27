@@ -1,9 +1,9 @@
 {% include '@common/common-tags.html.twig' %}
 
-<input type="hidden" name="tag_page" id="tag_page" value="../bookmark">
+<input type="hidden" name="tag_page" id="tag_page" value="{{ path('bookmark.bookmark_content') }}">
 <div id="DivContentTable">
     <div style="float:right">
-        <button class="kicp_button" onClick="self.location.href='../bookmark_add'"><i class="fa-solid fa-circle-plus"></i> Add </button>
+        <button class="kicp_button" onClick="self.location.href='{{ path('bookmark.add_data') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
     </div>
   {% for item in items %}
     <!--{{item ['bid'] }} -->
@@ -18,7 +18,7 @@
             <div class="bookmark_column2"><span class="bookmark_subtitle">Modified Date:</span> {{item ['bModified'] }} </div>
         </div>
         <div style="display:inline;">
-               <span><button class="kicp_button" onClick="location.href='/bookmark_change/{{ item['bid'] }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
+               <span><button class="kicp_button" onClick="location.href='{{ path('bookmark.change_data', {'bid': item['bid'] }) }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                <span style="margin-bottom:15px;"><button class="kicp_button" onClick="module_item_delete('bookmark',{{ item['bid'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
                <div id="cpRate_bookmark_{{ item['bid'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}</div>
         </div>

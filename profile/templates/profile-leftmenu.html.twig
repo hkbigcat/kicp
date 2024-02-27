@@ -10,8 +10,8 @@
         <li><a href="{{ path('profile.profile_group') }}">Group Maintenance</a></li>
         {% if type=='group' %}
         <ul>
-            <li><a href="{{ path('profile.profile_group') }}?type=B">Personal Group</a></li>
-            <li><a href="{{ path('profile.profile_group') }}?type=P">Personal Public Group</a></li>
+            <li><a href="{{ path('profile.profile_group', {'type': 'B' }) }}">Personal Group</a></li>
+            <li><a href="{{ path('profile.profile_group', {'type': 'P' }) }}">Personal Public Group</a></li>
         </ul>            
         {% endif %}
     </ul>

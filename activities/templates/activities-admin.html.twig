@@ -14,8 +14,8 @@
             <div style="width:5%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
             <div style="width:38%;float:left;display:block;">{{ item['evt_type_name'] }}</div>
             <div style="width:16%;float:left;display:block;">{{  item['display_order'] }}</a></div>
-            <div style="width:23%;float:left;display:block;"><a href="activities_admin_event/{{ item['evt_type_id']  }}">Event List</a></div>
-            <div style="width:10;float:left;display:block;"><button class="kicp_button" onclick="self.location.href='/activities_chabge/{{ item['evt_type_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button></div>            
+            <div style="width:23%;float:left;display:block;"><a href="{{ path('activities.admin_event', {'type_id': item['evt_type_id'] }) }}">Event List</a></div> 
+            <div style="width:10;float:left;display:block;"><button class="kicp_button" onclick="self.location.href='/activities_change/{{ item['evt_type_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button></div>            
         </div>
            {% endif %}
         {% endfor %}

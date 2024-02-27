@@ -1,10 +1,8 @@
 <div style="margin-top:1rem; display:flex; flex-wrap:wrap">
     {% for group in groups %}
-
         <div class="type_item" style="width:260px;">
-            <div style="float:left;"><img src="/system/files/activities/category/{{ group['img_name'] }}" border="0" alt="{{ group['group_name'] }}" title="{{ group['group_name'] }}" style="width:50px; height:50px;"></div>
-            <div style="float:left; margin: 10px 0px 0px 16px; font-size:14pt;"><a href="/activities/1/{{ group['group_id'] }}">{{ group['group_name'] }}</a></div>
+            <div style="float:left;"><img src="{{ url('<front>') }}/system/files/activities/category/{{ group['img_name'] }}" border="0" alt="{{ group['group_name'] }}" title="{{ group['group_name'] }}" style="width:50px; height:50px;"></div>
+            <div style="float:left; margin: 10px 0px 0px 16px; font-size:14pt;"><a href="{{ path('activities.content.cop', {'type_id': 1, 'cop_id': group['group_id'] }) }}">{{ group['group_name'] }}</a></div>
         </div>
-
     {% endfor %}        
 </div>

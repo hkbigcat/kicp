@@ -1,10 +1,10 @@
  {% set threadTopic = threads|first %}
 
-<div class="forum_navigation"><a href="../forum_view_forum/{{ forum_info.forum_id }}">{{ forum_info.forum_name }}</a> &gt; {{ threadTopic.subject }}</div>
+<div class="forum_navigation"><a href="{{ path('forum.forum_view_forum', {'forum_id': forum_info.forum_id }) }}">{{ forum_info.forum_name }}</a> &gt; {{ threadTopic.subject }}</div>
 {% include '@common/common-tags-list.html.twig' %} 
 {% include '@common/common-tags.html.twig' %}
-     <input type="hidden" name="tag_page" id="tag_page" value="../forum_tag">
-     <input type="hidden" name="notag_page" id="notag_page" value="../forum">   
+     <input type="hidden" name="tag_page" id="tag_page" value="{{ path('forum.forum_tag') }}">
+     <input type="hidden" name="notag_page" id="notag_page" value="{{ path('forum.forum') }}">   
 <div id="DivContentTable" style="display:table;">
   {% for thread in threads %}
     <div class="EntryContainer  {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%;">

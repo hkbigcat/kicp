@@ -13,7 +13,7 @@ var totalPages = new Array();
 var currentPage = new Array();
 
 var modulePath = 'modules/custom/kicp_lightgallery/';
-var srcPath = modulePath + 'src/';
+var srcPath = '/kmapp2/kicp/' + modulePath + 'src/';
 
 
 function getiframe() {
@@ -27,8 +27,6 @@ function getiframe() {
         srcAry[iframe_id] = new Array();
         
         var iframeSrc= $(this).attr('src');
-        //$(this).attr('src',src); 
-        //console.log(iframeSrc); // /kmapp/kicp/album?spgmGal=Commendation_Letter_Presentation_Ceremony_2011&spgmPic=0
         
         res = iframeSrc.split("spgmGal=");
         res2 = res[1].split("&");
@@ -48,7 +46,10 @@ function getiframe() {
 function replaceToDiv(iframe_id, iframe, iframeSrc, AlbumName){
         iframe.replaceWith("<div id='iframe" + iframe_id +"' class='lightgallery'>" + AlbumName + "</div>");
         
-        $.get(iframeSrc.replace("album", "kicp_lightgallery") + "&div=1", function(data) {
+        //$.get(iframeSrc.replace("album", "kicp_lightgallery") + "&div=1", function(data) {
+        console.log('Album name: '+AlbumName);    
+        console.log(iframeSrc);
+        $.get(iframeSrc + "&div=1", function(data) {
             htmldata = data;
         }, 'html').done(function(){
             
@@ -59,7 +60,6 @@ function replaceToDiv(iframe_id, iframe, iframeSrc, AlbumName){
             page_selector.html("{{page_selector"+ iframe_id  +"}}");
             
             var gallery = $("#animated-thumbnials");
-            //gallery.html(htmldata);
             gallery.attr("id","animated-thumbnials" + iframe_id);
             
             var gallery_page = $("#gallery_page");
