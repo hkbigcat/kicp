@@ -49,6 +49,7 @@ class kicp_lightgalleryController extends ControllerBase {
                 '#theme' => 'kicplightgallery-album',
                 '#album' => $album_name,
                 '#items' => $dirFile,
+                '#div' => $div,
             ];
         } else {
             $renderable = [

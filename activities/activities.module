@@ -65,6 +65,7 @@ function activities_theme($existing, $type, $theme, $path) {
                 'groups' => NULL,
                 'types' => NULL,
                 'evt_id' => NULL,
+                'PhotoPerPage' => NULL,
             ],
         ],
         'activities-deliverable' =>[

@@ -17,26 +17,22 @@ use Drupal\common\RatingData;
 
 class BookmarkDatatable extends ControllerBase {
 
-  public static function getBookmarks($bid=null) {
+  public static function getBookmarks($my_user_id=null,$bid=null, ) {
 
     $tagsUrl = \Drupal::request()->query->get('tags');
     if ($bid==null && $tagsUrl) {
       $tags = json_decode($tagsUrl);
     } 
 
-    $AuthClass = "\Drupal\common\Authentication";
-    $authen = new $AuthClass();
-    $my_user_id = $authen->getUserId();
-
     try {
         $database = \Drupal::database();
 
         $query = $database-> select('kicp_bookmark', 'a');
-        //$query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
+        $query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
 
         if ($tags && count($tags) > 0 ) {
           $query -> join('kicp_tags', 't', 'a.bid = t.fid');
-          //$query->addExpression('COUNT(a.bid)', 'bids');
+          $query->addExpression('COUNT(a.bid)', 'bids');
           $query-> condition('t.module', 'bookmark');
           $orGroup = $query->orConditionGroup();
           foreach($tags as $tmp) {
@@ -50,12 +46,23 @@ class BookmarkDatatable extends ControllerBase {
         }
 
         $query->fields('a', ['bid', 'user_id', 'bTitle', 'bAddress', 'bDescription', 'bModified']);
-        //$query->fields('b', ['user_name']);
+        $query->fields('b', ['user_name']);
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        if (!$isSiteAdmin) {
+          $orGroup = $query->orConditionGroup()
+          ->condition('a.user_id', $my_user_id)
+          ->condition('a.bStatus', 0);
+          $query->condition($orGroup);
+        }
+
         if ($bid!=null) {
           $query->condition('a.bid', $bid);  
           $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);  
         } else {
           $query->condition('a.is_deleted', '0');
+
           $query-> orderBy('bModified', 'DESC');
           $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);  

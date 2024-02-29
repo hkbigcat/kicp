@@ -13,7 +13,7 @@ fileshare.fileshare_folder:
   path: '/fileshare_folder'
   defaults:
     _controller: '\Drupal\fileshare\Controller\FileShareController::myShareFolder'
-    _title: 'File Share Folder'
+    _title: 'Folder Access Control'
   requirements:
     _permission: 'access content'
   option:
@@ -41,7 +41,7 @@ fileshare.fileshare_folder_add:
     no_cache: TRUE     
 
 fileshare.fileshare_folder_change:
-  path: '/fileshare_folder_change'
+  path: '/fileshare_folder_change/{folder_id}'
   defaults:
     _form: '\Drupal\fileshare\Form\FileShareFolderChange'
     _title: 'Edit File Share Folder'

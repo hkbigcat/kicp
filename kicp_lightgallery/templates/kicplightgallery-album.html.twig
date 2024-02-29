@@ -1,3 +1,5 @@
+
+{% if div != 1 %}
 <!DOCTYPE html>
 <html lang="en">
     <head>		
@@ -10,8 +12,9 @@
 		<script src="{{ url('<front>') }}/modules/custom/kicp_lightgallery/js/jquery.min.js"></script>
     </head>
     <body class="demos">
+{% endif %}    
         <input type="hidden" id="gallery_page">
-        <div id="page_selector" align="center">{{page_selector}}</div>
+        <div id="page_selector" align="center">[[page_selector]]</div>
         <div>
             <div id="animated-thumbnials" class="list-unstyled justified-gallery" style="height: 520px;">
 
@@ -25,6 +28,11 @@
             </div>
         </div>		
 
+<script type="text/javascript">		
+console.log("div: {{ div }} ");
+</script>
+
+{% if div != 1 %}
 <script type="text/javascript">		
     $.urlParam = function(name){
         var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -51,22 +59,11 @@
 <script src="../modules/custom/kicp_lightgallery/js/jquery.mousewheel.min.js"></script>
 <script src="../modules/custom/kicp_lightgallery/js/demos.js"></script>        
 <script type="text/javascript">
-
 $(".page").css('display', 'none');
-
-console.log($.urlParam('Page'))
-/*
-if($.urlParam('Page') == null){
-        window.location.href = "index.html?Page=1";
-}
-else{
-        Page = $.urlParam('Page')
-}
-
-$("#page" + Page).css('display', 'block');
-*/
+console.log("page: "+ $.urlParam('Page'));
 </script>
 
+{% endif %}  
 <script type="text/javascript">
         function loadLightGallery(){
             $(function() {
@@ -100,18 +97,15 @@ $("#page" + Page).css('display', 'block');
             $.get("modules/custom/kicp_lightgallery/photos.html", function(data) {
                 htmldata = data;
             }, 'html').done(function(){
-                //console.log(photohtml); 
-                //photohtml = htmldata;
-                
-                //$lg.lightGallery();
+
                 photohtml = '';
                 for(var i=0; i<photosAry.length; i++){
                     if(i>=PhotoIndexMin && i<=PhotoIndexMax){
 
                         photohtmlAry[i] = htmldata;
-                        photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoPath}}", photosAry[i]['downloadPhotoPath']);
-                        photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoName}}", photosAry[i]['downloadPhotoName']);
-                        photohtmlAry[i] = photohtmlAry[i].replace("{{galPhotoPath}}", photosAry[i]['galPhotoPath']);
+                        photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoPath]]", photosAry[i]['downloadPhotoPath']);
+                        photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoName]]", photosAry[i]['downloadPhotoName']);
+                        photohtmlAry[i] = photohtmlAry[i].replace("[[galPhotoPath]]", photosAry[i]['galPhotoPath']);
                         photohtml = photohtml + photohtmlAry[i];
                         
                     }
@@ -194,5 +188,7 @@ $("#page" + Page).css('display', 'block');
         }
         </script>
         <script>loadLightGallery()</script>
+{% if div != 1 %}        
     </body>
 </html>
+{% endif %}  

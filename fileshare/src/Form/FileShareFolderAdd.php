@@ -22,6 +22,9 @@ use Drupal\Core\Url;
 class FileShareFolderAdd extends FormBase {
 
     public function __construct() {
+      $AuthClass = "\Drupal\common\Authentication";
+      $authen = new $AuthClass();
+      $this->$my_user_id = $authen->getUserId();      
         $this->module = 'fileshare';
     }
 
@@ -46,9 +49,7 @@ class FileShareFolderAdd extends FormBase {
           '#size' => 90,
           '#maxlength' => 200,
           '#required' => TRUE,
-        );
-
-        
+        );        
 
         $form['tags'] = array(
           '#title' => t('Tags'),
@@ -129,10 +130,6 @@ class FileShareFolderAdd extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-      /****************************** */
-      /*      change authorization    */
-      /****************************** */
-	    $my_user_id  = \Drupal::currentUser()->id();      
 
        //Obtain the value as entered into the Form
        $folder_name =  $form_state->getValue('folder_name');
@@ -154,7 +151,7 @@ class FileShareFolderAdd extends FormBase {
 
         $query->values([
           $folder_name,
-          $my_user_id,
+          $this->$my_user_id,
           date('Y-m-d H:i:s', $current_time), 
           date('Y-m-d H:i:s', $current_time),
         ]);       
@@ -169,8 +166,7 @@ class FileShareFolderAdd extends FormBase {
           );
           $return1 = TagStorage::insert($entry1);
 
-
-          $url = Url::fromUserInput('/fileshare_folder');
+          $url = Url::fromRoute('fileshare.fileshare_folder');
           $form_state->setRedirectUrl($url);
     
           $messenger = \Drupal::messenger(); 

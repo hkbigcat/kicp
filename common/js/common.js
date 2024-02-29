@@ -1,5 +1,5 @@
 function module_item_delete(module, item_id) {
-  var page_url = "/"+module + "_delete/"+item_id;
+  var page_url = module + "_delete/"+item_id;
 
   var msgtitle = '';  
 

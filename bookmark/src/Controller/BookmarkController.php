@@ -18,11 +18,15 @@ use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-
+use Drupal\Core\Url;
 
 class BookmarkController extends ControllerBase {
 
     public function __construct() {
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();        
+
         $this->module = 'bookmark';
     }
 
@@ -33,7 +37,7 @@ class BookmarkController extends ControllerBase {
       
         $tagsUrl = \Drupal::request()->query->get('tags');
 
-        $bookmarks = BookmarkDatatable::getBookmarks(); 
+        $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id, $bid); 
         
         if ($tagsUrl) {
           $tags = json_decode($tagsUrl);
@@ -42,10 +46,10 @@ class BookmarkController extends ControllerBase {
           }
         }
 
-
         return [
             '#theme' => 'bookmark-list',
             '#items' => $bookmarks,
+            '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
             '#tagsUrl' => $tmp,
             '#pager' => ['#type' => 'pager',
@@ -55,6 +59,19 @@ class BookmarkController extends ControllerBase {
     }
 
     public function BookmarkDelete($bid=NULL) {
+
+
+      $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid); 
+      if ($bookmark['bid'] == null) {
+
+        $url = Url::fromRoute('bookmark.bookmark_content');
+        return new RedirectResponse($url->toString());
+
+        \Drupal::messenger()->addStatus(
+          t('Unable to delete this bookmark'.$bookmark['bid']  )
+          );
+
+      }
 
       $current_time =  \Drupal::time()->getRequestTime();
 
@@ -68,19 +85,31 @@ class BookmarkController extends ControllerBase {
         ])
         ->condition('bid', $bid)
         ->execute();
-           
-        return new RedirectResponse("/blog");
+
+        // delete tags
+        $query = $database->update('kicp_tags')->fields([
+          'is_deleted'=>1 , 
+        ])
+        ->condition('fid', $bid)
+        ->condition('module', 'bookmark')
+        ->execute();
+
+
+        $url = Url::fromRoute('bookmark.bookmark_content');
+        return new RedirectResponse($url->toString());
 
         $messenger = \Drupal::messenger(); 
         $messenger->addMessage( t('Bookmark has been deleted'));
 
+
       }
       catch (\Exception $e) {
+
           \Drupal::messenger()->addStatus(
               t('Unable to delete bookmark at this time due to datbase error. Please try again. ' )
               );
           
-          }	
+          }
   }    
 
 

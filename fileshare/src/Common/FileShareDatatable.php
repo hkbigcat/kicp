@@ -25,46 +25,86 @@ class FileShareDatatable extends ControllerBase {
    
   }  
 
-    public static function load_folder($folder_id=NULL) {
+  public static function load_folder($my_user_id=null,$folder_id=NULL) {
 
-        $search_str = \Drupal::request()->query->get('search_str');
+      
+      $search_str = \Drupal::request()->query->get('search_str');
 
-        try {
-          $query = \Drupal::database()->select('kicp_file_share_folder', 'r');
-          $query->leftJoin('kicp_access_control', 'a', 'r.folder_id = a.record_id AND a.module = :module AND a.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => 0]);
-          $query->leftJoin('xoops_users', 'c', 'r.user_id = c.user_id');
-          $query->fields('r', ['folder_id', 'folder_name','user_id']);
-          $query->fields('c', ['user_name']);
-          $query->addExpression('COUNT(a.id)', 'folder_access');
-          $query->condition('r.is_deleted', '0');
-          $query->groupBy('r.folder_id');
-          $query->orderBy('r.folder_name');
-          if ($folder_id != NULL) {
-            $query->condition('r.folder_id', $folder_id);
-            $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
-            foreach ($result as $row) {
-              $entries = $row;
-            }
-          }  else {
-            if ($search_str && $search_str !="") {
-              $query->condition('r.folder_name', '%' . $search_str . '%', 'LIKE');
-            }            
-            $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
-            $entries =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+      try {
+        $query = \Drupal::database()->select('kicp_file_share_folder', 'r');
+        $query->leftJoin('kicp_access_control', 'a', 'r.folder_id = a.record_id AND a.module = :module AND a.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => 0]);
+        $query->leftJoin('xoops_users', 'c', 'r.user_id = c.user_id');
+        $query->fields('r', ['folder_id', 'folder_name','user_id']);
+        $query->fields('c', ['user_name']);
+        $query->addExpression('COUNT(a.id)', 'folder_access');
+        $query->condition('r.is_deleted', '0');
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        if (!$isSiteAdmin) {
+          $query->condition('r.user_id', $my_user_id);
+        }
+
+        $query->groupBy('r.folder_id');
+        $query->orderBy('r.folder_name');
+        if ($folder_id != NULL) {
+          $query->condition('r.folder_id', $folder_id);
+          $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
+          foreach ($result as $row) {
+            $entries = $row;
           }
-   
-          return $entries;
-       }
-   
-         catch (\Exception $e) {
-   
-          \Drupal::messenger()->addStatus(
-             t('Unable to load fileshare folder at this time due to datbase error. Please try again. '.$e)
-           );
-   
-           return NULL;
-         }
-     }
+        }  else {
+          if ($search_str && $search_str !="") {
+            $query->condition('r.folder_name', '%' . $search_str . '%', 'LIKE');
+          }            
+          $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+          $entries =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        }
+  
+        return $entries;
+      }
+  
+        catch (\Exception $e) {
+  
+        \Drupal::messenger()->addStatus(
+            t('Unable to load fileshare folder at this time due to datbase error. Please try again. '.$e)
+          );
+  
+          return NULL;
+        }
+    }
+
+
+    public static function getMyEditableFolderList($my_user= null) {
+
+      $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+      if($isSiteAdmin) {
+          $sql = "SELECT a.folder_id, CONCAT(a.folder_name,' [',b.user_name,']') as folder_name FROM kicp_file_share_folder a LEFT JOIN xoops_users b ON (a.user_id=b.user_id) WHERE a.is_deleted=0 ORDER BY folder_name";
+      } else {
+          $sql = "SELECT a.folder_id, a.folder_name, b.group_type, b.group_id, a.user_id as folder_owner, count(b.id) as is_restricted, c.pub_group_owner as pub_group_owner, d.user_id as buddy_group_owner, e.pub_user_id, f.buddy_user_id, b.allow_edit
+                      FROM kicp_file_share_folder a
+                      LEFT JOIN kicp_access_control b ON (b.module='fileshare' AND b.record_id=a.folder_id AND b.is_deleted=0)
+                      LEFT JOIN kicp_public_group c ON (b.module='fileshare' AND b.group_type='P' AND b.group_id=c.pub_group_id AND c.is_deleted=0)
+                      LEFT JOIN kicp_buddy_group d ON (b.module='fileshare' AND b.group_type='B' AND b.group_id=d.buddy_group_id AND d.is_deleted=0)
+                      LEFT JOIN kicp_public_user_list e ON (b.module='fileshare' AND b.group_type='P' AND b.group_id=e.pub_group_id AND e.is_deleted=0 AND e.pub_user_id='".$my_user_id."')
+                      LEFT JOIN kicp_buddy_user_list f ON (b.module='fileshare' AND b.group_type='B' AND b.group_id=f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id='".$my_user_id."')
+                      WHERE a.is_deleted=0
+                      GROUP BY a.folder_id, b.group_type, b.group_id, b.allow_edit ";
+          $sql .= " HAVING is_restricted=0 OR ((pub_user_id='".$my_user_id."' OR buddy_user_id='".$my_user_id."') AND allow_edit=1) ";
+          $sql .= " ORDER BY a.folder_name";
+      }
+
+      $database = \Drupal::database();
+      $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+      $folderAry = array();
+      foreach($result as $record) {
+          $folderAry[$record['folder_id']] = $record['folder_name'];
+      }
+
+      return $folderAry;
+  }
+
 
      public static function getSharedFile($file_id = NULL) {
 

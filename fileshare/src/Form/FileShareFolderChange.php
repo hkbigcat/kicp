@@ -22,7 +22,10 @@ use Drupal\Core\Url;
 class FileShareFolderChange extends FormBase {
 
     public function __construct() {
-        $this->module = 'fileshare';
+      $AuthClass = "\Drupal\common\Authentication";
+      $authen = new $AuthClass();
+      $this->$my_user_id = $authen->getUserId();      
+      $this->module = 'fileshare';
     }
 
     /**
@@ -35,13 +38,30 @@ class FileShareFolderChange extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
+    public function buildForm(array $form, FormStateInterface $form_state, $folder_id=null) {
 
         $output = NULL;
 
-        $folder_id = \Drupal::request()->query->get('folder_id');
-        $folder = FileShareDatatable::load_folder($folder_id);
-        
+        $folder = FileShareDatatable::load_folder($this->$my_user_id,$folder_id);
+
+        if ($folder['folder_id'] == null) {
+          $output = '<p style="text-align:center">You cannot edit this File Folder.</p>';
+          $form['intro'] = array(
+          '#markup' => t($output),
+          );
+
+          $form['cancel'] = array(
+              '#type' => 'button',
+              '#value' => t('Cancel and Go Back'),
+              '#prefix' => '&nbsp;',
+              '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+              '#limit_validation_errors' => array(),
+            );
+
+            return $form;
+
+        }
+
         $Taglist = new TagList();
         $tags = $Taglist->getTagListByRecordId('fileshare_folder', $folder_id);
 
@@ -148,16 +168,11 @@ class FileShareFolderChange extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-      /****************************** */
-      /*      change authorization    */
-      /****************************** */
-	    $my_user_id  = \Drupal::currentUser()->id();      
-
        //Obtain the value as entered into the Form
        $folder_id =  $form_state->getValue('folder_id');
        $folder_name =  $form_state->getValue('folder_name');
        $folder_name_prev =  $form_state->getValue('folder_name_prev');
-	   $tags =  $form_state->getValue('tags');
+	    $tags =  $form_state->getValue('tags');
        $tags_prev =  $form_state->getValue('tags_prev');
        $current_time =  \Drupal::time()->getRequestTime();
 
@@ -192,9 +207,7 @@ class FileShareFolderChange extends FormBase {
             }
          }
 
-      
-
-         $url = Url::fromUserInput('/fileshare_folder');
+         $url = Url::fromRoute('fileshare.fileshare_folder');
          $form_state->setRedirectUrl($url);
     
          $messenger = \Drupal::messenger(); 

@@ -31,7 +31,7 @@ function getiframe() {
         res = iframeSrc.split("spgmGal=");
         res2 = res[1].split("&");
         AlbumName= res2[0];
-        
+
         iframe = $(this);
         
         iframeSrc = iframeSrc.replace(" ","%20");
@@ -47,17 +47,17 @@ function replaceToDiv(iframe_id, iframe, iframeSrc, AlbumName){
         iframe.replaceWith("<div id='iframe" + iframe_id +"' class='lightgallery'>" + AlbumName + "</div>");
         
         //$.get(iframeSrc.replace("album", "kicp_lightgallery") + "&div=1", function(data) {
-        console.log('Album name: '+AlbumName);    
-        console.log(iframeSrc);
         $.get(iframeSrc + "&div=1", function(data) {
             htmldata = data;
         }, 'html').done(function(){
             
             $("#iframe" + iframe_id).html(htmldata);
+
+
             
             var page_selector = $("#page_selector");
             page_selector.attr("id","page_selector" + iframe_id);
-            page_selector.html("{{page_selector"+ iframe_id  +"}}");
+            page_selector.html("[[page_selector"+ iframe_id  +"]]");
             
             var gallery = $("#animated-thumbnials");
             gallery.attr("id","animated-thumbnials" + iframe_id);
@@ -65,16 +65,20 @@ function replaceToDiv(iframe_id, iframe, iframeSrc, AlbumName){
             var gallery_page = $("#gallery_page");
             gallery_page.attr("id","gallery_page" + iframe_id);
             
+            
+
             $("#animated-thumbnials" + iframe_id +" .jg-entry").each(function() {
                 hrefAry[iframe_id].push($(this).attr("href"));
                 data_sub_htmlAry[iframe_id].push($(this).attr("data-sub-html"));
             });
 
+            
+
             $("#animated-thumbnials" + iframe_id +" .img-responsive").each(function() {
                 srcAry[iframe_id].push($(this).attr("src"));
             });
             
-            //console.log("frame" + iframe_id + " Total href:" + hrefAry[iframe_id].length);
+            console.log("frame" + iframe_id + " Total href:" + hrefAry[iframe_id].length);
             
             totalPages[iframe_id] = Math.ceil(hrefAry[iframe_id].length/PhotoPerPageConst);
             currentPage = 1;
@@ -102,9 +106,9 @@ function BlogLightGalleryChangePage(iframe_id, page, PhotoPerPage, totalPage){
         for(var i=0; i<hrefAry[iframe_id].length; i++){
             if(i>=PhotoIndexMin && i<=PhotoIndexMax){
                 photohtmlAry[i] = htmldata;
-                photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoPath}}", hrefAry[iframe_id][i]);
-                photohtmlAry[i] = photohtmlAry[i].replace("{{downloadPhotoName}}", data_sub_htmlAry[iframe_id][i]);
-                photohtmlAry[i] = photohtmlAry[i].replace("{{galPhotoPath}}", srcAry[iframe_id][i]);
+                photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoPath]]", hrefAry[iframe_id][i]);
+                photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoName]]", data_sub_htmlAry[iframe_id][i]);
+                photohtmlAry[i] = photohtmlAry[i].replace("[[galPhotoPath]]", srcAry[iframe_id][i]);
                 
                 photohtml = photohtml + photohtmlAry[i];
                 

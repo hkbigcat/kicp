@@ -23,8 +23,10 @@ use Drupal;
 class BookmarkChange extends FormBase  {
 
     public function __construct() {
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();  
         $this->module = 'bookmark';
-
     }
 
     /**
@@ -52,7 +54,26 @@ class BookmarkChange extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state, $bid=NULL) {
 
         $config = \Drupal::config('bookmark.settings'); 
-        $bookmark = BookmarkDatatable::getBookmarks($bid); 
+        $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid);
+
+
+        if ($bookmark['bid'] == null) {
+            $output = '<p style="text-align:center">You cannot edit this bookmark.</p>';
+            $form['intro'] = array(
+            '#markup' => t($output),
+            );
+
+            $form['cancel'] = array(
+                '#type' => 'button',
+                '#value' => t('Cancel and Go Back'),
+                '#prefix' => '&nbsp;',
+                '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                '#limit_validation_errors' => array(),
+              );
+  
+              return $form;
+
+        }
 
 
         $form['bid'] = [

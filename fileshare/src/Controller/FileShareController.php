@@ -21,17 +21,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\RatingData;
+use Drupal\Core\Url;
 
 class FileShareController extends ControllerBase {
 
   public function __construct() {
-
+    $AuthClass = "\Drupal\common\Authentication";
+    $authen = new $AuthClass();
+    $this->$my_user_id = $authen->getUserId();
     $file_system = \Drupal::service('file_system');
-
-
     $this->module = 'fileshare';
-    $this->ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
-    $this->app_path = CommonUtil::getSysValue('app_path'); // app_path
     $FileshareUri = 'private://fileshare/';
     $this->file_path = $file_system->realpath($FileshareUri);
   }
@@ -51,23 +50,7 @@ class FileShareController extends ControllerBase {
    */
   public function myShareFolder() {
 
-       /*
-
-    $content = [];
-    $content['message'] = [
-      '#markup' => t('File Share Folder'),
-    ];
-
-    $headers = [
-        t('ID'),
-        t('Folder Name'),
-        t('Users'),
-    ];
-
-*/
-
-   //$table_rows = $this->load_folder();
-   $table_rows = FileShareDatatable::load_folder();   
+   $table_rows = FileShareDatatable::load_folder($this->$my_user_id);
    $table_rows['type'] = 'folders';
 
    $search_str = \Drupal::request()->query->get('search_str');
@@ -78,23 +61,9 @@ class FileShareController extends ControllerBase {
     '#items' => $table_rows,
     '#empty' => t('No entries available.'),
     '#pager' => ['#type' => 'pager',
-  ],
+      ],
    ];      
 
-   /*
-
-   $content['table'] = [
-     '#type' => 'table',
-     '#header' => $headers,
-     '#rows' => $table_rows,
-     '#empty' => t('No entries available.'),
-   ];
-
-   
-    $content['#cache']['max-age'] = 0;
-
-    return $content;
-    */
 
   }
   
@@ -107,8 +76,6 @@ class FileShareController extends ControllerBase {
   public function getShareFile() {
 
     $table_rows_file = FileShareDatatable::getSharedFile();
-    //$TagList = new TagList();
-    //$taglist = $TagList->getTagsForModule('fileshare');
     
     return [
         '#theme' => 'fileshare-files',
@@ -164,17 +131,13 @@ class FileShareController extends ControllerBase {
   $table_rows_file = FileShareDatatable::getSharedFile($file_id);
   $table_rows_file['tagURL'] = $tagURL;
   
-  $AuthClass = "\Drupal\common\Authentication";
-  $authen = new $AuthClass();
-  $my_user_id = $authen->getUserId();
-
-  $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $my_user_id);
+  $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $this->$my_user_id);
   $rating['rsHadRate'] = $rsHadRate;
   $rating['module'] = 'fileshare';
   
     return [
         '#theme' => 'fileshare-view',
-        '#user_id' => $my_user_id,
+        '#user_id' => $this->$my_user_id,
         '#items' => $table_rows_file,
         '#tags' => $taglist,
         '#rating' => $rating,
@@ -256,6 +219,18 @@ class FileShareController extends ControllerBase {
   public function deleteShareFileFolder($folder_id=null) {
 
 
+    $folder = FileShareDatatable::load_folder($this->$my_user_id,$folder_id);
+    if ( $folder['folder_id'] == null) {
+
+      $url = Url::fromRoute('fileshare.fileshare_folder');
+      return new RedirectResponse($url->toString());
+
+      \Drupal::messenger()->addStatus(
+        t('Unable to delete this File Folder'.$bookmark['bid']  )
+        );
+
+    }
+
       // delete record
 
       try {
@@ -278,7 +253,12 @@ class FileShareController extends ControllerBase {
         ->execute();
 
 
-        return new RedirectResponse("/fileshare_folder");
+        $url = Url::fromRoute('fileshare.fileshare_folder');
+        return new RedirectResponse($url->toString());
+
+        $messenger = \Drupal::messenger(); 
+        $messenger->addMessage( t('File Folder has been deleted'));
+
       } 
       catch (\Exception $e ) {
         \Drupal::messenger()->addError(

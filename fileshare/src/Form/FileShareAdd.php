@@ -27,15 +27,12 @@ use Drupal\Core\File\FileSystemInterface;
 class FileShareAdd extends FormBase  {
 
     public function __construct() {
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->$my_user_id = $authen->getUserId();         
         $this->module = 'fileshare';
-//        $this->target_folder = CommonUtil::getModuleDetail($this->module, 'upload_folder');
-//        $this->allow_file_type = CommonUtil::getSysValue('fileshare_allow_file_type');
-//        $this->max_preview_page = CommonUtil::getSysValue('fileshare_max_preview_page');
-        $this->allow_file_type = 'doc doc   x ppt pptx pdf';
+        $this->allow_file_type = 'doc docx ppt pptx pdf';
         $this->target_folder = 'fileshare';
-		
-
-
     }
 
     /**
@@ -94,13 +91,8 @@ class FileShareAdd extends FormBase  {
             '#required' => TRUE,
         ];
 
-        $folders= FileShareDatatable::load_folder();
-       
-        $folderAry[] = array();
-        foreach($folders as $record) {
-            $folderAry[$record['folder_id']] = $record['folder_name'];
-        }
-       
+        $folderAry = FileShareDatatable::getMyEditableFolderList($this->$my_user_id);
+              
         $form['folder_id'] = [
             '#type' => 'select',
             '#title' => $this->t('Folder Name'),
@@ -127,6 +119,8 @@ class FileShareAdd extends FormBase  {
         $form['cancel'] = array(
             '#type' => 'button',
             '#value' => t('Cancel'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+            '#limit_validation_errors' => [],
         );
  
 
@@ -136,7 +130,7 @@ class FileShareAdd extends FormBase  {
             '#type' => 'details',
             '#open' => true,
             '#description' => t($taglist),
-            '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6;'),
+            '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6; margin-top: 20px;'),
         );
         
         $taglist = $TagList->getList($this->module);
@@ -200,17 +194,6 @@ class FileShareAdd extends FormBase  {
 
    public function submitForm(array &$form, FormStateInterface $form_state) {
 
-	/****************************** */
-	/*      change authorization    */
-	/****************************** */
-	$my_user_id  = \Drupal::currentUser()->id();
-		
-	//$transaction = \Drupal::database()->startTransaction();
-    
-   
-
-		//$starttime = time();
-	
 		//*************** File [Start]
 
 
@@ -262,7 +245,7 @@ class FileShareAdd extends FormBase  {
         'original_file_name' => $this_filename,
         'image_name' => $this_imagename,
         'folder_id' => $folder_id,
-        'user_id' => $my_user_id,
+        'user_id' => $this->$my_user_id,
         'create_datetime' => date('Y-m-d H:i:s', $current_time),
         'modify_datetime' => date('Y-m-d H:i:s', $current_time),
         );
@@ -391,14 +374,12 @@ class FileShareAdd extends FormBase  {
         }
 
                     //******** store image record(s) in table "file_managed" [End]
-      
-      
-      $url = Url::fromUserInput('/fileshare');
-      $form_state->setRedirectUrl($url);
 
-      $messenger = \Drupal::messenger(); 
-      $messenger->addMessage( t('Files has been added: '));
-    
+        $url = Url::fromRoute('fileshare.fileshare_content');
+        $form_state->setRedirectUrl($url);
+
+        $messenger = \Drupal::messenger(); 
+        $messenger->addMessage( t('Files has been added'));
 
     }
 

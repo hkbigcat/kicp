@@ -34,7 +34,7 @@ video.admin_content:
     _controller: '\Drupal\video\Controller\VideoController::AdminContent'
     _title: 'Event List Management'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE
 
@@ -44,7 +44,7 @@ video.admin_video_content:
     _controller: '\Drupal\video\Controller\VideoController::AdminVideoContent'
     _title: 'Event Video Management'
   requirements:
-    _permission: 'access content'
+    _permission: 'access administration pages'
   options:
     no_cache: TRUE    
 

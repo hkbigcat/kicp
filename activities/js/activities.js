@@ -13,7 +13,7 @@ function getEventData(type, evt_id) {
 
     jQuery.ajax({
         type: "POST",
-        url: '/activities_event_data',
+        url: '/kmapp2/kicp/activities_event_data',
         data: {
             evt_id: evt_id,
             type: type
@@ -23,7 +23,7 @@ function getEventData(type, evt_id) {
             
             var content = "";
             if (type == 'photo') {
-                link = 'activities_event_data?evt_id=' + evt_id + '&type=' + type
+                link = '/kmapp2/kicp/activities_event_data?evt_id=' + evt_id + '&type=' + type
                 content = '<div id="lightgallery">{{lightgallery}}</div>';
             } else {
                 content = data;

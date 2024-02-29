@@ -4,15 +4,27 @@ activities_key:
   css:
     theme:
       css/activities.css: {}
-      css/lightgallery-bundle.css: {}
-      css/lg-zoom.css: {}
-      css/lg-thumbnail.css: {}
+      css/lightgallery/justifiedGallery.min.css: {}
+      css/lightgallery/lightgallery.css: {}      
 
   js:
     js/activities.js: {}
-    js/lightgallery.umd.js: {}
-    js/thumbnail/lg-thumbnail.umd.js: {}
-    js/zoom/lg-zoom.umd.js: {}
+    js/lightgallery/lightgallery-all.min.js: {}
+    js/lightgallery/jquery.min.js: {}
+    js/lightgallery/prettify.js: {}
+    js/lightgallery/jquery.justifiedGallery.min.js: {}
+    js/lightgallery/transition.js: {}
+    js/lightgallery/collapse.js: {}
+    js/lightgallery/lightgallery.js: {}
+    js/lightgallery/lg-fullscreen.js: {}
+    js/lightgallery/lg-thumbnail.js: {}
+    js/lightgallery/lg-video.js: {}
+    js/lightgallery/lg-autoplay.js: {}
+    js/lightgallery/lg-zoom.js: {}
+    js/lightgallery/lg-pager.js: {}
+    js/lightgallery/jquery.mousewheel.min.js: {}
+    js/lightgallery/demos.js: {}
+    js/jquery-ui.min.js: {}
     
     
   dependencies:

@@ -139,10 +139,11 @@ class ActivitiesController extends ControllerBase {
         }  else if($type == 'photo') {
              
             $photos = ActivitiesDatatable::getEventPhotoByEventId($evt_id);
-
+            $PhotoPerPage = 15;
             $renderable = [
                 '#theme' => 'activities-photo',
                 '#items' => $photos,
+                '#PhotoPerPage' => $PhotoPerPage,
                 '#evt_id' => $evt_id,
               ];
             $output .= \Drupal::service('renderer')->renderPlain($renderable);

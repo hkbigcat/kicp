@@ -63,8 +63,7 @@ class BookmarkAdd extends FormBase  {
         ];          
                  
         $form['bDescription'] = [
-            '#type' => 'text_format',
-            '#format' => 'full_html',
+            '#type' => 'textarea',
             '#title' => $this->t('Content'),
             '#rows' => 2,
             '#attributes' => array('style' => 'height:300px;'),
@@ -72,7 +71,7 @@ class BookmarkAdd extends FormBase  {
         ];
 
         $form['bAddress'] = array(
-            '#title' => t('Web Address<span style="color:red">&nbsp;*</span>'),
+            '#title' => t('Web Address'),
             '#type' => 'textfield',
             '#size' => 150,
             '#maxlength' => 512,
@@ -154,7 +153,7 @@ class BookmarkAdd extends FormBase  {
             );
         }
 
-        if (isset($bDescription) and $bDescription['value'] != '' &&  strlen(trim($bDescription['value'])) > 30000) {
+        if (isset($bDescription) and $bDescription != '' &&  strlen(trim($bDescription)) > 30000) {
             $form_state->setErrorByName(
                 'bDescription', $this->t("Description exceeds 30,000 characters")
             );
@@ -212,7 +211,7 @@ class BookmarkAdd extends FormBase  {
             'bModified' => date('Y-m-d H:i:s'),
             'bTitle' => $bTitle,
             'bAddress' => $bAddress,
-            'bDescription' => $bDescription['value'],
+            'bDescription' => $bDescription,
             'bVotes' => 0,
             'bVoting' => 0,
           );
@@ -234,9 +233,9 @@ class BookmarkAdd extends FormBase  {
                 
             }      
 
-            $url = Url::fromUserInput('/bookmark/');
+
+            $url = Url::fromRoute('bookmark.bookmark_content');
             $form_state->setRedirectUrl($url);
-    
     
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Bookmark has been added.'));

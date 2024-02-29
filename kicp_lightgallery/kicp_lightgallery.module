@@ -86,6 +86,7 @@ function kicp_lightgallery_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'items' => NULL,
                 'album' => NULL,
+                'div' => NULL,
             ],
         ],     
         'kicplightgallery-folder' =>[

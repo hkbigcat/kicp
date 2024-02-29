@@ -1,24 +1,157 @@
-<div id="animated-thumbnails" class="list-unstyled justified-gallery" >
-    <a href="/system/files/activities/photo/000318/DSC03218.jpg" >
-        <img src="/system/files/activities/photo/000318/DSC03218.jpg" />
-    </a>
-    <a href="/system/files/activities/photo/000318/DSC03225.jpg"  >
-        <img src="/system/files/activities/photo/000318/DSC03225.jpg" />
-    </a>
-    <a href="/system/files/activities/photo/000318/DSC03232.jpg"  >
-        <img src="/system/files/activities/photo/000318/DSC03232.jpg" />
-    </a>
-    <a href="/system/files/activities/photo/000318/IMG_0212.jpg"   >
-        <img src="/system/files/activities/photo/000318/IMG_0212.jpg" />
-    </a>
-    <a href="/system/files/activities/photo/000318/IMG_0227.jpg"  >
-        <img src="/system/files/activities/photo/000318/IMG_0227.jpg" />
-    </a>
+
+{% set eventPhotoPath = '../system/files/activities/photo/' ~ "%06d" | format(evt_id) ~ '/'  %}
+{% set totalPages = (items | length / PhotoPerPage)  | round  %}
+<script>document.all["gallery_page"].value="1"</script>
+<script>var photosAry = new Array()</script>
+<script>
+{% for item in items %}
+    photosAry.push({downloadPhotoPath:"{{eventPhotoPath}}{{item['evt_photo_url']}}" , downloadPhotoName:"{{item['evt_photo_description']}}", galPhotoPath:"{{eventPhotoPath}}{{item['evt_photo_url']}}"});
+{% endfor %}
+</script>
+<input type="hidden" id="gallery_page">
+<div id="page_selector" align="center">
+    <span style="margin-right:12px;"><a href="#animated-thumbnials" id="album_pageFirst" class="btn_page_selector" onClick="changePage(1 , {{PhotoPerPage}} , {{totalPages}})">&lt;&lt; First</a></span>
+    <span style="margin-right:12px;"><a href="#animated-thumbnials" id="album_pagePrevious" class="btn_page_selector" onClick="changePage(1,{{PhotoPerPage}} , {{totalPages}})">&lt; Previous</a></span>
+    {% for page_index in range(1, totalPages) %}
+        <span style="margin-right:12px;"><a href="#animated-thumbnials" id="album_page{{page_index}}" class="btn_page_selector" onClick="changePage({{page_index}},  {{PhotoPerPage}} , {{totalPages}})"> {{page_index}} </a></span>
+    {% endfor %}
+    <span style="margin-right:12px;"><a href="#animated-thumbnials" id="album_pageNext" class="btn_page_selector" onClick="changePage(2,{{PhotoPerPage}},{{totalPages}})">Next &gt;</a></span>
+    <span style="margin-right:12px;"><a href="#animated-thumbnials" id="album_pageLast" class="btn_page_selector" onClick="changePage({{totalPages}} , {{PhotoPerPage}},  {{totalPages}} )">Last &gt;&gt;</a>    
 
 </div>
-
+<div>
+    <div id="animated-thumbnials" class="list-unstyled justified-gallery" style="height: 520px;">
+       
+    </div>
+</div>
 <script type="text/javascript">
-    lightGallery(document.getElementById('animated-thumbnails-gallery'), {
-        thumbnail: true,
-    });
-</script>
+
+                console.log("i: {{i}}");
+
+                function loadLightGallery(){
+                    $(function() {
+                        animThumb = $('#animated-thumbnials');
+                        if (animThumb.length) {
+                            animThumb.justifiedGallery({
+                                    border: 6
+                            }).on('jg.complete', function() {
+                                    animThumb.lightGallery({
+                                            thumbnail: true,
+                                            animateThumb: true
+                                    });
+                            });
+                        };
+                        console.log('Loaded Light Gallery');
+                    });
+                }
+                
+                function changePage(page, PhotoPerPage, totalPages){
+                    $('#gallery_page').val(page);
+                    
+                    $('#animated-thumbnials').html('');
+                   
+                    PhotoIndexMin=PhotoPerPage*(page-1);
+                    PhotoIndexMax=PhotoPerPage*page-1;
+                    
+                    var photohtml;
+                    photohtmlAry = new Array();
+                    var tmp='';
+                    
+                    $.get("/kmapp2/kicp/modules/custom/kicp_lightgallery/src/photos.html", function(data) {
+                        htmldata = data;
+                    }, 'html').done(function(){
+                        photohtml = '';
+                        
+
+                        for(var i=0; i<photosAry.length; i++){
+                            if(i>=PhotoIndexMin && i<=PhotoIndexMax){
+                                photohtmlAry[i] = htmldata;
+                                if (i==0) console.log("tmp "+tmp);
+                                photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoPath]]", photosAry[i]['downloadPhotoPath']);
+                                photohtmlAry[i] = photohtmlAry[i].replace("[[downloadPhotoName]]", photosAry[i]['downloadPhotoName']);
+                                photohtmlAry[i] = photohtmlAry[i].replace("[[galPhotoPath]]", photosAry[i]['galPhotoPath']);
+                                photohtml = photohtml + photohtmlAry[i];
+                                
+                            }
+                        }
+
+                        console.log("photohtml: "+photohtml);
+
+                        var gallery = $("#animated-thumbnials");
+                        gallery.lightGallery();
+                        gallery.data('lightGallery').destroy(true);
+                        gallery.html(photohtml);
+                        gallery.justifiedGallery({
+                                border: 6
+                        }).on('jg.complete', function() {
+                                gallery.lightGallery({
+                                        thumbnail: true,
+                                        animateThumb: true
+                                });
+                        });
+                        
+                        
+                        PreviousPage = page-1;
+                        NextPage = page+1;
+                        FirstPage = 1;
+                        LastPage =  totalPages;
+
+                        if(PreviousPage<FirstPage){
+                            PreviousPage = FirstPage;
+                        }
+                        
+                        if(NextPage>LastPage){
+                            NextPage = LastPage;
+                        }
+                        
+                        $('#album_pagePrevious').attr("onclick","changePage(" + PreviousPage.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        $('#album_pageNext').attr("onclick","changePage(" + NextPage.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        
+                        if(PreviousPage == page){
+                            $('#album_pagePrevious').css('display','none');
+                        }
+                        else{
+                            $('#album_pagePrevious').css('display','');
+                        }
+                        
+                        if(NextPage == page){
+                            $('#album_pageNext').css('display','none');
+                        }
+                        else{
+                            $('#album_pageNext').css('display','');
+                        }
+                        
+                        if(FirstPage == page){
+                            $('#album_pageFirst').css('display','none');
+                        }
+                        else{
+                            $('#album_pageFirst').css('display','');
+                        }
+                        
+                        if(LastPage == page){
+                            $('#album_pageLast').css('display','none');
+                        }
+                        else{
+                            $('#album_pageLast').css('display','');
+                        }
+                        
+                        for(var j=1; j<=totalPages; j++){
+                            $('#album_page' + j).attr("href","#animated-thumbnials");
+                            $('#album_page' + j).attr("onclick","changePage(" + j.toString() + "," + PhotoPerPage.toString() + "," + totalPages.toString() + ")");
+                        }
+                        
+                        $('#album_page' + page).removeAttr('href');
+                        $('#album_page' + page).removeAttr('onclick');
+                        
+                        $('.btn_page_selector').css("font-weight", "");
+                        $('.btn_page_selector').css("color", "");
+                        
+                        $('#album_page' + page).css('font-weight', 'bold');
+                        $('#album_page' + page).css("color", "black");
+                        
+                        
+                    });
+                }
+                </script>
+<script>$(function() {$("#album_page1").click()});</script>
+ 

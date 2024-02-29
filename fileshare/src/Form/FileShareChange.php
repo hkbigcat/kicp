@@ -24,14 +24,12 @@ use Drupal\Core\Url;
 class FileShareChange extends FormBase {
 
   public function __construct() {
+    $AuthClass = "\Drupal\common\Authentication";
+    $authen = new $AuthClass();
+    $this->$my_user_id = $authen->getUserId();      
     $this->module = 'fileshare';
-//        $this->target_folder = CommonUtil::getModuleDetail($this->module, 'upload_folder');
-//        $this->allow_file_type = CommonUtil::getSysValue('fileshare_allow_file_type');
-//        $this->max_preview_page = CommonUtil::getSysValue('fileshare_max_preview_page');
     $this->allow_file_type = 'doc docx ppt pptx pdf';
     $this->target_folder = 'fileshare';
-
-
 
 }  
 
@@ -58,7 +56,7 @@ class FileShareChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $file_id = NULL) {
 
 
-        $file = FileShareDatatable::getSharedFile($file_id);
+         $file = FileShareDatatable::getSharedFile($file_id);
          $Taglist = new TagList();
          $tags = $Taglist->getTagListByRecordId('fileshare', $file_id);
 
@@ -101,12 +99,7 @@ class FileShareChange extends FormBase {
           '#description' => 'Only support '.str_replace(' ', ', ', $this->allow_file_type).' file format',
         ];        
 
-        $folders= FileShareDatatable::load_folder();
-       
-        $folderAry[] = array();
-        foreach($folders as $record) {
-            $folderAry[$record['folder_id']] = $record['folder_name'];
-        }
+        $folderAry = FileShareDatatable::getMyEditableFolderList($this->$my_user_id);
        
         $form['folder_id'] = [
             '#type' => 'select',
@@ -219,12 +212,6 @@ class FileShareChange extends FormBase {
      */
 
    public function submitForm(array &$form, FormStateInterface $form_state) {
-
-    /****************************** */
-    /*      change authorization    */
-    /****************************** */
-    $my_user_id  = \Drupal::currentUser()->id();  
-
 
     try {
 
