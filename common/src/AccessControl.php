@@ -42,4 +42,29 @@ class AccessControl {
     }
 
 
+    public static function delAccessControl($module, $record_id) {
+
+        try {
+            $database = \Drupal::database();
+            $query = $database->update('kicp_access_control')->fields([
+              'is_deleted'=>1 , 
+              'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+            ])
+            ->condition('module', $module)
+            ->condition('record_id', $record_id)
+            ->execute();    
+             
+            return true;
+          } 
+          catch (\Exception $e ) {
+            \Drupal::messenger()->addError(
+              t('Unable to delete acces control at this time due to datbase error. Please try again.')
+            ); 
+
+            return false;
+         }    
+
+
+    }
+
 }

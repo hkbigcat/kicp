@@ -145,18 +145,21 @@ class CommonController extends ControllerBase {
         return $response;
     }   
     
-   
+    
     public function getAddGroupMemberUI() {
 
         $request = \Drupal::request();   // Request from ajax call
         $content = $request->getContent();
+
+        
         $params = array();
         if (!empty($content)) {
             $params = json_decode($content, TRUE);  // Decode json input
         }
+        
         $record_id = $params['record_id'];
         $module = $params['module'];
-        $current_group = AccessControl::getMyAccessControl($params['module'], $record_id);
+        $current_group = AccessControl::getMyAccessControl($module, $record_id);
 
         $renderable = [
             '#module' => $module,
@@ -220,11 +223,13 @@ class CommonController extends ControllerBase {
 
         $record_id = $params['record_id'];
         $search_str = $params['search_str'];
+        $module = $params['module'];
         $publicGroup = CommonDatatable::getAllPublicGroup($search_str);
         if ($publicGroup && $publicGroup !="") {
             $renderable = [
                 '#theme' => 'common-accesscontrol-grouptype',
                 '#items' => $publicGroup,
+                '#module' => $module,
                 '#record_id' => $record_id,
             ];
             $content = \Drupal::service('renderer')->renderPlain($renderable);
@@ -306,7 +311,6 @@ class CommonController extends ControllerBase {
         foreach ($params as $key => $value) {
             $$key = $value;
         }
-        
         
         $content = "";
         if($this_module == "" || $record_id == "") {

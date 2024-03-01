@@ -1,7 +1,9 @@
-var loadingImg = '<img src="modules/custom/common/images/loader.gif" border="0" width="40">';
-console.log("common_jquery");
+const app_path = '/kmapp2/kicp/';
+var loadingImg = '<img src="'+app_path+'modules/custom/common/images/loader.gif" border="0" width="40">';
+
 
 function getAddGroupMemberUI(module, record_id) {
+    console.log("module: "+module);
     jQuery("ul.menu").css("display","none");
     jQuery("#modal-body").html("");
     jQuery.ajax({
@@ -142,7 +144,7 @@ function add_access_control(module, record_id, group_type, group_id) {
         buttons: {
             "OK": function () {
 
-                console.log("add access control - module: "+module+" record_id: "+record_id + " group_type: "+group_type + " group_id: "+group_id );
+                console.log("add access control - this module: "+module+" record_id: "+record_id + " group_type: "+group_type + " group_id: "+group_id );
 
                 jQuery.ajax({
                     type: 'POST',
@@ -231,15 +233,15 @@ function cpRateShow(x,y, rateID) {
     for (i = 1; i <= 5; i++) {
         
         if (i <= x)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url("+app_path+"modules/custom/common/images/star-solid.svg)";
         else
         if (x + 1 - i >= 0.75)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url("+app_path+"modules/custom/common/images/star-solid.svg)";
         else
         if (x + 1 - i >= 0.25)
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-half-solid.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url("+app_path+"modules/custom/common/images/star-half-solid.svg)";
         else
-            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url(modules/custom/common/images/star-regular.svg)";
+            document.getElementById('star_'+i+'_'+rateID).style.backgroundImage = "url("+app_path+"modules/custom/common/images/star-regular.svg)";
     }
 
     if (y!=1) {

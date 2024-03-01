@@ -128,7 +128,7 @@ class FileShareController extends ControllerBase {
   $rating = $RatingData->getList('fileshare', $file_id);
 
   
-  $table_rows_file = FileShareDatatable::getSharedFile($file_id);
+  $table_rows_file = FileShareDatatable::getSharedFile($this->$my_user_id, $file_id);
   $table_rows_file['tagURL'] = $tagURL;
   
   $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $this->$my_user_id);
@@ -151,6 +151,19 @@ class FileShareController extends ControllerBase {
   
 
   public function deleteShareFile($file_id = NULL) {
+
+    $delFile = FileShareDatatable::getSharedFile($this->$my_user_id, $file_id);
+    if ( $delFile['file_id'] == null) {
+
+      $url = Url::fromRoute('fileshare.fileshare_content');
+      return new RedirectResponse($url->toString());
+
+      \Drupal::messenger()->addStatus(
+        t('Unable to delete this File ')
+        );
+
+    }
+
     $current_time =  \Drupal::time()->getRequestTime();
 
     // delete record
@@ -209,8 +222,12 @@ class FileShareController extends ControllerBase {
       ->condition('module', 'fileshare')
       ->execute();
 
-      
-      return new RedirectResponse("/fileshare");
+
+      $url = Url::fromRoute('fileshare.fileshare_content');
+      return new RedirectResponse($url->toString());
+
+      $messenger = \Drupal::messenger(); 
+      $messenger->addMessage( t('File has been deleted'));
 
 
   }

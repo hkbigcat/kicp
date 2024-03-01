@@ -23,8 +23,9 @@ class MainpageDatatable {
             
     }
 
-    public static function getLatest($tags="") {
+    public static function getLatest($my_user_id="", $tags="") {
 
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
         $output=array();
         $database = \Drupal::database();
 
@@ -39,6 +40,13 @@ class MainpageDatatable {
         $query ->addExpression('null', 'image_name');
         $query ->addExpression(":module", 'module', array(":module"=>"bookmark" ));
         $query ->condition('a.is_deleted', '0');
+        
+        if (!$isSiteAdmin) {
+          $orGroup1 = $query->orConditionGroup()
+          ->condition('a.user_id', $my_user_id)
+          ->condition('a.bStatus', 0);
+          $query->condition($orGroup1);
+        }        
 
         $query_blog = $database-> select('kicp_blog_entry', 'a1');
         $query_blog -> leftjoin('kicp_blog', 'b1', 'a1.blog_id = b1.blog_id');

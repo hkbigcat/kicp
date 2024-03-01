@@ -75,6 +75,7 @@ function common_theme($existing, $type, $theme, $path) {
                 'items' => NULL,
 				'search_str' => NULL,
 				'record_id' => NULL,
+				'module' => NULL,
             ],
         ],
 		'common-accesscontrol-personal' =>[

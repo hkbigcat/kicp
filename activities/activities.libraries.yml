@@ -4,11 +4,22 @@ activities_key:
   css:
     theme:
       css/activities.css: {}
-      css/lightgallery/justifiedGallery.min.css: {}
-      css/lightgallery/lightgallery.css: {}      
-
   js:
     js/activities.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog
+
+activities_gallery:
+  version: 1.x
+  header: true
+  css:
+    theme:
+      css/lightgallery/justifiedGallery.min.css: {}
+      css/lightgallery/lightgallery.css: {}      
+  js:
     js/lightgallery/lightgallery-all.min.js: {}
     js/lightgallery/jquery.min.js: {}
     js/lightgallery/prettify.js: {}
@@ -25,10 +36,8 @@ activities_key:
     js/lightgallery/jquery.mousewheel.min.js: {}
     js/lightgallery/demos.js: {}
     js/jquery-ui.min.js: {}
-    
-    
   dependencies:
     - core/jquery
     - core/drupalSettings
     - core/drupal
-    - core/drupal.dialog      
+    - core/drupal.dialog

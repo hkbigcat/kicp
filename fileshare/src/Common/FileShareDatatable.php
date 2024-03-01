@@ -40,7 +40,6 @@ class FileShareDatatable extends ControllerBase {
         $query->condition('r.is_deleted', '0');
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
-
         if (!$isSiteAdmin) {
           $query->condition('r.user_id', $my_user_id);
         }
@@ -106,7 +105,7 @@ class FileShareDatatable extends ControllerBase {
   }
 
 
-     public static function getSharedFile($file_id = NULL) {
+     public static function getSharedFile($my_user_id=null, $file_id = NULL) {
 
       $folder_id = \Drupal::request()->query->get('folder_id');
       
@@ -118,12 +117,23 @@ class FileShareDatatable extends ControllerBase {
       try {
         $database = \Drupal::database();
         $selected_query = $database-> select('kicp_file_share', 'a'); 
-        $selected_query -> leftjoin('kicp_file_share_folder', 'b', 'a.folder_id = b.folder_id');
+        $selected_query -> leftjoin('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
         $selected_query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
+        $selected_query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
+        $selected_query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
+        $selected_query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeB' => 'B', 'user_id' => $my_user_id]);
+        $selected_query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
+        $selected_query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
         $selected_query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
-        $selected_query-> fields('b', ['folder_name']);
+        $selected_query-> fields('j', ['folder_name']);
         $selected_query-> fields('u', ['user_displayname']);
         $selected_query-> condition('a.is_deleted', '0', '=');
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if (!$isSiteAdmin) {          
+          $selected_query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+        }
+
+        $selected_query-> groupBy('a.file_id');
         if ($folder_id != NULL) {
           $selected_query-> condition('a.folder_id', $folder_id, '=');
         }
@@ -176,10 +186,16 @@ class FileShareDatatable extends ControllerBase {
 
 
     try {
-      //$sql = "SELECT a.*, b.folder_name FROM `kicp_file_share` a left join kicp_file_share_folder b on a.folder_id = b.folder_id where a.file_id in (select fid FROM `kicp_tags` b where module like 'fileshare' and lower(tag) like '$tags' and is_deleted = 0 ) and a.is_deleted = 0";
       $database = \Drupal::database();
       $query = $database-> select('kicp_file_share', 'a'); 
-      $query -> join('kicp_file_share_folder', 'b', 'a.folder_id = b.folder_id');
+      $query -> join('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
+      $query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
+      $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
+      $query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
+      $query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeB' => 'B', 'user_id' => $my_user_id]);
+      $query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
+      $query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', 'user_id' => $my_user_id]);
+
       if ($tags && count($tags) > 0 ) {
         $tags1 = $database-> select('kicp_tags', 't');
         $tags1-> condition('tag', $tags, 'IN');
@@ -188,28 +204,19 @@ class FileShareDatatable extends ControllerBase {
         $tags1-> addField('t', 'fid');
         $tags1-> groupBy('t.fid');
         $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
-
-
-/*
-
-        $query -> join('kicp_tags', 't', 'a.file_id = t.fid');
-        $query-> condition('t.module', 'fileshare');
-        $orGroup = $query->orConditionGroup();
-        foreach($tags as $tmp) {
-          $orGroup->condition('t.tag', $tmp);
-        }
-        $query->condition($orGroup);
-        $query-> condition('t.is_deleted', '0');        
-        $query-> groupBy('a.file_id', '0');
-        $query->addExpression('COUNT(a.file_id)>='.count($tags) , 'occ');
-        $query->havingCondition('occ', 1);        
-*/
         $query-> condition('file_id', $tags1, 'IN');
       }
-      $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime']);
-      $query-> fields('b', ['folder_name']);
-      
+      $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
+      $query-> fields('j', ['folder_name']);
+      $query-> fields('u', ['user_displayname']);
+
       $query-> condition('a.is_deleted', '0');
+      $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+      if (!$isSiteAdmin) {          
+        $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+      }
+
+      $query-> groupBy('a.file_id');
       $query-> orderBy('modify_datetime', 'DESC');
       $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
       $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
