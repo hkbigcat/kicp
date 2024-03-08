@@ -165,14 +165,14 @@ class FileShareFolderAdd extends FormBase {
             'tags' => $tags,
           );
           $return1 = TagStorage::insert($entry1);
-
-          $url = Url::fromRoute('fileshare.fileshare_folder');
-          $form_state->setRedirectUrl($url);
-    
-          $messenger = \Drupal::messenger(); 
-          $messenger->addMessage( t('File Folder has been added'));
            
         }        
+
+        $url = Url::fromRoute('fileshare.fileshare_folder');
+        $form_state->setRedirectUrl($url);
+  
+        $messenger = \Drupal::messenger(); 
+        $messenger->addMessage( t('File Folder has been added'));
 
 
       }

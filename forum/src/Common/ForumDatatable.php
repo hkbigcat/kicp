@@ -18,15 +18,35 @@ class ForumDatatable {
 
     public static function getLatest5Topic() {
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        $access_sql = "";
+        $access_sql_group = "";
+        $access_sql2 = "";
+        if (!$isSiteAdmin) {
+            $access_sql = " LEFT JOIN kicp_access_control dd ON (dd.is_deleted=0 AND dd.module='forum' AND dd.record_id=c.forum_id)
+			LEFT JOIN kicp_public_group e ON ( e.is_deleted=0 AND dd.group_type='P' AND e.pub_group_id=dd.group_id)
+            LEFT JOIN kicp_buddy_group f ON ( f.is_deleted=0 AND dd.group_type='B' AND f.buddy_group_id=dd.group_id)
+            LEFT JOIN kicp_public_user_list g ON ( g.is_deleted=0 AND g.pub_group_id=e.pub_group_id AND g.pub_user_id='$my_user_id')
+            LEFT JOIN kicp_buddy_user_list h ON ( h.is_deleted=0 AND h.buddy_group_id=f.buddy_group_id AND h.buddy_user_id='$my_user_id')   ";
+
+            $access_sql_group = ", c.forum_id ";
+            $access_sql2 = " and ( count(dd.id) = 0 or count(g.id) >0 or count(h.buddy_user_id) >0  ) ";
+        }
+
+
         $sql = " SELECT MAX(a.post_id) AS post_id, MAX(a.post_id) AS this_post_id, b.title, COUNT(a.post_id) AS total_post, b.topic_id, b.forum_id, c.forum_name, x.user_name, b.counter, IF(COUNT(a.post_id)>0,(COUNT(a.post_id)-1),0) AS total_reply, b.create_datetime, IF(d.is_guest=1,d.poster_name,x.user_name) AS poster_name
         FROM kicp_forum_post a 
         LEFT JOIN kicp_forum_topic b ON (a.topic_id=b.topic_id AND b.is_deleted=0) 
         LEFT JOIN kicp_forum_forum c ON (b.forum_id=c.forum_id)
         LEFT JOIN kicp_forum_topic d ON (a.topic_id=d.topic_id AND d.is_deleted=0)
-        LEFT JOIN xoops_users x ON (x.user_id=b.user_id)
+        LEFT JOIN xoops_users x ON (x.user_id=b.user_id) $access_sql 
         WHERE a.is_deleted=0 
-        GROUP BY a.topic_id 
-        HAVING post_id=this_post_id 
+        GROUP BY a.topic_id $access_sql_group
+        HAVING post_id=this_post_id $access_sql2
         ORDER BY a.topic_id desc LIMIT 5 ";
 
         $database = \Drupal::database();
@@ -39,7 +59,28 @@ class ForumDatatable {
 
     public static function getForumList() {
 
-        $sql = "SELECT a.forum_id, a.forum_name, COUNT(b.topic_id) AS total_topic, IF(COUNT(c.post_id)>0,(COUNT(c.post_id)-1),0) AS total_post, max(b.create_datetime) AS topic_datetime, IFNULL(MAX(c.create_datetime), NULL) AS last_post, '' AS poster_name, COUNT(d.id) AS forum_access FROM kicp_forum_forum a LEFT JOIN kicp_forum_topic b ON (b.forum_id=a.forum_id AND b.is_deleted=0) LEFT JOIN kicp_forum_post c ON (c.topic_id=b.topic_id AND c.is_deleted=0) LEFT JOIN kicp_access_control d ON (d.is_deleted=0 AND d.module='forum' AND d.record_id=a.forum_id) WHERE 1 GROUP BY a.forum_id ORDER BY a.forum_name";
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        $access_sql = "";
+        $access_sql2 = "";
+        if (!$isSiteAdmin) {
+            $access_sql = " LEFT JOIN kicp_public_group e ON ( e.is_deleted=0 AND d.group_type='P' AND e.pub_group_id=d.group_id)
+            LEFT JOIN kicp_buddy_group f ON ( f.is_deleted=0 AND d.group_type='B' AND f.buddy_group_id=d.group_id)
+            LEFT JOIN kicp_public_user_list g ON ( g.is_deleted=0 AND g.pub_group_id=e.pub_group_id AND g.pub_user_id='$my_user_id')
+            LEFT JOIN kicp_buddy_user_list h ON ( h.is_deleted=0 AND h.buddy_group_id=f.buddy_group_id AND h.buddy_user_id='$my_user_id') ";
+
+            $access_sql2 = " having count(d.id) = 0 or count(g.id) >0 or count(h.buddy_user_id) >0 ";
+        }
+
+
+        $sql = "SELECT a.forum_id, a.forum_name, COUNT(b.topic_id) AS total_topic, IF(COUNT(c.post_id)>0,(COUNT(c.post_id)-1),0) AS total_post, max(b.create_datetime) AS topic_datetime, IFNULL(MAX(c.create_datetime), NULL) AS last_post, '' AS poster_name, COUNT(d.id) AS forum_access 
+        FROM kicp_forum_forum a LEFT JOIN kicp_forum_topic b ON (b.forum_id=a.forum_id AND b.is_deleted=0) 
+        LEFT JOIN kicp_forum_post c ON (c.topic_id=b.topic_id AND c.is_deleted=0) 
+        LEFT JOIN kicp_access_control d ON (d.is_deleted=0 AND d.module='forum' AND d.record_id=a.forum_id) $access_sql
+        WHERE 1 GROUP BY a.forum_id $access_sql2 ORDER BY a.forum_name";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
 
@@ -187,6 +228,32 @@ class ForumDatatable {
         
         return $record->title;
     }
+
+
+    public static function myAccessibleForum($user_id="") {
+        
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        $sql = "SELECT aa.forum_id
+        FROM kicp_forum_forum aa
+        LEFT JOIN kicp_access_control d ON (d.is_deleted=0 AND d.module='forum' AND d.record_id=aa.forum_id)
+        LEFT JOIN kicp_public_group e ON ( e.is_deleted=0 AND d.group_type='P' AND e.pub_group_id=d.group_id)
+        LEFT JOIN kicp_buddy_group f ON ( f.is_deleted=0 AND d.group_type='B' AND f.buddy_group_id=d.group_id)
+        LEFT JOIN kicp_public_user_list g ON ( g.is_deleted=0 AND g.pub_group_id=e.pub_group_id AND g.pub_user_id='$user_id')
+        LEFT JOIN kicp_buddy_user_list h ON ( h.is_deleted=0 AND h.buddy_group_id=f.buddy_group_id AND h.buddy_user_id='$user_id')
+        group by aa.forum_id
+        having count(d.id) = 0 or count(g.id) >0 or count(h.buddy_user_id) >0; ";
+
+        
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchCol();
+
+        return $result;
+        
+    }
+
 
 }
 

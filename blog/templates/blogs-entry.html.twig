@@ -16,7 +16,7 @@
     <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
         <div style="float:right">
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': items['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
-            <span><button class="kicp_button" onClick="module_item_delete('blog',{{ items['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+            
 
          </div>
         <div class="entry_title">{{ items ['entry_title'] }} </div>
@@ -31,7 +31,10 @@
           {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  items['entry_id'], countLike: items['countlike'], 'liked': items['liked']  }  %}
         </div>
   </div>
+
+
 <Script>getiframe();</script>
+
   <hr style="margin: 20px 0;"><a name="comment_area"></a>
 
 <div id="blogCommentContainer">

@@ -11,7 +11,9 @@ use Drupal\file\Entity\File;
 function blog_page_attachments_alter(&$page) {
 
     $path = $current_path = \Drupal::service('path.current')->getPath();
-    if ( str_contains($path, '/blog')) {
+    $routeName = \Drupal::routeMatch()->getRouteName();    
+
+    if (explode(".", $routeName)[0] === 'blog') {
         $page['#attached']['library'][] = 'blog/blog_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/common_assets';   
@@ -24,7 +26,9 @@ function blog_page_attachments_alter(&$page) {
 
         if ( str_contains($path, '/blog_entry')  ) {
             $page['#attached']['library'][] = 'blog/blog_form';
+            $page['#attached']['library'][] = 'blog/blog_gallery';
         }	
+
     }
 
 }
@@ -48,6 +52,8 @@ function blog_theme($existing, $type, $theme, $path) {
         'blogs-view' =>[
             'variables' => [
                 'items' => NULL,
+                'my_user_id' => NULL,
+                'delegate'  => NULL,
                 'tags' => NULL,
                 'archive' => NULL,                
                 'tagsUrl' => NULL,

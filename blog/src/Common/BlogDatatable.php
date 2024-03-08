@@ -10,32 +10,60 @@ use Drupal\common\CommonUtil;
 
 class BlogDatatable {
 
-    public static function getHomepageBlogList($blogType, $limit) {
+    public static function getHomepageBlogList($my_user_id, $blogType, $limit) {
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+  
+
+        $sql_access ="";
+        $sql_access2 = "";
+
+        if (!$isSiteAdmin) {   
+            $sql_access =  "LEFT JOIN kicp_access_control aa ON (aa.record_id = b.blog_id AND aa.is_deleted = 0 AND aa.module = 'blog') 
+            LEFT JOIN kicp_public_user_list e ON (aa.group_type='P' AND e.pub_group_id=aa.group_id AND e.is_deleted=0 AND e.pub_user_id = '".$my_user_id."'  )
+            LEFT JOIN kicp_buddy_user_list f ON (aa.group_type='B' AND aa.group_id = f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id = '".$my_user_id."'  )
+            LEFT JOIN kicp_public_group g ON (aa.group_type='P' AND g.pub_group_id=aa.group_id AND g.is_deleted=0 AND g.pub_group_owner  = '".$my_user_id."'  )
+            LEFT JOIN kicp_buddy_group h ON (aa.group_type='B' AND h.buddy_group_id=aa.group_id AND h.is_deleted=0 AND h.user_id  = '".$my_user_id."'  ) ";
+
+            $sql_access2 = " group by a.entry_id ";
+            $sql_access3 = " having b.user_id = '".$my_user_id."' OR COUNT(aa.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0 ";
+        }
 
         if ($blogType=="ALL") {
             $sql="SELECT
-            a.entry_id, a.entry_title, b.blog_name, b.counter, a.entry_create_datetime, a.entry_modify_datetime,
-            b.image_name, b.blog_type, a.blog_id, c.uid, c.user_name AS user_displayname, b.user_id
+            a.entry_id, a.entry_title, b.blog_name, b.counter, a.entry_create_datetime, a.entry_modify_datetime, 
+            b.image_name, b.blog_type, a.blog_id, c.uid, c.user_name AS user_displayname, b.user_id, c.uid
             FROM kicp_blog_entry a
             INNER JOIN kicp_blog b ON (a.blog_id=b.blog_id)
-            INNER JOIN xoops_users c ON (b.user_id=c.user_id AND c.user_is_inactive=0)
-            WHERE a.is_deleted = 0 AND b.is_deleted=0 
-            ORDER BY a.entry_modify_datetime DESC limit 10";
+            INNER JOIN xoops_users c ON (b.user_id=c.user_id AND c.user_is_inactive=0) $sql_access 
+            WHERE a.is_deleted = 0 AND b.is_deleted=0 $sql_access2 $sql_access3 
+            ORDER BY a.entry_modify_datetime DESC limit $limit";
+
+
         } else {
             $sql2="";
             if ($blogType=="T") {
-                $sql2 =  "INNER JOIN kicp_blog_thematic e ON (e.blog_id=c.blog_id) ";
-                $order_by = " ORDER BY e.weight DESC";
-            } else {
-                $order_by = " ORDER BY c.counter DESC";
-            }
+                $sql = "SELECT b.blog_id, b.blog_name, b.counter, b.image_name, b.blog_type, b.user_id, d.user_name AS user_displayname, d.uid 
+                        from kicp_blog_thematic et inner join kicp_blog b on et.blog_id = b.blog_id INNER JOIN xoops_users d ON (b.user_id=d.user_id) $sql_access 
+                        where b.is_deleted=0 and d.user_is_inactive=0 
+                        group by et.blog_id $sql_access3 order by min(et.weight) desc limit $limit";
 
-            $sql = "SELECT a.entry_id, a.entry_title, c.blog_name, c.counter, a.entry_create_datetime, a.entry_modify_datetime, c.image_name, c.blog_type, a.blog_id, d.uid, d.user_name AS user_displayname, c.user_id FROM kicp_blog_entry a INNER JOIN ( SELECT max(entry_id) as Maxid FROM kicp_blog_entry WHERE is_deleted=0 group by blog_id ) b ON (a.entry_id=b.Maxid) INNER JOIN kicp_blog c ON (a.blog_id=c.blog_id) INNER JOIN xoops_users d ON (c.user_id=d.user_id) 
-            $sql2 WHERE c.is_deleted=0 and a.is_deleted=0 AND c.blog_type='$blogType' and d.user_is_inactive=0 $order_by limit $limit";
+                        
+
+                } else {
+                    $sql = "SELECT b.blog_id, b.blog_name, b.counter, b.image_name, b.blog_type, b.user_id, d.user_name AS user_displayname, d.uid
+                            FROM kicp_blog b INNER JOIN xoops_users d ON (b.user_id=d.user_id) $sql_access 
+                            WHERE b.is_deleted=0 and b.blog_type = 'P' and d.user_is_inactive=0 
+                            group by b.blog_id $sql_access3 order by b.counter DESC limit $limit";
+                }
+
+                
+            
         }
-        //if ($blogType="P") dump ($sql);
-
+       
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -442,6 +470,39 @@ class BlogDatatable {
 
         return $result;
     }
-    
 
+    public static function myUnAccessibleBlog($user_id) {
+        $sql = "select b.blog_id, b.user_id from kicp_blog b 
+        left join kicp_access_control a on (a.record_id = b.blog_id and a.is_deleted =0 and a.module = 'blog') 
+        left join kicp_public_user_list e on (a.group_type = 'P' and a.group_id = e.pub_group_id and e.is_deleted = 0 and e.pub_user_id = '$user_id') 
+        left join kicp_buddy_user_list f on (a.group_type = 'B' and a.group_id = f.buddy_group_id and e.is_deleted = 0 and f.buddy_user_id = '$user_id') 
+        LEFT JOIN kicp_public_group g on (a.group_type = 'P' and a.group_id = g.pub_group_id and g.is_deleted = 0 and g.pub_group_owner = '$user_id') 
+        LEFT JOIN kicp_buddy_group h on (a.group_type = 'B' and a.group_id = h.buddy_group_id and h.is_deleted = 0 and h.user_id = '$user_id') 
+        group by b.blog_id having b.user_id <> '$user_id' AND COUNT(a.id) > 0 AND COUNT(e.pub_user_id)= 0 AND COUNT(f.buddy_user_id) = 0 AND COUNT(g.pub_group_id)= 0 AND COUNT(h.user_id)= 0";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchCol();
+
+
+        return $result;
+ 
+    }
+
+
+    public static function isBlogDelegatedUser($blog_id, $user_id) {
+        if ($blog_id == "" || $user_id == "") {
+            return false;
+        }
+        else {
+            $sql = "SELECT user_id FROM kicp_blog_delegated WHERE blog_id='$blog_id' AND user_id='$user_id' limit 1";
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchObject();      
+
+            if ($result->user_id !=null && $result->user_id !="" )
+                return true;
+            else
+                return false;
+
+        }
+    }
 }

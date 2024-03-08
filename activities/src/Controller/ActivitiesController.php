@@ -168,6 +168,9 @@ class ActivitiesController extends ControllerBase {
 
     public function deleteEventItem($evt_id="") {
 
+
+        $eventInfo = ActivitiesDatatable::getEventDetail($evt_id);
+        $type_id = $eventInfo['evt_type_id'];
         $current_time =  \Drupal::time()->getRequestTime();
 
         // delete record
@@ -184,8 +187,9 @@ class ActivitiesController extends ControllerBase {
           // delete tags
           $return2 = TagStorage::markDelete($this->module, $evt_id);
 
-          return new RedirectResponse("/activities_admin_event/2");
-  
+          $url = Url::fromUserInput('/activities_admin_event/'.$type_id);
+          return new RedirectResponse($url->toString());
+      
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Event has been deleted'));
   
@@ -216,6 +220,144 @@ class ActivitiesController extends ControllerBase {
 
     }
 
+
+    public function EventEnrollList($evt_id="") {
+
+        $EnrollRecord = ActivitiesDatatable::getEnrollmemtRecord($evt_id);
+        $EnrollRecord['time'] = \Drupal::time()->getCurrentTime();
+        $EventDetail = ActivitiesDatatable::getEventDetail($evt_id);
+                
+        return [
+            '#theme' => 'activities-enrollment-list',
+            '#items' => $EnrollRecord,
+            '#event' => $EventDetail,
+            '#empty' => t('No entries available.'),
+        ];   
+
+    }
+
+    public function deleteEventEnroll($evt_id, $user_id) {
+
+
+        // delete record   
+        $err_code = '0'; 
+        try {
+          $database = \Drupal::database();
+          $query = $database->update('kicp_km_event_member_list')->fields([
+            'is_deleted'=>1 , 
+          ])
+          ->condition('evt_id', $evt_id)
+          ->condition('user_id', $user_id)
+          ->execute();
+
+          $url = Url::fromUserInput('/activities_enroll_list/'.$evt_id);
+          return new RedirectResponse($url->toString());
+      
+          $err_code = '1';
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Enrollment has been deleted'));
+  
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete enrollment at this time due to datbase error. Please try again. ' )
+                );
+
+            }	        
+        $response = array('result' => $err_code);
+        return new JsonResponse($response);
+    
+
+    }
+
+
+    public static function changeEnrollStatus($evt_id, $user_id) {
+        
+        $err_code = '0';
+        $is_enrol_successful = $_REQUEST['is_enrol_successful'];
+        $is_showup = $_REQUEST['is_showup'];
+
+        try {
+            $database = \Drupal::database();
+            $query = $database->update('kicp_km_event_member_list')->fields([
+              'is_enrol_successful' => $is_enrol_successful, 
+              'is_showup'=>$is_showup,
+            ])
+            ->condition('evt_id', $evt_id)
+            ->condition('user_id', $user_id)
+            ->execute();
+          
+            $err_code = '1';
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Enrollment has been updated: ').$user_id);
+
+        }
+        catch (Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to update enrollment at this time due to datbase error. Please try again. '.$e )
+                );
+        }
+        
+        $err_code = '1';
+        $response = array('result' => $err_code);
+        return new JsonResponse($response);
+        
+    }
+
+
+    public function ActivityEvtPhotos($evt_id) {
+
+        $EventDetail = ActivitiesDatatable::getEventDetail($evt_id);
+        $EventPhotos = ActivitiesDatatable::getPhotosbyEvent($evt_id);
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        $EventPhotos['search_str'] =  $search_str;
+
+
+        return [
+            '#theme' => 'activities-admin-photos',
+            '#items' => $EventPhotos,
+            '#evt_id' => $evt_id,
+            '#type_id' => $EventDetail['evt_type_id'],
+            '#empty' => t('No entries available.'),
+            '#pager' => ['#type' => 'pager',
+            ],
+        ]; 
+    }
+
+
+    public function ActivityPhotoDelete($evt_photo_id) {
+
+
+        $photoInfo = ActivitiesDatatable::getEventPhotoInfo($evt_photo_id);
+        
+        $evt_id = $photoInfo->evt_id;
+
+        // delete record
+    
+        try {
+          $database = \Drupal::database();
+          $query = $database->update('kicp_km_event_photo')->fields([
+            'is_deleted'=>1 , 
+          ])
+          ->condition('evt_photo_id', $evt_photo_id)
+          ->execute();
+
+          $url = Url::fromUserInput('/activities_photo/'. $evt_id);
+          return new RedirectResponse($url->toString());
+      
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Photo has been deleted'));
+  
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete photo at this time due to datbase error. Please try again. ' )
+                );
+
+            }	
+
+    }
 
     public function getTagContent() {
 

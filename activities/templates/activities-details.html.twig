@@ -33,9 +33,11 @@
     </div>
     <div class="event_column_description">
         <div>&nbsp;</div>
+         {% if user.hasPermission('activities_admin') %}
         <div class="event_column_enroll_status"><a href="{{ path('activities.enroll_status', {'evt_id': items['evt_id'] }) }}">Enrollment Status</a></div>
+        {% endif %}
         <div id="description_content" style="text-align:justify;margin-top:30px;">
-            {{ items['evt_description'] | raw  }}
+            {{ items['evt_description']  | raw  | nl2br  }}
         </div>
     </div>
 </div>

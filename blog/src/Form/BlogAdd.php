@@ -142,7 +142,7 @@ class BlogAdd extends FormBase  {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'blog_view?blog_id=1234\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
 
@@ -153,7 +153,7 @@ class BlogAdd extends FormBase  {
             '#type' => 'details',
             '#open' => true,
             '#description' =>  t($taglist),
-            '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6;'),
+            '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6; margin-top: 40px;'),
         );
 
           
@@ -289,7 +289,7 @@ class BlogAdd extends FormBase  {
     }
     catch (\Exception $e) {
         \Drupal::messenger()->addStatus(
-            t('Unable to save blog at this time due to datbase error. Please try again. '. $uuid  )
+            t('Unable to save blog at this time due to datbase error. Please try again. ' )
             );
         
         }	

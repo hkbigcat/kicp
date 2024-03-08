@@ -40,6 +40,7 @@ function fileshare_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'items' => NULL,
                 'tags' => NULL,
+                'my_user_id' => NULL,
                 'pager' => NULL,
                 'tagsUrl' => NULL,
             ],

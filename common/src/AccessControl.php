@@ -67,4 +67,26 @@ class AccessControl {
 
     }
 
+
+    public static function canAccess($module, $record_id, $user_id) {
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if ($isSiteAdmin)
+            return true;
+
+        $sql = "SELECT a.record_id, count(b.id) as hasPublic , count(c.id) as hasPersonal FROM `kicp_access_control` a 
+        left join kicp_public_user_list b on (b.pub_group_id = a.group_id and a.group_type = 'P' and b.pub_user_id = '$user_id' and b.is_deleted = 0) 
+        left join kicp_buddy_user_list c on ( c.buddy_group_id = a.group_id and a.group_type = 'B' and c.buddy_user_id = '$user_id' and c.is_deleted = 0) 
+        where a.module = '$module' and a.record_id = $record_id and a.is_deleted = 0 group by a.record_id";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();       
+        
+        if ($result->record_id && $result->record_id != null && $result->hasPublic=0 && $result->hasPersonal=0  )
+            return false;
+        else
+            return true;
+
+    }
+
 }

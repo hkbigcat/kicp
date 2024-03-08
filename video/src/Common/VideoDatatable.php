@@ -17,7 +17,21 @@ class VideoDatatable {
 
     public static function getVideoEventList($limit = "", $start="") {
 
-        $outputAry = array();
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        $access_sql = "";
+        $access_sql2 = "";
+        if (!$isSiteAdmin) {
+
+            $access_sql = " LEFT JOIN kicp_media_event_privilege k on (a.media_event_id = k.media_event_id and k.is_deleted = 0)
+                            LEFT JOIN kicp_public_user_list g ON ( g.is_deleted=0 AND g.pub_group_id=k.pub_group_id AND g.pub_user_id='$my_user_id') ";
+
+            $access_sql2 = " group by a.media_event_id having count(k.id) = 0 or count(g.id)>0 ";
+
+        }
 
         
         $this_limit = (isset($limit) && $limit != "") ? ' LIMIT ' . $limit : '';
@@ -28,7 +42,8 @@ class VideoDatatable {
         }
 
         // Event list
-        $sql = 'SELECT media_event_id, media_event_name, LEFT(media_event_date,10) as media_event_date, media_event_image FROM kicp_media_event_name WHERE is_visible=1 AND is_deleted=0 ORDER BY media_event_sequence DESC, media_event_name' . $start_cond .$this_limit;
+        $sql =  "SELECT a.media_event_id, a.media_event_name, LEFT(a.media_event_date,10) as media_event_date, a.media_event_image 
+        FROM kicp_media_event_name a $access_sql WHERE a.is_visible=1 AND a.is_deleted=0 $access_sql2 ORDER BY a.media_event_sequence DESC, a.media_event_name $start_cond $this_limit ";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

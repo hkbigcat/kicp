@@ -42,7 +42,12 @@
   {% endif %}
 
     <div class="DivContentTable_item " style="width:50%;display:inline-block;">
-      <div style="width:55%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': forum['forum_id'] }) }}">{{ forum['forum_name'] }}</a> </div>
+      <div style="width:55%;float:left;display:block;">
+        <a href="{{ path('forum.forum_view_forum', {'forum_id': forum['forum_id'] }) }}">{{ forum['forum_name'] }}</a> 
+         {% if user.hasPermission('access administration pages') %}
+        <a href="#add-record" onclick="getAddGroupMemberUI('forum',{{forum['forum_id']}});">[{{ forum['forum_access']?'Restricted':'Public' }}]</a>
+        {% endif %}
+      </div>
       <div style="width:10%;float:left;display:block;">{{ forum['total_topic'] }}</div>
       <div style="width:10%;float:left;display:block;">{{ forum['total_post'] }}</div>
       <div style="width:22%;float:left;display:block;">{{ forum['topic_datetime'] }}</div>
@@ -54,3 +59,4 @@
 
   {% endfor %}   
 </div>
+{% include '@common/common-accesscontrol-modal.html.twig' %}

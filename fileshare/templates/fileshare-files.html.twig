@@ -25,8 +25,10 @@
                {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
           </div>
           <div style="width:27%;float:right;display:block;margin-left:20px;">
+          {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
                <span><button class="kicp_button" onclick="self.location.href='{{ path('fileshare.fileshare_change', {'file_id': item['file_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                <span style="margin-bottom:15px;"><button class="kicp_button" onClick="module_item_delete('fileshare',{{ item['file_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+          {% endif %}               
                <div id="cpRate_fileshare_{{ item['file_id'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}</div>
           </div>
           

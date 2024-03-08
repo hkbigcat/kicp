@@ -17,10 +17,11 @@
  {% for item in items %}
     {% if  item['entry_title'] %}
     <div id="DivEntry_{{item ['entry_id'] }}" class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }}">
-        <div style="float:right">   
+        <div style="float:right">
+           {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id or delegate)  %}
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': item['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ item['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
-
+            {% endif %}
          </div>
         <div class="entry_title"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}">{{item ['entry_title'] }}</a></div>
         <div class="entry_content">{{item ['entry_content'] | raw }}</div>
@@ -39,7 +40,7 @@
 
      {{ pager }}
 </div>
-<Script>getiframe();</script>
+<style>iframe { display:none; } </style>
 
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}
 

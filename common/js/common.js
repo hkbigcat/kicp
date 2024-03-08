@@ -12,12 +12,22 @@ function module_item_delete(module, item_id) {
       break;
     case 'blog':
         msgtitle = 'Blog';
+        page_url = "../"+module + "_delete/"+item_id;
       break;          
     case 'blog_elegate':
         msgtitle = 'Blog delegrate users';
       break;          
     case 'activities_item':
         msgtitle = 'KM Activities';
+        page_url = "../"+module + "_delete/"+item_id;
+      break;          
+    case 'activities_enroll':
+        msgtitle = 'KM Activities';
+        page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
+      break;          
+    case 'activities_photo':
+        msgtitle = 'KM Activities Photo';
+        page_url = "../"+module + "_delete/"+item_id;
       break;          
     case 'video_event':
         msgtitle = 'Video Event';
@@ -27,15 +37,15 @@ function module_item_delete(module, item_id) {
       break;       
     case 'video_event_privilege':
        msgtitle = 'Group';
-       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+       page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
       break;     
     case 'profile_group':
        msgtitle = 'Profile Group';
-       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+       page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
     break;     
     case 'profile_group_member':
        msgtitle = 'Profile Group Member';
-       page_url = "/"+module + "_delete/"+item_id.replace(/,/g, "/");
+       page_url = "../../"+module + "_delete/"+item_id.replace(/,/g, "/");
     break;     
     default:
       msgtitle = module;        
@@ -212,11 +222,19 @@ function loadMoreTag(module) {
 
 }
 
+function checkAll(cb, which) {
+  var cb_list = document.getElementsByName(which);
+  for (i = 0; i < cb_list.length; i++) {
+      cb_list[i].checked = cb.checked;
+  }
+}
 
 
 if (jQuery) {
-  console.log("jquery is loaded");
+  console.log("common.js jquery is loaded");
 } else {
-  console.log("Not loaded");
+  console.log("common.js  Not loaded");
 }
+
+
 

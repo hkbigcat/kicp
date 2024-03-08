@@ -12,9 +12,15 @@
         <table>
             <tbody>
                 <tr style="background-color:transparent;border:0">
-                    <td style="width: 15%;border:none; position:absolute"><div class="mainpage_image" style="width:100px;"><a href="{{item['link']}}" style="border-bottom:0px;"><img src="{{item['img_path']}}" border="0" width="100"></a></div> </td>
+                    <td style="width: 15%;border:none; position:absolute"><div class="mainpage_image" style="width:100px;"><a href="{{item['link']}}" style="border-bottom:0px;">
+                    {% if item['module'] == 'bookmark' %}
+                        <i class="fa-solid fa-bookmark" style="font-size:40px; margin:auto; width:100%; color:#00ff00"></i>
+                    {% else %}
+                        <img src="{{item['img_path']}}" border="0" width="100">
+                    {% endif %}
+                    </a></div> </td>
                     <td style="width: 85%;border:none">
-                        <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_date'] | date('j F, Y, g:i') }}</span>
+                        <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_time'] | date('j F, Y, g:i') }}</span>
                         <span class="title2"><strong>[{{ item['module'] | capitalize  }}]</strong></span>
                         <span class="title2_2"> <a href="{{item['link']}}">{{ item['Title'] }}</a></span>
                         <div class="author">Created By: <span class="author_name">{{item['user_displayname']}}</span> <span id="{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
@@ -26,13 +32,20 @@
         </table>
     </div>
     
-    <div style="width:8%;display:inline-block;float:right;">
+    
         {% if item['module'] in ['blog', 'forum'] %}
+        <div style="width:8%;display:inline-block;float:right;">
         {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
+        {% elseif item['module'] in ['fileshare', 'fookmark'] %}
+        <div style="width:33%;display:inline-block;float:right;">
+        {% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}
         {% endif %}
-    </div>
+        </div>
+
 </div>
 {% endfor %}
+
+
 
 <input type="hidden" name="tag_page" id="tag_page" value="tag">
 <div style="width:100%;">

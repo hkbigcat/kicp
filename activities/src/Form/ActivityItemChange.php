@@ -23,7 +23,7 @@ use Drupal\file\FileInterface;
 use Drupal\file\Entity;
 
 
-class ActivityItemAdd extends FormBase  {
+class ActivityItemChange extends FormBase  {
 
     public function __construct() {
         $this->module = 'activities';
@@ -35,7 +35,7 @@ class ActivityItemAdd extends FormBase  {
      * {@inheritdoc}
      */
     public function getFormId() {
-        return 'km_activities_item_add_form';
+        return 'km_activities_item_change_form';
     }
 
 
@@ -53,11 +53,13 @@ class ActivityItemAdd extends FormBase  {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state, $type_id="") {
+    public function buildForm(array $form, FormStateInterface $form_state, $evt_id="") {
 
         $config = \Drupal::config('activities.settings'); 
 
         $form['#attributes']['enctype'] = 'multipart/form-data';
+
+        $eventInfo = ActivitiesDatatable::getEventDetail($evt_id);
 
         $form['evt_name'] = [
             '#type' => 'textfield',
@@ -65,7 +67,13 @@ class ActivityItemAdd extends FormBase  {
             '#size' => 90,
             '#maxlength' => 225,
             '#required' => TRUE,
-        ];          
+            '#default_value' => $eventInfo['evt_name'],
+        ];  
+        
+        $form['evt_name_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_name'],
+          );
                  
         $form['evt_description'] = [
             '#type' => 'textarea',
@@ -74,58 +82,94 @@ class ActivityItemAdd extends FormBase  {
             '#cols' => 30,
             '#attributes' => array('style' => 'height:300px;'),
             '#required' => TRUE,
+            '#default_value' => $eventInfo['evt_description'],
         ];
+
+        $form['evt_description_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_description'],
+          );
+  
 
         $form['evt_venue'] = array(
             '#title' => t('Event Venue'),
             '#type' => 'textfield',
             '#size' => 90,
             '#maxlength' => 255,
+            '#default_value' => $eventInfo['venue'],
         );
+
+        $form['evt_venue_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['venue'],
+          );
   
 
         $form['evt_start_date'] = array(
             '#title' => t('Event Start Date'),
             '#type' => 'textfield',
-            '#size' => 30,
+            '#size' => 20,
             '#maxlength' => 19,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
             '#description' => t('YYYY-MM-DD hh:mm:ss'),
             '#required' => TRUE,
+            '#default_value' => $eventInfo['evt_start_date'],
         );
+
+        $form['evt_start_date_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_start_date'],
+          );
 
         $form['evt_end_date'] = array(
             '#title' => t('Event End Date'),
             '#type' => 'textfield',
-            '#size' => 30,
+            '#size' => 20,
             '#maxlength' => 19,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
             '#description' => t('YYYY-MM-DD hh:mm:ss'),
             '#required' => TRUE,
+            '#default_value' => $eventInfo['evt_end_date'],
         );
+
+        $form['evt_end_date_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_end_date'],
+          );
 
         $form['evt_enroll_start'] = array(
             '#title' => t('Event Enroll Start Date'),
             '#type' => 'textfield',
-            '#size' => 30,
+            '#size' => 20,
             '#maxlength' => 19,
             '#prefix' => '<br><div class="div_inline_440">',
             '#suffix' => '</div>',
             '#description' => t('YYYY-MM-DD hh:mm:ss'),
+            '#default_value' => $eventInfo['evt_enroll_start'],
         );
+
+        $form['evt_enroll_start_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_enroll_start'],
+          );
 
         $form['evt_enroll_end'] = array(
             '#title' => t('Event Enroll End Date'),
             '#type' => 'textfield',
-            '#size' => 30,
+            '#size' => 20,
             '#maxlength' => 19,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
             '#description' => t('YYYY-MM-DD hh:mm:ss'),
+            '#default_value' => $eventInfo['evt_enroll_end'],
         );
 
+        $form['evt_enroll_end_prev'] = array(
+            '#type' => 'hidden',
+            '#value' =>  $eventInfo['evt_enroll_end'],
+          );
 
         $activityTypeAry = ActivitiesDatatable::getAllActivityType();
         $activityTypeSelect = array();
@@ -137,12 +181,16 @@ class ActivityItemAdd extends FormBase  {
             '#title' => t('Event Type'),
             '#type' => 'select',
             '#options' => $activityTypeSelect,
-            '#prefix' => '<div stlye="display:block; height:100px;"></div><div class="div_inline_440">',
+            '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
             '#required' => TRUE,
-            '#default_value' => $type_id,
+            '#default_value' => $eventInfo['evt_type_id'],
         );        
 
+        $form['form_evt_type_id_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_type_id'],
+          );
 
         $copSelectAry = ActivitiesDatatable::getCOPItem();
         $copSelect = array();
@@ -156,10 +204,17 @@ class ActivityItemAdd extends FormBase  {
             '#prefix' => '<div id="div_evt_cop_id">',
             '#suffix' => '</div>',
             '#options' => $copSelect,
-            //'#default_value' => $_temp_evt_cop_id,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div><br>',
+            '#default_value' => $eventInfo['cop_id'],
         );
+
+
+        $form['evt_cop_id_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['cop_id'],
+          );
+
 
         $form['is_recent'] = array(
             '#title' => t('Recent Event '),
@@ -167,7 +222,15 @@ class ActivityItemAdd extends FormBase  {
             '#default_value' => 1,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
+            '#default_value' => $eventInfo['is_recent'],
         );
+
+
+        $form['is_recent_prev'] = array(
+            '#type' => 'hidden',
+            '#alue' => $eventInfo['is_recent'],
+          );
+
 
         $form['is_visible'] = array(
             '#title' => t('Event Visible '),
@@ -175,35 +238,69 @@ class ActivityItemAdd extends FormBase  {
             '#default_value' => 1,
             '#prefix' => '<div class="div_inline_440">',
             '#suffix' => '</div>',
+            '#default_value' => $eventInfo['is_visible'],
         );
+
+        $form['is_visible_prev'] = array(
+            '#type' => 'hidden',
+            '#default_value' => $eventInfo['is_visible'],
+          );
+
 
         $form['evt_recent_status'] = array(
             '#title' => t('Event Recent Status'),
             '#type' => 'textfield',
             '#size' => 90,
             '#maxlength' => 255,
+            '#default_value' => $eventInfo['evt_recent_status'],
         );
+
+        $form['evt_recent_status_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_recent_status'],
+          );
+
 
         $form['evt_max_enroll'] = array(
             '#title' => t('Maximum # of Enrollment'),
             '#type' => 'textfield',
             '#size' => 40,
             '#maxlength' => 10,
+            '#default_value' => $eventInfo['evt_capacity'],
         );
+
+        $form['evt_max_enroll_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['evt_capacity'],
+          );
+
 
         $form['evt_enroll_url'] = array(
             '#title' => t('Enrollment URL '),
             '#type' => 'textarea',
             '#rows' => 4,
             '#cols' => 30,
+            '#default_value' => $eventInfo['enroll_URL'],
         );
+
+        $form['evt_enroll_url_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['enroll_URL'],
+          );
+
 
         $form['evt_enroll_status_url'] = array(
             '#title' => t('Enrollment Status URL '),
             '#type' => 'textarea',
             '#rows' => 4,
             '#cols' => 30,
+            '#default_value' => $eventInfo['current_enroll_status'],
         );
+
+        $form['evt_enroll_status_url_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['current_enroll_status'],
+          );
 
         $msgSelect = ActivitiesDatatable::getEventSubmitReply();
 
@@ -211,11 +308,25 @@ class ActivityItemAdd extends FormBase  {
             '#title' => t('Message appears to applications '),
             '#type' => 'select',
             '#options' => $msgSelect,
+            '#default_value' => $eventInfo['submit_reply'],
         );
+
+        $form['evt_msg_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $eventInfo['submit_reply'],
+          );
+  
+        if($eventInfo['evt_logo_url'] != "") {
+            $original_img = '<img src="../system/files/'.$this->module.'/item/'.$eventInfo['evt_logo_url'].'" border="0" width="50" height="50">';
+        } else {
+            $original_img = "";
+        }
+
 
         $form['evt_logo'] = array(
             '#title' => t('Event Logo'),
             '#type' => 'file',
+            '#prefix' => $original_img,
         );
 
         $form['evt_forum_id'] = array(
@@ -223,16 +334,30 @@ class ActivityItemAdd extends FormBase  {
             '#type' => 'textfield',
             '#size' => 20,
             '#maxlength' => 10,
+            '#default_value' => $eventInfo['forum_topic_id'],
         );
+
+        $form['evt_forum_id_prev'] = array(
+            '#type' => 'hidden',
+            '#value' =>$eventInfo['forum_topic_id'],
+          );
 
 
         $TagList = new TagList();
+
+        $tags = $TagList->getTagListByRecordId('activities', $evt_id);
 
         $form['tags'] = array(
             '#title' => t('Tags'),
             '#type' => 'textarea',
             '#rows' => 2,
             '#description' => 'Use semi-colon (;) as separator',
+            '#default_value' => implode(";", $tags),
+        );
+
+        $form['tags_prev'] = array(
+            '#type' => 'hidden',
+            '#value' => $tags,
         );
           
         $form['actions']['submit'] = array(
@@ -240,15 +365,32 @@ class ActivityItemAdd extends FormBase  {
             '#value' => t('Save'),
         );
         
+
+        $form['mgmt'] = array(
+            '#type' => 'hidden',
+            '#value' => $_REQUEST['mgmt'],
+        );
+        
+        $form['evt_type_id'] = array(
+            '#type' => 'hidden',
+            '#value' => $_REQUEST['evt_type_id'],
+        );
+        
+        $form['evt_id'] = array(
+            '#type' => 'hidden',
+            '#value' => $evt_id,
+        );
+
         $form['actions']['cancel'] = array(
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'../activities_admin_event/'.$type_id.'\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'window.open(\'../activities_admin_event/'.$eventInfo['evt_type_id'].'\', \'_self\'); return false;'),
             '#limit_validation_errors' => array(),
         );
         
-        $taglist = $TagList->getListCopTagForModule();
+        
+        $taglist = $TagList->getListCopTagForModule('activities', $evt_id);
         $form['t3'] = array(
             '#title' => t('COP Tags'),
             '#type' => 'details',
@@ -348,38 +490,47 @@ class ActivityItemAdd extends FormBase  {
             'cop_id' => $evt_cop_id,
             'is_recent' => $is_recent,
             'evt_recent_status' => $evt_recent_status,
-            'is_archived' => 0,
-            'is_deleted' => 0,
             'is_visible' => $is_visible,
             'evt_capacity' => ($evt_max_enroll=="" ? NULL : $evt_max_enroll),
             'enroll_URL' => $evt_enroll_url,
             'current_enroll_status' => $evt_enroll_status_url,
             'venue' => $evt_venue,
-            'allow_likes' => 1,
-            'num_likes' => 0,
             'forum_topic_id' => ($evt_forum_id=="" ? NULL : $evt_forum_id),
             'submit_reply' => $evt_msg,
-            'user_id' => $this->default_creator,
-            'create_datetime' => date('Y-m-d H:i:s', $current_time),
-            'modify_datetime' => date('Y-m-d H:i:s', $current_time),            
           );
 
 
-          
-          try {
-            $query = \Drupal::database()->insert('kicp_km_event')
-            ->fields( $eventEntry);
-            $evt_id = $query->execute();
+        // if changes in content, update timestamp
+        if($evt_name != $evt_name_prev || $evt_description != $evt_description_prev || $evt_venue != $evt_venue_prev || $evt_start_date != $evt_start_date_prev || $evt_end_date != $evt_end_date_prev || $evt_enroll_start != $evt_enroll_start_prev || $evt_enroll_end != $evt_enroll_end_prev || $form_evt_type_id != $form_evt_type_id_prev || $evt_cop_id != $evt_cop_id_prev || $is_recent != $is_recent_prev || $is_visible != $is_visible_prev || $evt_recent_status != $evt_recent_status_prev || $evt_max_enroll != $evt_max_enroll_prev || $evt_enroll_url != $evt_enroll_url_prev || $evt_enroll_status_url != $evt_enroll_status_url_prev || $evt_msg != $evt_msg_prev || $evt_forum_id != $evt_forum_id_prev || ( isset($_FILES['files']['name']['evt_logo']) && $_FILES['files']['name']['evt_logo'] != "")) {
+            $eventEntry['modify_datetime'] = date('Y-m-d H:i:s', $current_time);
+        }
 
-            if ($tags != '') {
-                $entry1 = array(
-                    'module' => $this->module,
-                    'module_entry_id' => intval($evt_id),
-                    'tags' => $tags,
-                );
-                $return1 = TagStorage::insert($entry1);
-                
-            } 
+
+          try {
+            $query = \Drupal::database()->update('kicp_km_event')
+            ->fields( $eventEntry)
+            ->condition('evt_id', $evt_id)
+            ->execute();    
+
+            if ($tags != $tags_prev) {
+                // rewrite tags
+                if ($tags_prev != '') {
+                    $query = $database->update('kicp_tags')->fields([
+                        'is_deleted'=>1 , 
+                      ])
+                      ->condition('fid', $evt_id)
+                      ->condition('module', 'activities')
+                      ->execute();                
+                }
+                if ($tags != '') {
+                    $entry1 = array(
+                        'module' => 'activities',
+                        'module_entry_id' => intval($evt_id),
+                        'tags' => $tags,
+                      );
+                      $return1 = TagStorage::insert($entry1);                
+                }
+              }
             
             if ($_FILES['files']['name']['evt_logo'] != "") {
                 $file_system = \Drupal::service('file_system');   
@@ -412,7 +563,7 @@ class ActivityItemAdd extends FormBase  {
             $form_state->setRedirectUrl($url);
     
             $messenger = \Drupal::messenger(); 
-            $messenger->addMessage( t('Event has been added.'));
+            $messenger->addMessage( t('Event has been updated.'));
 
         }
         catch (\Exception $e) {

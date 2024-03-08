@@ -20,20 +20,15 @@ use Symfony\Component\HttpFoundation\Response;
 class BlogController extends ControllerBase {
     
     public function __construct() {
-        //$Paging = new Paging();
-        //$DefaultPageLength = $Paging->getDefaultPageLength();
 
         $this->BlogHomepageDisplayNo = 10;
         $this->module = 'blog';
         $this->LimitPerPage = (isset($_REQUEST['limit']) && $_REQUEST['limit'] != '') ? $_REQUEST['limit'] : $DefaultPageLength;
-        //$this->app_path = CommonUtil::getSysValue('app_path');
-        //$this->app_path_url = CommonUtil::getSysValue('app_path_url');
-        //$this->domain_name = CommonUtil::getSysValue('domain_name');
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
 
-        //$user_id = "BTPLEE.OGCIO";
+
         $this->$user_id = $authen->getUserId();
         $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->$user_id );
         
@@ -41,10 +36,10 @@ class BlogController extends ControllerBase {
     
     public function content() {
 
-
-        $ThematicBlogAry = BlogDatatable::getHomepageBlogList('T', $this->BlogHomepageDisplayNo);
-        $PersonalBlogAry = BlogDatatable::getHomepageBlogList('P', $this->BlogHomepageDisplayNo);
-        $LatestBlogContent = BlogDatatable::getHomepageBlogList('ALL', $this->BlogHomepageDisplayNo);
+        
+        $ThematicBlogAry = BlogDatatable::getHomepageBlogList($this->$user_id, 'T', $this->BlogHomepageDisplayNo);
+        $PersonalBlogAry = BlogDatatable::getHomepageBlogList($this->$user_id, 'P', $this->BlogHomepageDisplayNo);
+        $LatestBlogContent = BlogDatatable::getHomepageBlogList($this->$user_id, 'ALL', $this->BlogHomepageDisplayNo);
 
         $items = array();
         $items['thematic'] = $ThematicBlogAry;
@@ -90,10 +85,13 @@ class BlogController extends ControllerBase {
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($blog_id);
         $entry['blog'] = $blog;
+        $isdeletegate = BlogDatatable::isBlogDelegatedUser($blog_id,  $this->$user_id);
         
         return [
             '#theme' => 'blogs-view',
             '#items' => $entry,
+            '#my_user_id' => $this->my_user_id,
+            '#delegate' => $isdeletegate,
             '#archive' => $archive,
             '#empty' => t('No entries available.'),
             '#pager' => ['#type' => 'pager',

@@ -2,8 +2,8 @@
 
 {% include '@common/common-tags.html.twig' %}
 
-     <input type="hidden" name="tag_page" id="tag_page" value="../tag">
-     <input type="hidden" name="notag_page" id="notag_page" value="../"> 
+     <input type="hidden" name="tag_page" id="tag_page" value="{{ url('<front>') }}/tag">
+     <input type="hidden" name="notag_page" id="notag_page" value="{{ url('<front>') }}"> 
 
  {% for item in items %}
 

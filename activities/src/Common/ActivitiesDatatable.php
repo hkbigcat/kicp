@@ -128,20 +128,22 @@ class ActivitiesDatatable {
             return $record;
         }
 
-        $sql = 'SELECT a.evt_id, a.evt_name, a.evt_type_id, a.evt_start_date, a.evt_end_date, a.evt_enroll_start, a.evt_enroll_end, a.evt_description, a.evt_is_cop_evt, a.cop_id, a.survey_id, a.venue, b.display, b.template, a.is_recent, a.is_visible, a.evt_recent_status, a.evt_capacity, a.enroll_URL, a.current_enroll_status, a.submit_reply, a.forum_topic_id, a.evt_logo_url, a.user_id, EXISTS (SELECT 1 FROM kicp_km_event_photo where evt_id = \'' . $evt_id . '\' and  is_deleted=0 ) AS has_photo,  EXISTS (SELECT 1 FROM kicp_km_event_deliverable where evt_id = \'' . $evt_id . '\' and  is_deleted=0 ) AS has_deliverable  FROM kicp_km_event a LEFT JOIN kicp_km_event_submitreply b ON (a.submit_reply = b.reply AND b.is_visible = 1) WHERE a.evt_id=\'' . $evt_id . '\' AND a.is_archived = 0 AND a.is_deleted = 0 ORDER BY a.evt_enroll_end DESC';
+        $sql = "SELECT a.evt_id, a.evt_name, a.evt_type_id, a.evt_start_date, a.evt_end_date, a.evt_enroll_start, a.evt_enroll_end, a.evt_description, a.evt_is_cop_evt, a.cop_id, a.survey_id, a.venue, b.display, b.template, a.is_recent, a.is_visible, a.evt_recent_status, a.evt_capacity, a.enroll_URL, a.current_enroll_status, a.submit_reply, a.forum_topic_id, a.evt_logo_url, a.user_id, EXISTS (SELECT 1 FROM kicp_km_event_photo where evt_id = '$evt_id' and  is_deleted=0 ) AS has_photo,  EXISTS (SELECT 1 FROM kicp_km_event_deliverable where evt_id = '$evt_id' and  is_deleted=0 ) AS has_deliverable  FROM kicp_km_event a LEFT JOIN kicp_km_event_submitreply b ON (a.submit_reply = b.reply AND b.is_visible = 1) WHERE a.evt_id='$evt_id' AND a.is_archived = 0 AND a.is_deleted = 0 ORDER BY a.evt_enroll_end DESC";
 
         
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
+        $result = $database-> query($sql)->fetchAssoc();
 
         $TagList = new TagList();
-        foreach ($result as $record) {
-            $record["user"] = $authen->getKICPUserInfo($record["user_id"]);
-            $record["tags"] = $TagList->getTagsForModule('activities', $record["evt_id"]);
-            $record["countlike"] = LikeItem::countLike('activities', $record["evt_id"]);
-            $record["liked"] = LikeItem::countLike('activities', $record["evt_id"],$my_user_id);    
-            return $record;   
-        }
+        
+        $result["user"] = $authen->getKICPUserInfo($result["user_id"]);
+        $result["tags"] = $TagList->getTagsForModule('activities', $result["evt_id"]);
+        $result["countlike"] = LikeItem::countLike('activities', $result["evt_id"]);
+        $result["liked"] = LikeItem::countLike('activities', $result["evt_id"],$my_user_id);    
+
+        
+        return $result;
+        
         
     }
     
@@ -214,15 +216,55 @@ class ActivitiesDatatable {
                     FROM kicp_nonportal_users d 
                     INNER JOIN kicp_km_event_member_list c ON (d.uid=c.uid) 
                     WHERE c.is_deleted = 0 AND c.is_portal_user=0 AND d.uid IN (SELECT uid FROM kicp_km_event_member_list WHERE evt_id=".$evt_id." AND evt_reg_datetime IS NOT NULL)
-                        AND c.evt_id=".$evt_id."
-                            
+                        AND c.evt_id=".$evt_id."                            
                     ORDER BY evt_reg_datetime DESC";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
     
+
+    public static function getPhotosbyEvent($evt_id) {
+
+        $database = \Drupal::database();
+        $query = $database-> select('kicp_km_event_photo', 'a');
+        $query->fields('a', ['evt_id', 'evt_photo_id', 'evt_photo_url', 'evt_photo_description']);
+        $query->condition('a.evt_id', $evt_id);
+        $query->condition('a.is_deleted', 0);
+
+        $search_str = \Drupal::request()->query->get('search_str');
+        if ($search_str && $search_str !="") {
+            $orGroup = $query->orConditionGroup();
+            $orGroup->condition('a.evt_photo_url', '%' . $search_str . '%', 'LIKE');
+            $orGroup->condition('a.evt_photo_description', '%' . $search_str . '%', 'LIKE');
+            $query->condition($orGroup);
+        }                   
+
+        $query-> orderBy('a.evt_photo_url');
+
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);        
+
+        return $result;
+
+    }
     
+
+    public static function getEventPhotoInfo($evt_photo_id) {
+        
+        $record = array();
+        
+        if($evt_photo_id == "") {
+            return $record;
+        } else {
+            $sql = 'SELECT evt_id, evt_photo_url, evt_photo_description FROM kicp_km_event_photo WHERE is_deleted = 0 AND evt_photo_id='.$evt_photo_id;
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchObject();
+            return $result;
+        }
+        
+    }
+
     public static function getActivitiesTags($tags) {
 
         $output=array();

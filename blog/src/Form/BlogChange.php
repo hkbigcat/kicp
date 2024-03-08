@@ -73,6 +73,15 @@ class BlogChange extends FormBase  {
         $authen = new $AuthClass();
         $user_id = $authen->getUserId();
 
+
+        if ($entry['entry_title'] == null) {
+            $form['intro'] = array(
+              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> Blog enrty not found'),
+            );
+            return $form; 
+           }
+
+
         $BlogFileUri = 'private://blog/file';
 
         $blog_id = BlogDatatable::getBlogIDByUserID($entry_id);

@@ -57,6 +57,16 @@ class FileShareChange extends FormBase {
 
 
          $file = FileShareDatatable::getSharedFile($file_id);
+
+         if ($file['title'] == null) {
+          $form['intro'] = array(
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found'),
+          );
+          return $form; 
+         }
+
+
+
          $Taglist = new TagList();
          $tags = $Taglist->getTagListByRecordId('fileshare', $file_id);
 
@@ -88,7 +98,7 @@ class FileShareChange extends FormBase {
 
         $form['description_prev'] = array(
           '#type' => 'hidden',
-          '#default_value' =>  $file['description'],
+          '#value' =>  $file['description'],
         );
 
 

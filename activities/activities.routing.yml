@@ -64,7 +64,7 @@ activities.admin_content:
     _controller: '\Drupal\activities\Controller\ActivitiesController::AdminContent'
     _title: 'KM Activities Management'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE     
 
@@ -74,7 +74,7 @@ activities.admin_event:
     _controller: '\Drupal\activities\Controller\ActivitiesController::AdminEvents'
     _title: 'KM Activities Management Event'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE     
 
@@ -84,7 +84,7 @@ activities.admin_item_add:
     _form: '\Drupal\activities\Form\ActivityItemAdd'
     _title: 'KM Activities - Add Event'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE
 
@@ -94,7 +94,7 @@ activities.admin_item_delete:
     _controller: '\Drupal\activities\Controller\ActivitiesController::deleteEventItem'
     _title: 'Delete Event'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE  
 
@@ -103,6 +103,66 @@ activities.enroll_status:
   defaults:
     _controller: '\Drupal\activities\Controller\ActivitiesController::EventEnrollStatus'
     _title: 'Activities Enrollment Status'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin.enroll_list:
+  path: '/activities_enroll_list/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::EventEnrollList'
+    _title: 'Activities Enrollment List'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.enroll_delete:
+  path: '/activities_enroll_delete/{evt_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::deleteEventEnroll'
+    _title: 'Delete Activities Enrollment'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+activities.enroll_status_update:
+  path: '/activities_enroll_status_update/{evt_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::changeEnrollStatus'
+    _title: 'Update Activities Enrollment'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.photo:
+  path: '/activities_photo/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityEvtPhotos'
+    _title: 'KM Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+activities.photo_change:
+  path: '/activities_photo_change/{evt_photo_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityPhotoChange'
+    _title: 'KM Activities - Edit Event Photo'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.photo_delete:
+  path: '/activities_photo_delete/{evt_photo_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityPhotoDelete'
+    _title: 'Delete Event Photo'
   requirements:
     _permission: 'access content'
   options:
@@ -114,7 +174,7 @@ activities.enroll_status_export:
     _controller: '\Drupal\activities\Controller\ActivitiesController::EventEnrollStatusExport'
     _title: 'Activities Enrollment Status'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE    
 
@@ -125,5 +185,15 @@ activities.activities_tag:
     _title: 'KM Activities'
   requirements:
     _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+activities.admin_item_change:
+  path: '/activities_item_change/{evt_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityItemChange'
+    _title: 'KM Activities - Edit Event'
+  requirements:
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE    

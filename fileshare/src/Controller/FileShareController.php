@@ -22,6 +22,7 @@ use Drupal\Core\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\RatingData;
 use Drupal\Core\Url;
+use Drupal\common\AccessControl;
 
 class FileShareController extends ControllerBase {
 
@@ -75,12 +76,12 @@ class FileShareController extends ControllerBase {
    */
   public function getShareFile() {
 
-    $table_rows_file = FileShareDatatable::getSharedFile();
+        $table_rows_file = FileShareDatatable::getSharedFile();
     
     return [
         '#theme' => 'fileshare-files',
         '#items' => $table_rows_file,
-        //'#tags' => $taglist,
+        '#my_user_id' => $this->$my_user_id,
         '#empty' => t('No entries available.'),
         '#pager' => ['#type' => 'pager',
                     ],
@@ -96,7 +97,13 @@ class FileShareController extends ControllerBase {
    */
   public function viewShareFile($file_id) {
 
+    $table_rows_file = FileShareDatatable::getSharedFile($file_id);
+    if ($table_rows_file['file_id'] == null ) {
+      return [
+        '#markup' => '<p>You are not authorize to access this file or file does no exisit</p>',
+      ];
 
+    }
 
     $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
 
@@ -119,7 +126,7 @@ class FileShareController extends ControllerBase {
         } 
       
       }
-  }
+    }
         
   $TagList = new TagList();
   $taglist = $TagList->getTagsForModule('fileshare', $file_id);
@@ -127,8 +134,6 @@ class FileShareController extends ControllerBase {
   $RatingData = new RatingData();
   $rating = $RatingData->getList('fileshare', $file_id);
 
-  
-  $table_rows_file = FileShareDatatable::getSharedFile($this->$my_user_id, $file_id);
   $table_rows_file['tagURL'] = $tagURL;
   
   $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $this->$my_user_id);
@@ -152,7 +157,7 @@ class FileShareController extends ControllerBase {
 
   public function deleteShareFile($file_id = NULL) {
 
-    $delFile = FileShareDatatable::getSharedFile($this->$my_user_id, $file_id);
+    $delFile = FileShareDatatable::getSharedFile($file_id);
     if ( $delFile['file_id'] == null) {
 
       $url = Url::fromRoute('fileshare.fileshare_content');
@@ -269,6 +274,8 @@ class FileShareController extends ControllerBase {
         ->condition('module', 'fileshare_folder')
         ->execute();
 
+      // delete access control
+        $delaccces = delAccessControl('fileshare', $folder_id);
 
         $url = Url::fromRoute('fileshare.fileshare_folder');
         return new RedirectResponse($url->toString());
