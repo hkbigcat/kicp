@@ -1,0 +1,32 @@
+<div style="width: 35%; text-align: right; margin-top: -50px; float: right;">
+    <button class="kicp_button size-2" onClick="self.location.href='{{ path('ppcactivities.deliverable_add', {'evt_id': evt_id }) }}'"><i class="fa-solid fa-circle-plus"></i> Add Deliveriable</button>
+    <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'" style="cursor:pointer;">Event List</button> 
+</div>
+<div id="DivContentTable">
+    <form id="search_form" name="search_form" method="get">
+        <div style="width:100%;text-align:right;float:right;margin:5px;">
+        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Deliverable Name / Description"></div>
+    </form>
+
+    <div class="common_table_header">
+        <div style="width:31%;text-align:left;margin-left:51px;">Deliverable Name</div>
+        <div style="width:50%;text-align:left;">Description</div>
+    </div>
+
+    {% for item in items %}
+        {% if  item['evt_deliverable_id'] %}
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
+            <div style="width:2%;float:left;display:block; margin-left:10px">{{ loop.index0 + 1 }}</div>
+            <div style="width:26%;float:left;display:block;overflow-wrap: break-word;"><a href="{{ url('<front>') }}system/files/ppcactivities/deliverable/{{ "%06d" | format(evt_id) }}/{{ item['evt_deliverable_url'] }}">{{item['evt_deliverable_url']}}</a></div>
+            <div style="width:45%;float:left;display:block;margin-left:77px;">{{item['evt_deliverable_name']}}</div>
+            <div style="width:20%;float:left;display:block;">
+                <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.deliverable_change', {'evt_deliverable_id': item['evt_deliverable_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
+                <button class="kicp_button size-2" onclick="module_item_delete('ppcactivities_deliverable','{{ item['evt_deliverable_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}    
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'deliverable'}  %}

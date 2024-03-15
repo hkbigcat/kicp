@@ -7,7 +7,7 @@
         <div style="float:left; padding-right:20px;"></div>
         <div style="float:left;padding:6px;">
             <span class="activities_title">[<strong>{{ item['is_activity'] == 1?'Activities':'Deliverable' }}</strong>]
-                {% set act_path = item['is_activity'] == 1 ? path('activities.activities_detail', {'evt_id': item['evt_id'] } ):  '/system/files/activities/deliverable/' ~ "%06d" | format(item['evt_id'])  ~ '/' ~ item['name']  %}
+                {% set act_path = item['is_activity'] == 1 ? path('activities.activities_detail', {'evt_id': item['evt_id'] } ):  'system/files/activities/deliverable/' ~ "%06d" | format(item['evt_id'])  ~ '/' ~ item['name']  %}
                 <a href="{{act_path}}" target="_blank">{{ item['name']}}</a>
             </span>
             {% if  item['is_activity'] == 1 %} <div>Date: {{ item['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ item['evt_end_date'] | date('H:i:s')  }} ({{ item['evt_start_date'] | date('l')  }})</div>{% endif %}

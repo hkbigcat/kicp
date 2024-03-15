@@ -17,7 +17,7 @@ function activities_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'common/content_table';
         
 
-        if ( str_contains($path, 'activities_item_add') || str_contains($path, 'activities_item_change')  || str_contains($path, 'activities_detail') || str_contains($path, 'activities_tag')  ) {
+        if ( str_contains($path, 'activities_item_add') || str_contains($path, 'activities_item_change')  || str_contains($path, 'activities_detail') || str_contains($path, 'activities_tag') || str_contains($path, 'activities_deliverable_add') || str_contains($path, 'activities_deliverable_change') ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }
         
@@ -51,6 +51,14 @@ function activities_theme($existing, $type, $theme, $path) {
                 'pager' => NULL,
             ],
         ],
+        'activities-admin-deliverable' =>[
+            'variables' => [
+                'items' => NULL,
+                'type_id' => NULL,
+                'evt_id' => NULL,
+                'pager' => NULL,
+            ],
+        ],        
         'activities-details' =>[
             'variables' => [
                 'items' => NULL,
@@ -65,6 +73,19 @@ function activities_theme($existing, $type, $theme, $path) {
                 'types' => NULL,
                 'events' => NULL,
                 'copitems' => NULL,
+            ],
+        ],
+        'activities-admin-category'=>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],
+        'activities-admin-cop'=>[
+            'variables' => [
+                'items' => NULL,
+                'group' => NULL,
+                'pager' => NULL,
             ],
         ],
         'activities-admin-events' =>[

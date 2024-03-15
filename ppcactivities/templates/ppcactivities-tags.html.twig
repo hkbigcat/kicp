@@ -1,0 +1,22 @@
+{% include '@common/common-tags.html.twig' %}
+<input type="hidden" name="tag_page" id="tag_page" value="{{path('ppcactivities.activities_tag')}}">
+<input type="hidden" name="notag_page" id="notag_page" value="{{path('ppcactivities.content')}}">
+<div id="DivContentTable" style="display:table;">
+    {% for item in act_items %}
+    <div class="homepage_div {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%; min-width:auto; min-height:auto;">
+        <div style="float:left; padding-right:20px;"></div>
+        <div style="float:left;padding:6px;">
+            <span class="activities_title">[<strong>{{ item['is_activity'] == 1?'PPC Activities':'Deliverable' }}</strong>]
+                {% set act_path = item['is_activity'] == 1 ? path('ppcactivities.activities_detail', {'evt_id': item['evt_id'] } ):   'system/files/ppcactivities/deliverable/' ~ "%06d" | format(item['evt_id'])  ~ '/' ~ item['highlight']  %}
+                <a href="{{act_path}}" target="_blank">{{ item['name']}}</a>
+            </span>
+            {% if  item['is_activity'] == 1 %} <div>Date: {{ item['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ item['evt_end_date'] | date('H:i:s')  }} ({{ item['evt_start_date'] | date('l')  }})</div>{% endif %}
+            {% set text = item['highlight']  |render|striptags %}
+            <div class="entry_highlight">{{ text |length > 200 ?  text | slice(0, 300) | raw ~ '...' : text | raw }}</div>
+            {% include '@common/common-tags-list.html.twig' with {tags: item ['tags']} %} 
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<div style="float:right; margin:20px;">{{ pager }}</div>
+

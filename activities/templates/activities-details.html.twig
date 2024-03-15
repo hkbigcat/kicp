@@ -8,7 +8,9 @@
           {% if items['has_deliverable']  %}
         <li class="submenu_item"><a href="javascript:;" id="submenu_link_deliverable" onclick="getEventData('deliverable',{{ items['evt_id'] }})">Deliverable</a></li>
         {% endif %} 
-        <li class="submenu_item"><a href="video_list?media_event_id=57" id="submenu_link_video" target="_blank">Video</a></li>
+        {% if items['has_video']  %}
+        <li class="submenu_item"><a href="{{ path('video.video_list', {'media_event_id': items['has_video'] }) }}" id="submenu_link_video" target="_blank">Video</a></li>
+        {% endif %} 
         {% include '@common/common-like.html.twig'  with {module: 'activities', 'record_id':  items['evt_id'], countLike: items ['countlike'], 'liked': items ['liked']}  %}
         <style>.like_text_div{width:30%; text-align:right;display:inline-block;float:right;}</style>
     </ul>

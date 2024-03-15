@@ -1,7 +1,0 @@
-blog.blog:
-  title: KM Activities
-  description: KCIP Activities
-  menu_name: main
-  route_name: activities.activities.content
-  weight: 10
-

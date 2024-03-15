@@ -28,16 +28,6 @@ activities.content.cop:
   options:
     no_cache: TRUE
 
-activities.content.item:
-  path: '/activities/{type_id}/{cop_id}/{item_id}'
-  defaults:
-    _controller: '\Drupal\activities\Controller\ActivitiesController::content'
-    _title: 'KM Activities'
-  requirements:
-    _permission: 'access content'
-  options:
-    no_cache: TRUE
-
 activities.activities_detail:
   path: '/activities_detail/{evt_id}'
   defaults:
@@ -67,6 +57,86 @@ activities.admin_content:
     _permission: 'activities_admin'
   options:
     no_cache: TRUE     
+
+activities.admin_category:
+  path: '/activities_admin_category'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::AdminCategory'
+    _title: 'KM Activities Management'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE         
+
+activities.admin_category_delete:
+  path: '/activities_category_delete/{group_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::deleteCOPCategory'
+    _title: 'Delete COP Category'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+activities.admin_cop_category_change:
+  path: '/activities_cop_category_change/{group_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityCOPCategoryChange'
+    _title: 'KM Activities - Edit COP Category'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_cop_category_add:
+  path: '/activities_cop_category_add'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityCOPCategoryAdd'
+    _title: 'KM Activities - Add COP Category'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_cop_item:
+  path: '/activities_cop/{group_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::AdminActivityCOP'
+    _title: 'KM Activities Management'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_cop_delete:
+  path: '/activities_cop_delete/{cop_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::deleteCOPItem'
+    _title: 'Delete COP Item'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+activities.admin_cop_item_change:
+  path: '/activities_cop_item_change/{cop_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityCOPItemChange'
+    _title: 'KM Activities - Edit COP Item'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_cop_item_add:
+  path: '/activities_cop_item_add/{cop_group_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityCOPItemAdd'
+    _title: 'KM Activities - Add COP Item'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
 
 activities.admin_event:
   path: '/activities_admin_event/{type_id}'
@@ -148,6 +218,16 @@ activities.photo:
   options:
     no_cache: TRUE
 
+activities.photo_add:
+  path: '/activities_photo_add/{evt_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityPhotoAdd'
+    _title: 'KM Activities - Add Event Photo'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
 activities.photo_change:
   path: '/activities_photo_change/{evt_photo_id}'
   defaults:
@@ -164,9 +244,49 @@ activities.photo_delete:
     _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityPhotoDelete'
     _title: 'Delete Event Photo'
   requirements:
-    _permission: 'access content'
+    _permission: 'activities_admin'
   options:
     no_cache: TRUE
+
+activities.deliverable:
+  path: '/activities_deliverable/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityDeliverable'
+    _title: 'KM Activities'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+activities.deliverable_add:
+  path: '/activities_deliverable_add/{evt_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityDeliverableAdd'
+    _title: 'KM Activities - Add Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.deliverable_change:
+  path: '/activities_deliverable_change/{evt_deliverable_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityDeliverableChange'
+    _title: 'KM Activities - Edit Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+activities.deliverable_delete:
+  path: '/activities_deliverable_delete/{evt_deliverable_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityDeliverableDelete'
+    _title: 'Delete Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
 
 activities.enroll_status_export:
   path: '/activities_enroll_status_export/{evt_id}'
@@ -197,3 +317,33 @@ activities.admin_item_change:
     _permission: 'activities_admin'
   options:
     no_cache: TRUE    
+
+activities.admin_list_change:
+  path: '/activities_list_change/{evt_type_id}'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityTypeChange'
+    _title: 'KM Activities - Edit Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_list_add:
+  path: '/activities_list_add'
+  defaults:
+    _form: '\Drupal\activities\Form\ActivityTypeAdd'
+    _title: 'KM Activities - Add Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+activities.admin_list_delete:
+  path: '/activities_list_delete/{evt_type_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::deleteActivityType'
+    _title: 'Delete Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE

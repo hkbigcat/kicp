@@ -19,6 +19,7 @@ use Drupal\common\Controller\TagList;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class BookmarkController extends ControllerBase {
 
@@ -64,12 +65,12 @@ class BookmarkController extends ControllerBase {
       $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid); 
       if ($bookmark['bid'] == null) {
 
-        $url = Url::fromRoute('bookmark.bookmark_content');
-        return new RedirectResponse($url->toString());
-
-        \Drupal::messenger()->addStatus(
+        \Drupal::messenger()->addError(
           t('Unable to delete this bookmark'.$bookmark['bid']  )
           );
+
+        $response = array('result' => 0);
+        return new JsonResponse($response);
 
       }
 
@@ -94,22 +95,20 @@ class BookmarkController extends ControllerBase {
         ->condition('module', 'bookmark')
         ->execute();
 
-
-        $url = Url::fromRoute('bookmark.bookmark_content');
-        return new RedirectResponse($url->toString());
-
         $messenger = \Drupal::messenger(); 
         $messenger->addMessage( t('Bookmark has been deleted'));
-
 
       }
       catch (\Exception $e) {
 
-          \Drupal::messenger()->addStatus(
+          \Drupal::messenger()->addError(
               t('Unable to delete bookmark at this time due to datbase error. Please try again. ' )
               );
           
           }
+        $response = array('result' => 1);
+        return new JsonResponse($response);
+  
   }    
 
 

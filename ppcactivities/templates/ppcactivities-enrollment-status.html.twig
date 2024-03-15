@@ -1,0 +1,29 @@
+<div class="content">
+    {% set evt_id = event['evt_id'] | number_format %}
+    
+    <div style="text-align:right; width:95%;"><button class="kicp_button size-2" onclick="window.open('{{ path('ppcactivities.enroll_status_export', {'evt_id': evt_id}) }}')" style="cursor:pointer;">Export to Excel</button> </div>
+    <h2>{{ event['evt_name'] }}</h2>
+    <div style="margin-bottom:15px;">Total <strongb>{{ (items | length)-2 }}</strong> enrollment(s) as at {{ items['time'] | date("h:i:sa") }} on {{ items['time'] | date("d.m.Y") }} </div>
+    <div class="type_item_row">
+        <div class="div_inline inline_header" style="width:220px;">Full Name</div>
+        <div class="div_inline inline_header" style="width:100px;">Dept</div>
+        <div class="div_inline inline_header" style="width:100px;">Rank</div>
+        <div class="div_inline inline_header" style="width:100px;">Post</div>
+        <div class="div_inline inline_header" style="width:100px;">Tel</div>
+        <div class="div_inline inline_header" style="width:320px;">Email</div>
+        <div class="div_inline inline_header" style="width:180px;">Registration Time</div>
+    </div>
+{% for item in items %}
+ {% if  item['user_full_name'] %}
+    <div class="type_item_row">
+        <div class="div_inline" style="width:220px;">{{ item['user_full_name'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_dept'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_rank'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_post_unit'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_phone'] }}</div>
+        <div class="div_inline" style="width:320px;">{{ item['user_lotus_email'] }}</div>
+        <div class="div_inline" style="width:180px;">{{ item['evt_reg_datetime'] }}</div>
+    </div>
+{% endif %}
+{% endfor %}
+</div>

@@ -38,6 +38,16 @@ video.admin_content:
   options:
     no_cache: TRUE
 
+video.change_event_data:
+  path: '/video_event_change/{media_event_id}'
+  defaults:
+    _form: '\Drupal\video\Form\VideoEventChange'
+    _title: 'Edit Event'
+  requirements:
+   _permission: 'access administration pages' 
+  options:
+    no_cache: TRUE
+
 video.admin_video_content:
   path: '/video_list_admin/{media_event_id}'
   defaults:

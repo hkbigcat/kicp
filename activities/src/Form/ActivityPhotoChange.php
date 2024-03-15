@@ -78,7 +78,7 @@ class ActivityPhotoChange extends FormBase {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'activities_photo?evt_type_id=' . $_REQUEST['evt_type_id'].'&evt_id='.$_REQUEST['evt_id'] . '\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'window.open(\'../activities_photo/' . $photoInfo->evt_id . '\', \'_self\'); return false;'),
             '#limit_validation_errors' => array(),
         );
 

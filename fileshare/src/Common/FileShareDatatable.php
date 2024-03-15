@@ -85,8 +85,8 @@ class FileShareDatatable extends ControllerBase {
                       LEFT JOIN kicp_access_control b ON (b.module='fileshare' AND b.record_id=a.folder_id AND b.is_deleted=0)
                       LEFT JOIN kicp_public_group c ON (b.module='fileshare' AND b.group_type='P' AND b.group_id=c.pub_group_id AND c.is_deleted=0)
                       LEFT JOIN kicp_buddy_group d ON (b.module='fileshare' AND b.group_type='B' AND b.group_id=d.buddy_group_id AND d.is_deleted=0)
-                      LEFT JOIN kicp_public_user_list e ON (b.module='fileshare' AND b.group_type='P' AND b.group_id=e.pub_group_id AND e.is_deleted=0 AND e.pub_user_id='".$my_user_id."')
-                      LEFT JOIN kicp_buddy_user_list f ON (b.module='fileshare' AND b.group_type='B' AND b.group_id=f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id='".$my_user_id."')
+                      LEFT JOIN kicp_public_user_list e ON (b.module='fileshare' AND b.group_type='P' AND b.group_id=e.pub_group_id AND e.is_deleted=0 AND e.pub_user_id='$my_user_id')
+                      LEFT JOIN kicp_buddy_user_list f ON (b.module='fileshare' AND b.group_type='B' AND b.group_id=f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id='$my_user_id')
                       WHERE a.is_deleted=0
                       GROUP BY a.folder_id, b.group_type, b.group_id, b.allow_edit ";
           $sql .= " HAVING is_restricted=0 OR ((pub_user_id='".$my_user_id."' OR buddy_user_id='".$my_user_id."') AND allow_edit=1) ";
@@ -171,6 +171,18 @@ class FileShareDatatable extends ControllerBase {
      }
 
   }
+
+  public static function getFolder($file_id = NULL) {
+
+    $query = $database-> select('kicp_file_share', 'a'); 
+    $query-> fields('a', ['folder_id']);
+    $query-> condition('file_id', $file_id);
+    $result = $query->execute()->fetchObject();
+   
+    return $result->folder_id;
+
+  }
+
 
   public static function getSharedFileByTags($tags) {
 

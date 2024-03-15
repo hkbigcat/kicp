@@ -1,0 +1,48 @@
+{% include '@ppcactivities/leftmenu.html.twig' %}
+<div id="right_content">
+    <ul class="submenu_container">
+        <li class="submenu_item"><a href="javascript:;" class="active" id="submenu_link_info" onclick="getEventData('info',{{ items['evt_id'] }})">Event Information</a></li>
+        {% if items['has_photo']  %}
+        <li class="submenu_item"><a href="javascript:;" id="submenu_link_photo" onclick="getEventData('photo',{{ items['evt_id'] }})">Photo</a></li>
+        {% endif %} 
+          {% if items['has_deliverable']  %}
+        <li class="submenu_item"><a href="javascript:;" id="submenu_link_deliverable" onclick="getEventData('deliverable',{{ items['evt_id'] }})">Deliverable</a></li>
+        {% endif %} 
+        {% if items['has_video']  %}
+        <li class="submenu_item"><a href="{{ path('video.video_list', {'media_event_id': items['has_video'] }) }}" id="submenu_link_video" target="_blank">Video</a></li>
+        {% endif %} 
+        {% include '@common/common-like.html.twig'  with {module: 'ppcactivities', 'record_id':  items['evt_id'], countLike: items ['countlike'], 'liked': items ['liked']}  %}
+        <style>.like_text_div{width:30%; text-align:right;display:inline-block;float:right;}</style>
+    </ul>
+    <div id="event_info" class="type_item" style="width:98%;">
+        <div class="event_column_title">Event Name:</div>
+        <div class="event_column_content"> {{ items['evt_name']   }}</div>
+        <div id="event_detail" style="display: block;">
+            <div class="event_column_title">Date:</div>
+            <div class="event_column_content">{{ items['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ items['evt_end_date'] | date('H:i:s')  }} ({{ items['evt_start_date'] | date('l')  }})</div>
+            <div class="event_column_title">Venue:</div>
+            <div class="event_column_content">{{ items['venue']  }}</div>
+            <div class="event_column_title">Enrollment Period:</div>
+            <div class="event_column_content">{{ items['evt_enroll_start'] | date('d.m.Y')  }} - {{ items['evt_enroll_end'] | date('d.m.Y')  }}</div>
+            <div class="event_column_title">Created By:</div>
+            <div class="event_column_content">{{ items['user']['user_name'] }} <span id="DivFollow_{{ items['user_id'] }}"><a href="javascript:;" onclick="updateFollowUserStatus('KMU.OGCIO', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+        </div>
+
+        {% include '@common/common-tags-list.html.twig'  with {'tags': items['tags']}  %}            
+        <input type="hidden" name="tag_page" id="tag_page" value="{{ path('ppcactivities.activities_tag') }}">
+        <input type="hidden" name="notag_page" id="notag_page" value="{{ path('ppcactivities.content') }}"> 
+
+    </div>
+    <div class="event_column_description">
+        <div>&nbsp;</div>
+         {% if user.hasPermission('activities_admin') %}
+        <div class="event_column_enroll_status"><a href="{{ path('ppcactivities.enroll_status', {'evt_id': items['evt_id'] }) }}">Enrollment Status</a></div>
+        {% endif %}
+        <div id="description_content" style="text-align:justify;margin-top:30px;">
+            {{ items['evt_description']  | raw  | nl2br  }}
+        </div>
+    </div>
+</div>
+
+
+

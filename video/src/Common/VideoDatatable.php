@@ -222,6 +222,64 @@ class VideoDatatable {
 
     }
 
+    public static function hasEventAccessRight($media_event_id, $user_id = "") {
 
+         $sql= "SELECT a.media_event_id 
+                FROM kicp_media_event_name a 
+                LEFT JOIN kicp_media_event_privilege b ON (a.media_event_id=b.media_event_id and b.is_deleted = 0) 
+                LEFT JOIN kicp_public_user_list c on (b.pub_group_id = c.pub_group_id and c.is_deleted = 0 and c.pub_user_id = '$user_id') 
+                WHERE a.media_event_id = $media_event_id
+                group by a.media_event_id
+                having count(b.pub_group_id) = 0 or count(c.id)>0 ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        if ($result->media_event_id) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+
+    public static function getMediaEventbyEvtID($evt_id="", $type="", $user_id = "") {
+
+        $accessql = "";
+        $accessql2 = ""; 
+        $isKMAdmin = \Drupal::currentUser()->hasPermission('activities_admin'); 
+        if (!$isKMAdmin ) {
+            $accessql = " LEFT JOIN kicp_media_event_privilege b ON (a.media_event_id=b.media_event_id and b.is_deleted = 0) 
+                          LEFT JOIN kicp_public_user_list c on (b.pub_group_id = c.pub_group_id and c.is_deleted = 0 and c.pub_user_id = '$user_id') ";
+            $accessql2 = " group by a.media_event_id
+                          having count(b.pub_group_id) = 0 or count(c.id)>0 ";
+        }
+
+        $sql = "SELECT a.media_event_id FROM kicp_media_event_name a $accessql 
+                WHERE evt_type = '$type' AND evt_id = '$evt_id' $accessql2";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        return $result->media_event_id;
+
+    }
+
+    public static function getAllActivityByEventType($evt_type="") {
+        
+        $database = \Drupal::database();
+        
+        if($evt_type == 'KM') {
+            $sql = 'SELECT evt_id, evt_name FROM kicp_km_event WHERE is_visible = 1 AND is_deleted = 0 AND is_archived = 0 ORDER BY evt_name';
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        } else if ($evt_type == 'PPC') {
+            $sql = 'SELECT evt_id, evt_name FROM kicp_ppc_event WHERE is_visible = 1 AND is_deleted = 0 AND is_archived = 0 ORDER BY evt_name';
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        } else {
+            $result = array();
+        }
+        
+        return $result;
+    }    
 
 }

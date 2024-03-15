@@ -8,6 +8,7 @@ namespace Drupal\common\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\fileshare\Controller\FileShareController;
+use Drupal\fileshare\Common\FileShareDatatable;
 use Drupal\blog\Common\BlogDatatable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,12 +26,16 @@ class CommonController extends ControllerBase {
 
     public function downloadModuleFile($module_name=NULL, $file_id=NULL) {
 
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+
         switch($module_name) {
 
             
             case 'blog':
-                 $fname = \Drupal::request()->query->get('fname');
-                 $entry_uid = BlogDatatable::getBlogIDByEntryID($file_id);
+                $hasRecordAccessRight  = true; 
+                $fname = \Drupal::request()->query->get('fname');
+                $entry_uid = BlogDatatable::getBlogIDByEntryID($file_id);
                                 
                 $this_entry_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
                 $this_entry_uid = str_pad($entry_uid, 6, "0", STR_PAD_LEFT);
@@ -38,29 +43,59 @@ class CommonController extends ControllerBase {
             break;
 
             case 'fileshare':
+                $hasRecordAccessRight  = false;
+                $table_rows_file = FileShareDatatable::getSharedFile($file_id);
+                if ($table_rows_file['file_id'] != null ) {
+                    $hasRecordAccessRight  = true;  
+                }
                 $filename = FileShareController::getFileLocation($file_id);
+            break;
+
+            case 'activities':
+                $hasRecordAccessRight  = true;  
+                $fname = \Drupal::request()->query->get('fname');
+                $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
+                $filename = "sites/default/files/private/activities/deliverable/".$this_file_id."/".$fname;
+                break;
+
+            case 'ppcactivities':
+                    $hasRecordAccessRight  = true;  
+                    $fname = \Drupal::request()->query->get('fname');
+                    $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
+                    $filename = "sites/default/files/private/ppcactivities/deliverable/".$this_file_id."/".$fname;
             break;
 
             default:
                 break;            
         }
 
+       
+        if(!$hasRecordAccessRight) {
+            return array(
+                '#type' => 'markup',
+                '#markup' => $this->t('You do not have access right to download this file'),   
+            );
         
-        $filesize = filesize(urldecode($filename));
+            exit;
+        } else {
 
-        header('Content-type: application/pdf');
-        header("application/force-download");
-        header('Content-Disposition: attachment; filename='.basename($filename).';');
-        header("Content-length: $filesize");
+            $filesize = filesize(urldecode($filename));
 
-        @readfile($filename);
-        
+            header('Content-type: application/pdf');
+            header("application/force-download");
+            header('Content-Disposition: attachment; filename='.basename($filename).';');
+            header("Content-length: $filesize");
 
-        return array(
-            '#type' => 'markup',
-            '#markup' => $this->t(' '),   
-        );
-        //return new RedirectResponse($filename);
+            @readfile($filename);
+            
+
+            return array(
+                '#type' => 'markup',
+                '#markup' => $this->t(' '),   
+            );
+            //return new RedirectResponse($filename);
+
+        }
 
     }
 

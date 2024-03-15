@@ -44,7 +44,7 @@
                 <button class="kicp_button size-2" onclick="module_item_delete('activities_item','{{ item['evt_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
                 <button class="kicp_button size-2" onclick="self.location.href='{{ path('activities.admin.enroll_list', {'evt_id': item['evt_id'] }) }}'">Enrollment List</button>
                 <button class="kicp_button size-2" onclick="self.location.href='{{ path('activities.photo', {'evt_id': item['evt_id'] }) }}'">Photo</button>
-                <button class="kicp_button size-2" onclick="self.location.href='/activities_change/{{ item['evt_id'] }}'">Deliverable</button>
+                <button class="kicp_button size-2" onclick="self.location.href='{{ path('activities.deliverable', {'evt_id': item['evt_id'] }) }}'">Deliverable</button>
             </div>
         </div>
           {% endif %}

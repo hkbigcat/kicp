@@ -1,0 +1,36 @@
+<div id="right_content" style="width:100%;">
+    <div class="type_title">COP Category Management </div>
+    <div style="width: 70%; text-align: right; margin-top: -50px; margin-bottom:20px; float: right;">
+        <button class="kicp_button size-2" onClick="self.location.href='{{ path('activities.admin_cop_category_add') }}'"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> Add COP Category</button>
+        <button class="kicp_button size-2" onClick="self.location.href='{{ path('activities.admin_content') }}'"><i class="fa fa-calendar" aria-hidden="true"></i> Event Type Management</button>
+    </div>
+    <form id="search_form" name="search_form" method="get">
+        <div style="width:100%;text-align:right;float:right;margin:5px;  margin-bottom:20px;">
+        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Category Name"></div>
+    </form>    
+    <div id="DivContentTable">
+        <div class="common_table_header">
+            <div style="width:5%;">&nbsp;</div>
+            <div style="width:37%;text-align:left;">Category Name</div>
+            <div style="width:23%;text-align:left;">COP Item</div>
+            <div style="width:10%;text-align:left;">&nbsp;</div>
+        </div>
+
+        {% for item in items %}
+           {% if  item['group_name'] %}
+        <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
+            <div style="width:5%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
+            <div style="width:38%;float:left;display:block;">{{ item['group_name'] }}</div>
+            <div style="width:35%;float:left;display:block;"><a href="{{ path('activities.admin_cop_item', {'group_id': item['group_id'] }) }}">COP Items</a></div> 
+            <div style="width:10;float:left;display:block;"><button class="kicp_button" onclick="self.location.href='{{ path('activities.admin_cop_category_change', {'group_id': item['group_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></div>            
+            {% if item['cop_total']==0 %}
+                <button class="kicp_button size-2" onclick="module_item_delete('activities_category','{{ item['group_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+           {% endif %} 
+        </div>
+           {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div style="float:right; margin:20px;">{{ pager }}</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'cop category'}  %}

@@ -19,7 +19,7 @@ class SurveyDatatable {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
-
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $TagList = new TagList();
         $database = \Drupal::database();
@@ -39,15 +39,27 @@ class SurveyDatatable {
             $query-> condition('a.survey_id', $tags1, 'IN');
         }
 
-        $query -> leftjoin('kicp_access_control', 'c', 'a.survey_id = c.record_id AND c.is_deleted= :is_deleted AND c.module= :module', [':is_deleted' => 0, ':module' => 'survey'] );
+        //$query -> leftjoin('kicp_access_control', 'c', 'a.survey_id = c.record_id AND c.is_deleted= :is_deleted AND c.module= :module', [':is_deleted' => 0, ':module' => 'survey'] );
 
+        if (!$isSiteAdmin) {          
+            $query-> leftjoin('kicp_access_control', 'ac', 'ac.record_id = a.survey_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'survey', ':is_deleted' => '0']);
+            $query-> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+            $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+          }
         
         $query-> fields('a', ['survey_id', 'title', 'description', 'user_id', 'start_date', 'expiry_date']);
         $query-> fields('x', ['user_displayname']);
         $query-> addExpression('count(b.survey_id)', 'response');
-        $query-> addExpression('count(c.id)', 'survey_access');
+        $query-> addExpression('count(ac.id)', 'survey_access');
         
         $query-> condition('a.is_deleted', '0');
+
+        if (!$isSiteAdmin) {          
+            $query-> having('a.user_id = :user_id OR COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+          }
+
         $query-> groupBy('a.survey_id');
         $query-> orderBy('a.start_date', 'DESC');  
         $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);

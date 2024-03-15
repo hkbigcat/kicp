@@ -14,12 +14,23 @@ function module_item_delete(module, item_id) {
         msgtitle = 'Blog';
         page_url = "../"+module + "_delete/"+item_id;
       break;          
-    case 'blog_elegate':
+    case 'blog_delegate':
         msgtitle = 'Blog delegrate users';
       break;          
     case 'activities_item':
         msgtitle = 'KM Activities';
         page_url = "../"+module + "_delete/"+item_id;
+      break;          
+    case 'activities_list':
+        msgtitle = 'KM Activities';
+      break;          
+    case 'activities_category':
+        msgtitle = 'KM Activities';
+        page_url = "../"+module + "_delete/"+item_id;        
+      break;          
+    case 'activities_cop':
+        msgtitle = 'KM Activities';
+        page_url = "../"+module + "_delete/"+item_id;        
       break;          
     case 'activities_enroll':
         msgtitle = 'KM Activities';
@@ -28,7 +39,33 @@ function module_item_delete(module, item_id) {
     case 'activities_photo':
         msgtitle = 'KM Activities Photo';
         page_url = "../"+module + "_delete/"+item_id;
+      break;
+    case 'activities_deliverable':
+        msgtitle = 'KM Activities Deliverable';
+        page_url = "../"+module + "_delete/"+item_id;
+      break;
+    case 'ppcactivities_item':
+        msgtitle = 'PPC Activities';
+        page_url = "../"+module + "_delete/"+item_id;
       break;          
+    case 'ppcactivities_category':
+        msgtitle = 'PPC Activities';
+      break;          
+    case 'ppcactivities_list':
+        msgtitle = 'PPC Activities';
+      break;          
+    case 'ppcactivities_enroll':
+        msgtitle = 'PPC Activities';
+        page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
+      break;          
+    case 'ppcactivities_photo':
+        msgtitle = 'PPC Activities Photo';
+        page_url = "../"+module + "_delete/"+item_id;
+      break;
+    case 'ppcactivities_deliverable':
+        msgtitle = 'PPC Activities Deliverable';
+        page_url = "../"+module + "_delete/"+item_id;
+      break;             
     case 'video_event':
         msgtitle = 'Video Event';
       break;          
@@ -41,7 +78,7 @@ function module_item_delete(module, item_id) {
       break;     
     case 'profile_group':
        msgtitle = 'Profile Group';
-       page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
+       page_url = module + "_delete/"+item_id.replace(/,/g, "/");
     break;     
     case 'profile_group_member':
        msgtitle = 'Profile Group Member';

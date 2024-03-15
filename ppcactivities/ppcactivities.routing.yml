@@ -1,0 +1,339 @@
+ppcactivities.content:
+  path: '/ppcactivities'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::content'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.content.cop:
+  path: '/ppcactivities/{cop_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::content'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.content.type:
+  path: '/ppcactivities/{cop_id}/{type_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::content'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.activities_detail:
+  path: '/ppcactivities_detail/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityDetail'
+    _title: 'PPC Activities - Event Information'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.event_data:
+  path: '/ppcactivities_event_data'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityEventData'
+    _title: 'Get Event Data'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.admin_content:
+  path: '/ppcactivities_admin'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::AdminEvents'
+    _title: 'PPC Activities Management'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE     
+
+ppcactivities.admin_category:
+  path: '/ppcactivities_admin_category'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::AdminCategory'
+    _title: 'PPC Activities Management'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE         
+
+ppcactivities.admin_type:
+  path: '/ppcactivities_admin_type'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::AdminType'
+    _title: 'PPC Activities Management'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE         
+
+ppcactivities.admin_category_delete:
+  path: '/ppcactivities_category_delete/{cop_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::deletePpcCategory'
+    _title: 'Delete PPC Category'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_cop_category_change:
+  path: '/ppcactivities_cop_category_change/{cop_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityCOPCategoryChange'
+    _title: 'PPC Activities - Edit COP Category'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_cop_category_add:
+  path: '/ppcactivities_cop_category_add'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityCOPCategoryAdd'
+    _title: 'PPC Activities - Add COP Category'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_cop_item_change:
+  path: '/ppcactivities_cop_item_change/{cop_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityCOPItemChange'
+    _title: 'PPC Activities - Edit COP Item'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_type_item_add:
+  path: '/ppcactivities_type_item_add'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityTypeItemAdd'
+    _title: 'PPC Activities - Add COP Item'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_event:
+  path: '/ppcactivities_admin_event/{type_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::AdminEvents'
+    _title: 'PPC Activities Management Event'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE     
+
+ppcactivities.admin_item_add:
+  path: '/ppcactivities_item_add'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityItemAdd'
+    _title: 'PPC Activities - Add Event'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_item_delete:
+  path: '/ppcactivities_item_delete/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::deleteEventItem'
+    _title: 'Delete PPC Event'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE  
+
+ppcactivities.enroll_status:
+  path: '/ppcactivities_enroll_status/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::EventEnrollStatus'
+    _title: 'PPC Activities Enrollment Status'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin.enroll_list:
+  path: '/ppcactivities_enroll_list/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::EventEnrollList'
+    _title: 'PPC Activities Enrollment List'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.enroll_delete:
+  path: '/ppcactivities_enroll_delete/{evt_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::deleteEventEnroll'
+    _title: 'Delete PPC Activities Enrollment'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.enroll_status_update:
+  path: '/ppcactivities_enroll_status_update/{evt_id}/{user_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::changeEnrollStatus'
+    _title: 'Update Activities Enrollment'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.photo:
+  path: '/ppcactivities_photo/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityEvtPhotos'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.photo_add:
+  path: '/ppcactivities_photo_add/{evt_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityPhotoAdd'
+    _title: 'PPC Activities - Add Event Photo'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+ppcactivities.photo_change:
+  path: '/ppcactivities_photo_change/{evt_photo_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityPhotoChange'
+    _title: 'PPC Activities - Edit Event Photo'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.photo_delete:
+  path: '/ppcactivities_photo_delete/{evt_photo_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityPhotoDelete'
+    _title: 'Delete Event Photo'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.deliverable:
+  path: '/ppcactivities_deliverable/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityDeliverable'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.deliverable_add:
+  path: '/ppcactivities_deliverable_add/{evt_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityDeliverableAdd'
+    _title: 'PPC Activities - Add Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.deliverable_change:
+  path: '/ppcactivities_deliverable_change/{evt_deliverable_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityDeliverableChange'
+    _title: 'PPC Activities - Edit Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.deliverable_delete:
+  path: '/ppcactivities_deliverable_delete/{evt_deliverable_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::ActivityDeliverableDelete'
+    _title: 'Delete Event Deliverable'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.enroll_status_export:
+  path: '/ppcactivities_enroll_status_export/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::EventEnrollStatusExport'
+    _title: 'Activities Enrollment Status'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.activities_tag:
+  path: '/ppcactivities_tag'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::getTagContent'
+    _title: 'PPC Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.admin_item_change:
+  path: '/ppcactivities_item_change/{evt_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityItemChange'
+    _title: 'PPC Activities - Edit Event'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE    
+
+ppcactivities.admin_list_change:
+  path: '/ppcactivities_list_change/{evt_type_id}'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityTypeChange'
+    _title: 'PPC Activities - Edit Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_list_add:
+  path: '/ppcactivities_list_add'
+  defaults:
+    _form: '\Drupal\ppcactivities\Form\PPCActivityTypeAdd'
+    _title: 'PPC Activities - Add Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE
+
+ppcactivities.admin_list_delete:
+  path: '/ppcactivities_list_delete/{evt_type_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::deleteActivityType'
+    _title: 'Delete Event Type'
+  requirements:
+    _permission: 'activities_admin'
+  options:
+    no_cache: TRUE

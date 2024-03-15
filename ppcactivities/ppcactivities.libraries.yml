@@ -1,0 +1,43 @@
+ppcactivities_key:
+  version: 1.x
+  header: true
+  css:
+    theme:
+      css/ppcactivities.css: {}
+  js:
+    js/ppcactivities.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog
+
+ppcactivities_gallery:
+  version: 1.x
+  header: true
+  css:
+    theme:
+      css/lightgallery/justifiedGallery.min.css: {}
+      css/lightgallery/lightgallery.css: {}      
+  js:
+    js/lightgallery/lightgallery-all.min.js: {}
+    js/lightgallery/jquery.min.js: {}
+    js/lightgallery/prettify.js: {}
+    js/lightgallery/jquery.justifiedGallery.min.js: {}
+    js/lightgallery/transition.js: {}
+    js/lightgallery/collapse.js: {}
+    js/lightgallery/lightgallery.js: {}
+    js/lightgallery/lg-fullscreen.js: {}
+    js/lightgallery/lg-thumbnail.js: {}
+    js/lightgallery/lg-video.js: {}
+    js/lightgallery/lg-autoplay.js: {}
+    js/lightgallery/lg-zoom.js: {}
+    js/lightgallery/lg-pager.js: {}
+    js/lightgallery/jquery.mousewheel.min.js: {}
+    js/lightgallery/demos.js: {}
+    js/jquery-ui.min.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

@@ -357,7 +357,7 @@ class ActivityItemChange extends FormBase  {
 
         $form['tags_prev'] = array(
             '#type' => 'hidden',
-            '#value' => $tags,
+            '#value' => implode(";", $tags),
         );
           
         $form['actions']['submit'] = array(
@@ -473,7 +473,12 @@ class ActivityItemChange extends FormBase  {
             $$key = $value;
         }
         
-
+        $hasImage = false;
+            
+        if ($_FILES['files']['name']['group_image'] != "") {
+            $hasImage = true;
+            $img_name = $_FILES['files']['name']['group_image'];
+        }
         $evt_is_cop_evt = 1;
         $evt_cop_id = $evt_cop_id;
         $current_time =  \Drupal::time()->getRequestTime();
@@ -532,7 +537,7 @@ class ActivityItemChange extends FormBase  {
                 }
               }
             
-            if ($_FILES['files']['name']['evt_logo'] != "") {
+            if ($hasImage) {
                 $file_system = \Drupal::service('file_system');   
                 $image_path = 'private://activities/item';
                 if (!is_dir($file_system->realpath($image_path))) {

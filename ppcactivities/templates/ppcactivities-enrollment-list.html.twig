@@ -1,0 +1,46 @@
+<div class="content">
+    {% set evt_id = event['evt_id'] | number_format %}
+    
+    <div style="text-align:right; width:95%;">
+        <button class="kicp_button size-2" onclick="window.open('{{ path('ppcactivities.enroll_status_export', {'evt_id': evt_id}) }}')" style="cursor:pointer;">Export to Excel</button> 
+        <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'" style="cursor:pointer;">Event List</button> 
+    </div>
+    <h2>{{ event['evt_name'] }}</h2>
+    <div style="margin-bottom:15px;">Total <strongb>{{ (items | length)-2 }}</strong> enrollment(s) as at {{ items['time'] | date("h:i:sa") }} on {{ items['time'] | date("d.m.Y") }} </div>
+    <form method="post" action="{{ url('<current>') }}">
+    <div style="margin-left:740px;width:300px;border:1px solid #CCCCCC;border-bottom-color:#ECECEC;text-align:center;padding:4px;background-color:#ECECEC;">
+        <button class="kicp_button size-2" onclick="updateEnrollStatus();return false" title="Update">Update</button>
+    </div>        
+    <div class="type_item_row">
+        <div class="div_inline inline_header" style="width:280px;">Full Name</div>
+        <div class="div_inline inline_header" style="width:100px;">Dept</div>
+        <div class="div_inline inline_header" style="width:100px;">Rank</div>
+        <div class="div_inline inline_header" style="width:100px;">Post</div>
+        <div class="div_inline inline_header" style="width:100px;">Tel</div>
+        <div class="div_inline inline_header" style="width:150px;text-align:center;"><label style="font-weight:normal;"><input type="checkbox" onchange="checkAll(this, 'chk_success')"> Success Selected</label></div>
+        <div class="div_inline inline_header" style="width:150px;text-align:center;"><label style="font-weight:normal;"><input type="checkbox" onchange="checkAll(this, 'chk_showup')"> Show Up</label></div>
+        <div class="div_inline inline_header" style="width:160px;">&nbsp;</div>
+    </div>
+{% for item in items %}
+ {% if  item['user_full_name'] %}
+    <div class="type_item_row">
+        <div class="div_inline" style="width:280px;">{{ item['user_full_name'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_dept'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_rank'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_post_unit'] }}</div>
+        <div class="div_inline" style="width:100px;">{{ item['user_phone'] }}</div>
+        <div class="div_inline" style="width:150px; text-align:center;"><input type="checkbox" name="chk_success" id="chk_success" value="{{item['user_id']}}" {{ item['is_enrol_successful']?'checked=""':'' }}></div>
+        <div class="div_inline" style="width:150px; text-align:center;"><input type="checkbox" name="chk_showup" id="chk_showup" value="{{item['user_id']}}" {{ item['is_showup']?'checked=""':'' }}></div>
+        <div class="div_inline" style="width:160px; text-align:center;"><button class="kicp_button size-2" onclick="module_item_delete('ppcactivities_enroll','{{ evt_id }},{{item['user_id']}}');return false;"><i class="fa-solid fa-trash-can"></i> Delete</button></div>
+    </div>
+{% endif %}
+{% endfor %}
+        <input type="hidden" name="evt_id" id="evt_id" value="{{event['evt_id']}}">
+    </form>
+</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'enrollment'}  %}
+<div id="update-confirm" style="display:none;">
+    <p style="text-align:center">
+        &emsp;Enrollment record(s) have been updated.
+    </p>
+</div>

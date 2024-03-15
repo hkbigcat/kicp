@@ -12,45 +12,104 @@ use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
 use Drupal\common\Controller\TagList;
 use Drupal\common\LikeItem;
+use Drupal\video\Common\VideoDatatable;
 
 
 class ActivitiesDatatable {
 
     public static function getAllActivityType() {
 
-        $sql = "SELECT a.evt_type_id, a.evt_type_name, a.description, a.display_order, IF(COUNT(b.evt_id)>0, false, true) AS allow_delete FROM kicp_km_event_type a LEFT JOIN kicp_km_event b on (b.evt_type_id = a.evt_type_id AND b.is_deleted = 0) WHERE a.is_deleted = 0 GROUP BY a.evt_type_id, a.evt_type_name,  a.description, a.display_order ORDER BY a.display_order";
+        $search_str = \Drupal::request()->query->get('search_str');
+        $cond = "";
+        if ($search_str && $search_str !="") {
+            $cond = " and a.evt_type_name like '%$search_str%' ";
+        }                    
+
+        $sql = "SELECT a.evt_type_id, a.evt_type_name, a.description, a.display_order, IF(COUNT(b.evt_id)>0, false, true) AS allow_delete 
+                FROM kicp_km_event_type a LEFT JOIN kicp_km_event b on (b.evt_type_id = a.evt_type_id AND b.is_deleted = 0) 
+                WHERE a.is_deleted = 0 $cond GROUP BY a.evt_type_id, a.evt_type_name,  a.description, a.display_order ORDER BY a.display_order";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public static function getCOPGroupInfo() {
-        //$cond = ($cop_id != "") ? ' AND group_id=' . $cop_id : '';
-        $sql = 'SELECT group_id, group_name, group_description, img_name FROM kicp_km_cop_group WHERE  is_deleted = 0  '.$cond.' ORDER BY group_id ';
-        $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
-        return $result;
-    }    
+    public static function getCOPGroupInfo($group_id="") {
 
+        $search_str = \Drupal::request()->query->get('search_str');       
+
+        $database = \Drupal::database();
+        $query = $database-> select('kicp_km_cop_group', 'a'); 
+        $query-> fields('a', ['group_id', 'group_name',' group_description', 'img_name']);
+        $query-> condition('a.is_deleted', '0');
+
+        if ($group_id != "") {
+            $query-> condition('a.group_id', $group_id);
+            $result = $query->execute()->fetchAssoc();
+        } else {
+            if ($search_str && $search_str !="") {
+                $query->condition('a.group_name', '%' . $search_str . '%', 'LIKE');
+            }                 
+            $query -> leftjoin('kicp_km_cop', 'b', 'a.group_id = b.cop_group_id AND b.is_deleted=:is_deleted' , [':is_deleted' => 0]);
+            $query->addExpression('COUNT(b.cop_id)', 'cop_total');
+            $query->groupBy('a.group_id');
+            $query-> orderBy('a. group_id');
+            $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+            $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);        
+        }
+
+        return $result;        
+
+    }    
 
     public static function getActivityTypeInfo($type_id=1) {
         $sql = "SELECT evt_type_name, description, display_order FROM kicp_km_event_type WHERE is_deleted = 0 AND evt_type_id=" . $type_id;
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $database-> query($sql)->fetchAssoc();
 
-        foreach($result as $record) {
-            return $record;
-        }
+        return $result;
         
     }
 
-    public static function getCOPItem($cop_id="") {
-        $cond = ($cop_id != "") ? ' AND cop_group_id=' . $cop_id : '';
-        $sql = 'SELECT cop_id, cop_name, cop_info, img_name, cop_group_id, display_order FROM kicp_km_cop WHERE is_deleted = 0 ' . $cond . ' ORDER BY cop_group_id, display_order ';    // in specific display order
+    public static function getCOPbyGroupID($group_id="") {
+        $search_str = \Drupal::request()->query->get('search_str');
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $query = $database-> select('kicp_km_cop', 'a'); 
+        $query -> leftjoin('kicp_km_event', 'b', 'b.cop_id=a.cop_id AND b.evt_type_id=:evt_type_id AND b.is_deleted=:is_deleted' , [':evt_type_id' => 1, ':is_deleted' => 0]);
+        $query-> fields('a', ['cop_id', 'cop_name',' cop_info', 'img_name', 'cop_group_id', 'display_order']);
+        $query->addExpression('COUNT(b.evt_id)', 'evt_total');
+        $query-> condition('a.cop_group_id', $group_id);
+        $query-> condition('a.is_deleted', '0');
+        if ($search_str && $search_str !="") {
+            $query->condition('a.cop_name', '%' . $search_str . '%', 'LIKE');
+        }          
+        $query->groupBy('a.cop_id');
+        $query-> orderBy('a.display_order');
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);        
 
-        return $result;
+        return $result; 
+
+        
+    }
+    public static function getCOPItem($cop_id="") {
+
+        $database = \Drupal::database();
+        $query = $database-> select('kicp_km_cop', 'a'); 
+        $query-> fields('a', ['cop_id', 'cop_name',' cop_info', 'img_name', 'cop_group_id', 'display_order']);
+        $query-> condition('a.is_deleted', '0');
+        if ($cop_id != "") {
+            $query-> condition('a.cop_id', $cop_id);
+            $result = $query->execute()->fetchAssoc();
+        } else {
+            $query-> orderBy('a.cop_group_id');
+            $query-> orderBy('a.display_order');
+            $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+            $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);        
+        }
+
+        return $result; 
+
+
     }
 
 
@@ -90,7 +149,6 @@ class ActivitiesDatatable {
         $search_str = \Drupal::request()->query->get('search_str');
         
         $database = \Drupal::database();
-
         $query = $database-> select(' kicp_km_event', 'a'); 
         $query -> join('kicp_km_event_type', 'b', 'a.evt_type_id = b.evt_type_id');
         if ($type_id==1) {
@@ -98,7 +156,7 @@ class ActivitiesDatatable {
             $query-> fields('c', ['cop_name']);
             $query-> condition('c.is_deleted', '0');
         }
-        $query-> fields('a', ['evt_id', 'evt_name','evt_id', 'evt_start_date', 'evt_end_date', 'is_recent', 'is_visible' ]);
+        $query-> fields('a', ['evt_id', 'evt_name', 'evt_start_date', 'evt_end_date', 'is_recent', 'is_visible' ]);
         $query-> fields('b', ['evt_type_name']);
         $query-> condition('a.evt_type_id', $type_id);
         $query-> condition('a.is_archived', '0');
@@ -133,6 +191,8 @@ class ActivitiesDatatable {
         
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
+
+        $result["has_video"] = VideoDatatable::getMediaEventbyEvtID($evt_id, 'KM', $my_user_id);
 
         $TagList = new TagList();
         
@@ -181,10 +241,16 @@ class ActivitiesDatatable {
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
 
+        $search_sql = "";
+        $search_str = \Drupal::request()->query->get('search_str');
+        if ($search_str && $search_str !="") {
+            $search_sql = " and ( evt_deliverable_url like '%$search_str%' or  evt_deliverable_name like '%$search_str%' ) ";
+        }
+
         if($evt_id == "") {
             return $record;
         } else {
-            $sql = 'SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_km_event_deliverable WHERE evt_id='.$evt_id.' AND is_deleted = 0 ORDER BY evt_deliverable_url';
+            $sql = "SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_km_event_deliverable WHERE evt_id='$evt_id' AND is_deleted = 0 $search_sql ORDER BY evt_deliverable_url";
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
 
@@ -197,6 +263,15 @@ class ActivitiesDatatable {
             }
             return $output;
         }
+    }
+
+    public static function getEventDeliverableInfo($evt_deliverable_id) {
+
+        $sql = "SELECT * FROM kicp_km_event_deliverable WHERE is_deleted = 0 and evt_deliverable_id = '$evt_deliverable_id' ";        
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result;
+            
     }
 
     public static function getEnrollmemtRecord($evt_id) {
@@ -340,4 +415,22 @@ class ActivitiesDatatable {
         return $output;
 
     }
+
+    public static function getActivityTypeMaxDisplayOrder() {
+        $sql = "SELECT MAX(display_order) AS max_value FROM kicp_km_event_type WHERE is_deleted = 0";
+        $database = \Drupal::database();
+        $record = $database-> query($sql)->fetchObject();
+    
+        return ($record->max_value == "" ? 0 : $record->max_value);
+    }
+
+    public static function getMaxCopItemDispplayOrder($cop_group_id) {
+        $sql = "SELECT max(display_order) as maxOrder FROM kicp_km_cop WHERE cop_group_id=".$cop_group_id.' AND is_deleted=0';
+        $database = \Drupal::database();
+        $record = $database-> query($sql)->fetchObject();
+        
+        return ($record->maxOrder == "" ? 0 : $record->maxOrder);
+
+    }
+
 }

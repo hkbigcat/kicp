@@ -1,0 +1,7 @@
+ppcactivities.ppcactivities:
+  title: PPC Activities
+  description: PPC Activities
+  menu_name: main
+  route_name: ppcactivities.content
+  weight: 70
+

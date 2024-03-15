@@ -1,0 +1,13 @@
+<div id="main_content">
+    <ul class="submenu_container">
+    {% for category in categories %}
+        {% set activeclass = category['cop_id'] == cop_id?"class=active":"" %}
+        <li class="topmenu_item"><a href="{{ path('ppcactivities.content.cop', {'cop_id': category['cop_id'] }) }}" {{activeclass}} id="topmenu_link_info">{{category['cop_name']}}</a></li>
+    {% endfor %}        
+    </ul>
+</div>
+<div class="homepage_div">
+    {% for type in types %}
+    <div class="title"><a href="{{ path('ppcactivities.content.type', {'cop_id': cop_id, 'type_id': type['evt_type_id'] }) }}">{{ type['evt_type_name'] }}</a></div>
+    {% endfor %}            
+</div>

@@ -28,11 +28,7 @@ class VideoController extends ControllerBase {
         //$DefaultPageLength = $Paging->getDefaultPageLength();
 
         $this->module = 'video';
-        $this->pagesize = 5;
-        $this->app_path = CommonUtil::getSysValue('app_path');
-        $this->app_path_url = CommonUtil::getSysValue('app_path_url');
-        $this->domain_name = CommonUtil::getSysValue('domain_name');
-        
+        $this->pagesize = 5;        
     }
     
     public function content() {
@@ -51,6 +47,11 @@ class VideoController extends ControllerBase {
     }
 
     public function VideoContent($media_event_id="") {
+
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+
         $EventInfo = VideoDatatable::getVideoEventInfo($media_event_id);
         $VideoList = VideoDatatable::getVideoListByEventId($media_event_id);
         $TagList = new TagList();

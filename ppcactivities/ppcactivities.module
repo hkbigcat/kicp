@@ -1,0 +1,138 @@
+<?php
+
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\file\Entity;
+use Drupal\file\Entity\File;
+
+
+function ppcactivities_page_attachments_alter(&$page) {
+        
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    if ( str_contains($path, '/ppcactivities')) {
+        $page['#attached']['library'][] = 'ppcactivities/ppcactivities_key';
+        $page['#attached']['library'][] = 'common/common_key';
+        $page['#attached']['library'][] = 'common/content_table';
+        
+
+        if ( str_contains($path, 'ppcactivities_item_add') || str_contains($path, 'ppcactivities_item_change')  || str_contains($path, 'ppcactivities_detail') || str_contains($path, 'ppcactivities_tag') || str_contains($path, 'ppcactivities_deliverable_add') || str_contains($path, 'ppcactivities_deliverable_change') ) {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }
+        
+        
+        if ( str_contains($path, '/ppcactivities_detail')) 
+        {
+            $page['#attached']['library'][] = 'ppcactivities/ppcactivities_gallery';
+        }
+
+     }
+}
+
+
+function ppcactivities_theme($existing, $type, $theme, $path) {
+
+    return [
+        'ppcactivities-main' =>[
+            'variables' => [
+                'items' => NULL,
+                'types' => NULL,
+                'events' => NULL,
+                'categories' => NULL,
+                'cop_id' => NULL,
+            ],
+        ],
+        'ppcactivities-admin-photos' =>[
+            'variables' => [
+                'items' => NULL,
+                'type_id' => NULL,
+                'evt_id' => NULL,
+                'pager' => NULL,
+            ],
+        ],
+        'ppcactivities-admin-deliverable' =>[
+            'variables' => [
+                'items' => NULL,
+                'type_id' => NULL,
+                'evt_id' => NULL,
+                'pager' => NULL,
+            ],
+        ],        
+        'ppcactivities-details' =>[
+            'variables' => [
+                'items' => NULL,
+                'types' => NULL,
+                'categories' => NULL,
+                'cop_id' => NULL,
+            ],
+        ],        
+        'ppcactivities-admin-category'=>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],
+        'ppcactivities-admin-type'=>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],
+        'ppcactivities-admin-events' =>[
+            'variables' => [
+                'items' => NULL,
+                'pager' => NULL,
+            ],
+        ],        
+        'ppcactivities-photo' =>[
+            'variables' => [
+                'items' => NULL,
+                'groups' => NULL,
+                'types' => NULL,
+                'evt_id' => NULL,
+                'PhotoPerPage' => NULL,
+            ],
+        ],
+        'ppcactivities-deliverable' =>[
+            'variables' => [
+                'items' => NULL,
+                'evt_id' => NULL,
+            ],
+        ],        
+        'ppcactivities-enrollment-status' =>[
+            'variables' => [
+                'items' => NULL,
+                'event' => NULL,
+            ],
+        ],
+        'ppcactivities-enrollment-list' =>[
+            'variables' => [
+                'items' => NULL,
+                'event' => NULL,
+            ],
+        ],        
+        'ppcactivities-tags' =>[
+            'variables' => [
+                'act_items' => NULL,
+                'tags' => NULL,
+                'tagsUrl' => NULL,                
+                'pager' => NULL,
+            ],
+        ],        
+    ];
+
+}
+
+
+/**
+ * Implements hook_help().
+ */
+function ppcactivities_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.ppcactivities':
+        return '<p>' . t('PPCActivities module that provides KICP PPC Activities.') . '</p>';
+        break;
+    }
+  }  
+    
