@@ -152,6 +152,7 @@ class ProfileController extends ControllerBase {
         $members["group_name"] = $groupInfo->group_name;
         $members["group_id"] = $group_id;
         $search_str = \Drupal::request()->query->get('search_str');
+        $users = "";
         if ($search_str && $search_str!="") {
             $users = ProfileDatatable::getUsers();
         }

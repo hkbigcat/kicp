@@ -18,6 +18,9 @@ class SurveyView extends FormBase {
 
     public function __construct() {
         $this->module = 'survey';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();             
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
         $this->max_preview_page = CommonUtil::getSysValue('survey_max_preview_page');
     }
@@ -36,10 +39,6 @@ class SurveyView extends FormBase {
 
         $survey_id = \Drupal::request()->query->get('survey_id');
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-
-        $record_user_id = $authen->getUserId();
         $survey = SurveyDatatable::getSurvey($survey_id);
         $questionInfo = SurveyDatatable::getSurveyQuestionAll($survey_id);
 
@@ -413,7 +412,6 @@ class SurveyView extends FormBase {
 
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
-        $record_user_id = $authen->getUserId();
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
@@ -421,7 +419,7 @@ class SurveyView extends FormBase {
 
         $RespondentEntry = array(
             'submitted' => 'Y',
-            'username' => $record_user_id,
+            'username' => $this->my_user_id,
             'create_datetime' => date('Y-m-d H:i:s'),
             'modify_datetime' => date('Y-m-d H:i:s'),
             'survey_id' => $survey_id,

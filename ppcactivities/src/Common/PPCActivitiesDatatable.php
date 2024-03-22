@@ -113,6 +113,11 @@ class PPCActivitiesDatatable {
         $output=array();
         $cond = '';
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+
+
         if ($cop_id !="") {
             $cond .= " AND cop_id = $cop_id";
         }

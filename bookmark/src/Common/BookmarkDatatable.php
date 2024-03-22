@@ -29,8 +29,8 @@ class BookmarkDatatable extends ControllerBase {
 
         $query = $database-> select('kicp_bookmark', 'a');
         $query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
-
-        if ($tags && count($tags) > 0 ) {
+      
+        if (isset($tags) && count($tags) > 0 ) {
           $query -> join('kicp_tags', 't', 'a.bid = t.fid');
           $query->addExpression('COUNT(a.bid)', 'bids');
           $query-> condition('t.module', 'bookmark');

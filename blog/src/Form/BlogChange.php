@@ -84,7 +84,7 @@ class BlogChange extends FormBase  {
 
         $BlogFileUri = 'private://blog/file';
 
-        $blog_id = BlogDatatable::getBlogIDByUserID($entry_id);
+        $blog_id = BlogDatatable::getBlogIDByUserID($user_id);
                 
         $file_system = \Drupal::service('file_system');   
         $filePath = $file_system->realpath($BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id);

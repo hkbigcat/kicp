@@ -31,16 +31,15 @@ class ActivitiesController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-
-        $this->$user_id = $authen->getUserId();
         
     }
     
     public function content($type_id=1, $cop_id="", $item_id="" ) {
         
         $activitiesType = ActivitiesDatatable::getAllActivityType();
-        
         $GroupInfo = ActivitiesDatatable::getCOPGroupInfo();
+        $COPitems = array();
+        $events = array();
 
         if ($cop_id!="" )   { 
             $COPitems = ActivitiesDatatable::getCOPbyGroupID($cop_id);

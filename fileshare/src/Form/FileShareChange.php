@@ -26,7 +26,7 @@ class FileShareChange extends FormBase {
   public function __construct() {
     $AuthClass = "\Drupal\common\Authentication";
     $authen = new $AuthClass();
-    $this->$my_user_id = $authen->getUserId();      
+    $this->my_user_id = $authen->getUserId();      
     $this->module = 'fileshare';
     $this->allow_file_type = 'doc docx ppt pptx pdf';
     $this->target_folder = 'fileshare';
@@ -109,7 +109,7 @@ class FileShareChange extends FormBase {
           '#description' => 'Only support '.str_replace(' ', ', ', $this->allow_file_type).' file format',
         ];        
 
-        $folderAry = FileShareDatatable::getMyEditableFolderList($this->$my_user_id);
+        $folderAry = FileShareDatatable::getMyEditableFolderList($this->my_user_id);
        
         $form['folder_id'] = [
             '#type' => 'select',
@@ -224,30 +224,8 @@ class FileShareChange extends FormBase {
    public function submitForm(array &$form, FormStateInterface $form_state) {
 
     try {
-
-      //*************** File [Start]
-
-      $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
-      $this_filename = str_replace(' ', '_', $_FILES["files"]["name"]['filename']);
-      $this_filename = str_replace("'", "", $this_filename);      // remove single quote
-      $this_filename = str_replace('"', '', $this_filename);      // remove double quote
-      $this_filename = str_replace('&', '_', $this_filename);      // remove & sign
-      $this_filename = str_replace('!', '', $this_filename);      // remove ! sign
-      $this_filename = str_replace('@', '', $this_filename);      // remove @ sign
-      $this_filename = str_replace('#', '', $this_filename);      // remove # sign
-      $this_filename = str_replace('$', '', $this_filename);      // remove $ sign
-      $this_filename = str_replace('%', '', $this_filename);      // remove % sign
-      $this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
-      $this_filename = str_replace('+', '', $this_filename);      // remove + sign
-      $this_filename = str_replace('=', '', $this_filename);      // remove = sign
-
-      
-      $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));		
-
-        //*************** File [End]
         
         //*************** Thumbnail [Start]
-
 
         $this_imagename = str_replace('.'.$file_ext, '', $this_filename);
         $this_pdfname = str_replace('.'.$file_ext, '.pdf', $this_filename);		
@@ -262,26 +240,22 @@ class FileShareChange extends FormBase {
         $file_id =  $form_state->getValue('file_id');
         $tags =  $form_state->getValue('tags');
         $tags_prev =  $form_state->getValue('tags_prev');
-        $current_time =  \Drupal::time()->getRequestTime();
 
         $database = \Drupal::database();
-        
+        $transaction = $database->startTransaction();      
 
         if ($title != $title_prev || $description != $description_prev || $folder_id != $folder_id_prev) {
-
           
             $query = $database->update('kicp_file_share')->fields([
               'title' => $title, 
               'description' => $description,
               'folder_id' => $folder_id,
-              'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+              'modify_datetime' => date('Y-m-d H:i:s'),
             ])
             ->condition('file_id', $file_id)
             ->execute();    
 
           }
-
-          
 
           if ($tags != $tags_prev) {
             // rewrite tags
@@ -306,10 +280,22 @@ class FileShareChange extends FormBase {
 
       if ($_FILES['files']['name']['filename'] != "") {
 
-        /////////////// FILE //////////////
-
-        //$ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
-        //$app_path = CommonUtil::getSysValue('app_path'); // app_path
+        //*************** File [Start]
+        $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
+        $this_filename = str_replace(' ', '_', $_FILES["files"]["name"]['filename']);
+        $this_filename = str_replace("'", "", $this_filename);      // remove single quote
+        $this_filename = str_replace('"', '', $this_filename);      // remove double quote
+        $this_filename = str_replace('&', '_', $this_filename);      // remove & sign
+        $this_filename = str_replace('!', '', $this_filename);      // remove ! sign
+        $this_filename = str_replace('@', '', $this_filename);      // remove @ sign
+        $this_filename = str_replace('#', '', $this_filename);      // remove # sign
+        $this_filename = str_replace('$', '', $this_filename);      // remove $ sign
+        $this_filename = str_replace('%', '', $this_filename);      // remove % sign
+        $this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
+        $this_filename = str_replace('+', '', $this_filename);      // remove + sign
+        $this_filename = str_replace('=', '', $this_filename);      // remove = sign
+        $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));		
+        //*************** File [End]
 
         $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
 
@@ -355,7 +341,7 @@ class FileShareChange extends FormBase {
         $file = file_save_upload('filename', $validators, 'private://fileshare/file/'.$this_file_id,$delta);
 
         // rename file, remove white space in filename
-        if(file_exists($file_path."/".$_FILES['files']['name']['filename'])) {
+        if(file_exists($file_path."/".$_FILES['files']['name']['filename']) && $_FILES['files']['name']['filename'] != $this_filename) {
             exec("mv \"".$file_path."/".$_FILES['files']['name']['filename']."\" \"".$file_path."/".$this_filename."\"");     
         }
 
@@ -451,11 +437,10 @@ class FileShareChange extends FormBase {
         \Drupal::messenger()->addError(
           t('Unable to update filess at this time due to datbase error. Please try again.')
         ); 
-
+        $transaction->rollBack();
     }
 
-    // Redirect to home.
-    //$form_state->setRedirect('<front>');
+    unset($transaction);
   }
     
 }

@@ -29,11 +29,6 @@ class PPCActivitiesController extends ControllerBase {
 
         $this->module = 'ppcactivities';
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-
-        $this->$user_id = $authen->getUserId();
-        
     }
     
     public function content( $cop_id="1", $type_id="") {

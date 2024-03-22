@@ -119,4 +119,54 @@ class AccessControl {
 
     }
 
+
+    public static function deleteAccessControlRecord($module, $record_id) {
+
+
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();
+
+        try{
+            $query = $database->update('kicp_access_control')->fields([
+                'is_deleted'=>1 , 
+            ])
+            ->condition('record_id', $record_id)
+            ->condition('module', 'fileshare_folder');
+            $affected_rows = $query->execute();
+
+        }
+        catch (\Exception $e ) {
+            \Drupal::messenger()->addError(
+              t('Unable to delete access control. Please try again.')
+            ); 
+            $transaction->rollBack();
+         }
+         unset($transaction);   
+        
+         return  $affected_rows;
+
+    }
+
+    public static function getAccessControlModalElement() {
+        
+        // DIV "add-record"
+        $output = '<div id="add-record" class="modal access_control_table" style="display:none;"></div>';
+        
+        /* Display add record UI  using AJAX */
+        
+        $output .= '<script>
+                            jQuery(\'a[href="#add-record"]\').click(function(event) {
+                                event.preventDefault();
+                                jQuery(this).modal({
+                                  escapeClose: false,
+                                  clickClose: false,
+                                  showClose: false
+                                });
+                            });
+                        </script>';
+        // DIV "add-record" [End]
+        
+        return $output;
+    }    
+
 }

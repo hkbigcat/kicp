@@ -8,7 +8,6 @@
 
 namespace Drupal\blog\Form;
 
-
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\blog\Common\BlogDatatable;
@@ -59,7 +58,7 @@ class BlogMyPhoto extends FormBase  {
         $authen = new $AuthClass();
         $user_id = $authen->getUserId();
 
-        $blog_id = BlogDatatable::getBlogIDByUserID($entry_id);
+        $blog_id = BlogDatatable::getBlogIDByUserID($user_id);
 
         $form['blog_id'] = [
             '#type' => 'hidden',
@@ -147,11 +146,16 @@ class BlogMyPhoto extends FormBase  {
             'image_name' =>  $filename,
           );
 
-        
         $query = \Drupal::database()->update('kicp_blog')->fields($entry)
                 ->condition('blog_id', $blog_id)
-                ->execute();      
-    
+                ->execute();          
+
+        // write logs to common log table
+        \Drupal::logger('blog')->info('Photo added to blog blog id: %id, photo: %image',   
+        array(
+            '%id' => $blog_id,
+            '%image' => $filename,
+        ));      
 
         $url = Url::fromUserInput('/blog_view/'.$blog_id);
         $form_state->setRedirectUrl($url);

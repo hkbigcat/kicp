@@ -233,6 +233,11 @@ class BookmarkAdd extends FormBase  {
                 
             }      
 
+            \Drupal::logger('bookmark')->info('Created id: %id, title: %title.',   
+            array(
+                '%id' => $bid,
+                '%title' => $bTitle,
+            ));            
 
             $url = Url::fromRoute('bookmark.bookmark_content');
             $form_state->setRedirectUrl($url);
@@ -242,10 +247,11 @@ class BookmarkAdd extends FormBase  {
 
         }
         catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
                 t('Unable to save bookmark at this time due to datbase error. Please try again. ' )
                 );
-            
+            \Drupal::logger('bookmark')->error('Bookmark is not deleted: ' . $variables);   
         }	
     }
 

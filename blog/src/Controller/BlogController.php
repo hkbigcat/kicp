@@ -10,11 +10,13 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
+use Drupal\common\Controller\TagStorage;
 use Drupal\blog\Common\BlogDatatable;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class BlogController extends ControllerBase {
@@ -23,23 +25,25 @@ class BlogController extends ControllerBase {
 
         $this->BlogHomepageDisplayNo = 10;
         $this->module = 'blog';
-        $this->LimitPerPage = (isset($_REQUEST['limit']) && $_REQUEST['limit'] != '') ? $_REQUEST['limit'] : $DefaultPageLength;
+        //$this->LimitPerPage = (isset($_REQUEST['limit']) && $_REQUEST['limit'] != '') ? $_REQUEST['limit'] : $DefaultPageLength;
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
 
+        $this->my_user_id = $authen->getUserId();
+        $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
 
-        $this->$user_id = $authen->getUserId();
-        $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->$user_id );
+        $myBlogInfo = BlogDatatable::getBlogInfo($this->my_blog_id);
         
+
     }
     
     public function content() {
 
         
-        $ThematicBlogAry = BlogDatatable::getHomepageBlogList($this->$user_id, 'T', $this->BlogHomepageDisplayNo);
-        $PersonalBlogAry = BlogDatatable::getHomepageBlogList($this->$user_id, 'P', $this->BlogHomepageDisplayNo);
-        $LatestBlogContent = BlogDatatable::getHomepageBlogList($this->$user_id, 'ALL', $this->BlogHomepageDisplayNo);
+        $ThematicBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'T', $this->BlogHomepageDisplayNo);
+        $PersonalBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'P', $this->BlogHomepageDisplayNo);
+        $LatestBlogContent = BlogDatatable::getHomepageBlogList($this->my_user_id, 'ALL', $this->BlogHomepageDisplayNo);
 
         $items = array();
         $items['thematic'] = $ThematicBlogAry;
@@ -58,11 +62,20 @@ class BlogController extends ControllerBase {
 
     public function viewEntry($entry_id) {
 
-        
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
+
+        if ($entry==null) {
+            return [
+                '#type' => 'markup',
+                '#markup' => $this->t('Blog entry not avaiable'),
+              ];
+        }
+
         $entry['my_blog_id'] = $this->my_blog_id;
         $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
         $entry['comments'] = $entryCommentAry;
+        $blog_id = BlogDatatable::getBlogIDByEntryID($entry_id);
+
         $archive = BlogDatatable::getBlogArchiveTree($blog_id);
         $TagList = new TagList();
         $taglist = $TagList->getTagsForModule('blog', $entry_id);        
@@ -79,13 +92,20 @@ class BlogController extends ControllerBase {
 
     public function viewBlog($blog_id) {
 
-
         $blog = BlogDatatable::getBlogInfo($blog_id);
         $entry = BlogDatatable::getBlogListContent($blog_id);
+
+        if ($entry==null) {
+            return [
+                '#type' => 'markup',
+                '#markup' => $this->t('Blog entries not avaiable'),
+              ];
+        }
+
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($blog_id);
         $entry['blog'] = $blog;
-        $isdeletegate = BlogDatatable::isBlogDelegatedUser($blog_id,  $this->$user_id);
+        $isdeletegate = BlogDatatable::isBlogDelegatedUser($blog_id,  $this->my_user_id);
         
         return [
             '#theme' => 'blogs-view',
@@ -127,33 +147,65 @@ class BlogController extends ControllerBase {
     }
 
 
-    public function BlogDelete($entry_id=NULL) {
+    public function BlogDelete($entry_id) {
 
-        $current_time =  \Drupal::time()->getRequestTime();
-
-        // delete record
-    
-        try {
-          $database = \Drupal::database();
-          $query = $database->update('kicp_blog_entry')->fields([
-            'is_deleted'=>1 , 
-            'entry_modify_datetime' => date('Y-m-d H:i:s', $current_time),
-          ])
-          ->condition('entry_id', $entry_id)
-          ->execute();
-             
-          return new RedirectResponse("/blog");
-
-          $messenger = \Drupal::messenger(); 
-          $messenger->addMessage( t('Blog has been deleted'));
-
-        }
-        catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
-                t('Unable to delete blog at this time due to datbase error. Please try again. ' )
+        $entry = BlogDatatable::getBlogEntryContent($entry_id);
+        if ($entry==null) {
+            \Drupal::messenger()->addError(
+                t('you cannot delete this blog ' )
                 );
-            
-            }	
+                $response = array('result' => 0);
+                return new JsonResponse($response);    	        
+        } else if ($entry['is_deleted']==1) {
+            \Drupal::messenger()->addStatus(
+                t('this blog has already deleted ' )
+                );
+                $response = array('result' => 0);
+                return new JsonResponse($response);    	        
+        }
+        else {
+            // delete record
+            try {
+                $database = \Drupal::database();
+                $query = $database->update('kicp_blog_entry')->fields([
+                'is_deleted'=>1 , 
+                'entry_modify_datetime' => date('Y-m-d H:i:s'),
+                ])
+                ->condition('entry_id', $entry_id);
+                $row_affected = $query->execute();        
+
+                if ($row_affected) {
+
+                    // delete tags  
+                    $return2 = TagStorage::markDelete($this->module, $entry_id);
+                
+                    // write logs to common log table
+                    \Drupal::logger('blog')->info('Deleted id: %id, title: %title',   
+                    array(
+                        '%id' => $entry_id,
+                        '%title' =>  $entry['entry_title'],
+                    ));    
+
+                    $messenger = \Drupal::messenger(); 
+                    $messenger->addMessage( t('Blog has been deleted'));
+                } else {
+                    \Drupal::messenger()->addError(
+                        t('Unable to delete blog ' )
+                        );
+                    \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
+                        
+                }
+
+            }
+            catch (\Exception $e) {
+                \Drupal::messenger()->addStatus(
+                    t('Unable to delete blog at this time due to datbase error. Please try again. ' )
+                    );
+                    \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
+                }
+            $response = array('result' => 1);
+            return new JsonResponse($response);    	
+        }
     }
 
     public function CommentAdd() {
@@ -255,16 +307,26 @@ class BlogController extends ControllerBase {
             ->condition('blog_id',  $this->my_blog_id)
             ->condition('user_id', $user_id)
             ->execute();
-               
-            return new RedirectResponse("/blog_delegate");
-  
+
+            // write logs to common log table
+            \Drupal::logger('blog')->info('Delegation deleted id: %id, user: %user',   
+            array(
+                '%id' => $this->my_blog_id,
+                '%user' =>   $user_id,
+            ));    
+
             $messenger = \Drupal::messenger(); 
-            $messenger->addMessage( t('Blog has been deleted'));
+            $messenger->addMessage( t('Blog delegation has been deleted'));       
+            
+            
+            $response = array('result' => 1);
+            return new JsonResponse($response);    	
   
           }
           catch (\Exception $e) {
+              \Drupal::logger('blog')->error('Unable to delete blog delegation');   
               \Drupal::messenger()->addStatus(
-                  t('Unable to delete blog at this time due to datbase error. Please try again. ' )
+                  t('Unable to delete blog delegation at this time due to datbase error. Please try again. ' )
                   );
               
               }	
@@ -278,6 +340,7 @@ class BlogController extends ControllerBase {
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($this->my_blog_id);
         $search_str = \Drupal::request()->query->get('search_str');
+        $search_user = "";
         if ($search_str  && $search_str !="") {
             $search_user = BlogDatatable::blog_delegate_add_search($search_str);
             $entry['search_str'] = $search_str;        
@@ -310,14 +373,26 @@ class BlogController extends ControllerBase {
                 'user_id' => $add_user_id,
             ])->execute();
 
-            return new RedirectResponse("/blog_delegate_list_add?search_str=". $search_str);
+            // write logs to common log table
+            \Drupal::logger('blog')->info('Delegation added id: %id, user: %user',   
+            array(
+                '%id' => $this->my_blog_id,
+                '%user' =>  $add_user_id,
+            ));                
 
             $messenger = \Drupal::messenger(); 
-            $messenger->addMessage( t('new Blog delegation has been added'));
+            $messenger->addMessage( t('New blog delegation has been added: '.$add_user_id));
+
+            $url = Url::fromUri("base:/blog_delegate_list_add");
+            return new RedirectResponse($url->toString()."?search_str=". $search_str);
+
+
+
         }
         catch (\Exception $e) {
 
-            return new RedirectResponse("/blog_delegate_list_add?search_str=". $search_str);
+            $url = Url::fromUri("base:/blog_delegate_list_add?search_str=". $search_str);
+            return new RedirectResponse($url->toString());
 
             \Drupal::messenger()->addStatus(
                 t('Unable to add blog delegate at this time due to datbase error. Please try again. '. $add_user_id.' - ' .$this->my_blog_id )

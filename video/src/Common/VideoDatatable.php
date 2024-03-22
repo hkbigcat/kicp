@@ -261,7 +261,10 @@ class VideoDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
 
-        return $result->media_event_id;
+        if ($result)
+            return $result->media_event_id;
+        else
+            return null;
 
     }
 
@@ -281,5 +284,20 @@ class VideoDatatable {
         
         return $result;
     }    
+
+    public static function getMaxEventSortOrder() {
+        
+        $sql = "SELECT max(media_event_sequence) as max_order FROM kicp_media_event_name";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        $sort_order = 0;
+        if ($result!=null) {
+            $sort_order =  $result->max_order;
+        }
+        return $sort_order;
+
+    }
+
 
 }

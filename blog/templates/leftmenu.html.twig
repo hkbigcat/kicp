@@ -6,7 +6,7 @@
         <li><a href="{{ path('blog.blog_view' , {'blog_id': items['my_blog_id']}) }}">View My Blog</a></li>
         <li><a href="{{ path('blog.add_data') }}">Write New Entry</a></li>
         <li><a href="{{ path('blog.my_photo') }}">My Photo</a></li>
-        <li><a href="../blog_delegate">My Delegated Users</a></li>
+        <li><a href="{{ path('blog.blog_delegate') }}">My Delegated Users</a></li>
         <li><a href="#add-record" onclick="getAddGroupMemberUI('blog',{{ items['my_blog_id'] }});">My Blog Access Control</a></li>
     </ul>
     <div class="title">Other Blogs</div>

@@ -4,11 +4,13 @@
     <span class="small" style="color:#CC6600;display:block">({{ rating['overall_rating'] |number_format }} out of 5)</span>
 </span>
 {% set rates = [1,2,3,4,5] %}
-<div class="divCpRate" {% if (rating['rsHadRate'] == 0) %} onmouseout="cpRateShow({{ rating['overall_rating'] }},1,{{ rating['rate_id'] }})" {% endif %}>
+{% set allow = (rating['rsHadRate'] != 0) or (justsubmit == 1)?0:1  %}
+
+<div class="divCpRate" {% if (allow) %} onmouseout="cpRateShow({{ rating['overall_rating'] }},1,{{ rating['rate_id'] }})" {% endif %}>
     <span style="display:none">{{ rating['overall_rating'] }}</span> 
     {% for rate in rates %} 
         {% set star_class = ( (rating['overall_rating'] + 1  - rate) >= 0.75 )?'cpRateStarOn': ( (rating['overall_rating'] + 1  - rate) >= 0.25 )?'cpRateStarHalf ':'cpRateStarOff' %}
-        <span id="star_{{rate}}_{{ rating['rate_id'] }}" class="{{ star_class}}" {% if (rating['rsHadRate'] == 0) %} onclick="cpRateShowBox({{ rating['rate_id'] }},'{{user_id}}',{{ rate }},this, '{{ rating['module'] }}', '');" title="Please Rate"  onmouseover="cpRateShow({{ rate }} , 0 , {{ rating['rate_id'] }}  ); " {% endif %} >&nbsp;</span>
+        <span id="star_{{rate}}_{{ rating['rate_id'] }}" class="{{ star_class}}" {% if (allow) %} onclick="cpRateShowBox({{ rating['rate_id'] }},'{{user_id}}',{{ rate }},this, '{{ rating['module'] }}', '');" title="Please Rate"  onmouseover="cpRateShow({{ rate }} , 0 , {{ rating['rate_id'] }}  ); " {% endif %} >&nbsp;</span>
     {% endfor %}
     <span id="cpRateWording_{{ rating['rate_id'] }}"></span>
     <span class="cpRateWording small">({{ rating['rating_count'] }} review)</span>

@@ -1,7 +1,9 @@
 {% include '@common/common-tags.html.twig' %}
 
 <input type="hidden" name="tag_page" id="tag_page" value="../survey">
-
+<div style="float:right">
+    <button class="kicp_button" onClick="self.location.href='{{ path('survey.survey_add_page1') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
+</div>
 <div id="DivContentTable" style="display:table;">
   {% for item in items %}
     <div id="row_{{ loop.index0 + 1 }} " class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
@@ -14,10 +16,17 @@
             <div style="margin-top:5px;"><span class="entry_subtitle">Start Date: </span>{{ item['start_date'] | date('d.m.Y')  }}</div>
             <div style="margin-top:5px;"><span class="entry_subtitle">Expiry Date: </span>{{ item['expiry_date'] | date('d.m.Y')  }}</div>
         </div>
-        {% include '@common/common-like.html.twig'  with {module: 'survey', 'record_id':  item['survey_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
-        <div style="display:block;float:left;width:15%"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
-        <div style="width:10%;float:left;margin-left:10px;display:block;">
-          <button class="kicp_button" onclick="self.location.href='{{ path('survey.export_survey' , {'survey_id': item['survey_id'] }  ) }}'">Export</button>
+        <div style="width:15%; float:left">
+          {% include '@common/common-like.html.twig'  with {module: 'survey', 'record_id':  item['survey_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
+          <div style="display:block;float:left;"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
+        </div>  
+        <div style="width:13%;float:left;margin-left:10px;display:block;">
+          {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
+          <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_change_1', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
+          <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.export_survey' , {'survey_id': item['survey_id'] }  ) }}'">Export</button></span>
+          <span><button class="kicp_button" onClick="module_item_delete('survey',{{ item['survey_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+          {% endif %}
+
           <div style="margin:10px;"><a href="#add-record" onclick="getAddGroupMemberUI('survey',{{ item['survey_id'] }});">{{ item['survey_access']?'Restricted':'Public' }}</a></div>
         </div>
     </div>
@@ -25,5 +34,5 @@
 </div>
 
 <div style="float:right; margin:20px">{{ pager }}</div>
-
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'survey'}  %}    
 {% include '@common/common-accesscontrol-modal.html.twig' %}

@@ -23,7 +23,7 @@ function survey_page_attachments_alter(&$page) {
         if ($routeName== 'survey.survey_view') {
             $page['#attached']['library'][] = 'survey/survey_form';
         }
-        if ($routeName== 'survey.survey_content') {
+        if ($routeName== 'survey.survey_content' || $routeName== 'survey.survey_add_page1' || $routeName== 'survey.survey_add_page2' || $routeName== 'survey.survey_change_1' ) {
             $page['#attached']['library'][] = 'common/content_tags';
         }
 
@@ -38,6 +38,7 @@ function survey_theme($existing, $type, $theme, $path) {
         'survey-home' =>[
             'variables' => [
                 'items' => NULL,
+                'my_user_id' => NULL,
                 'tagsUrl' => NULL,
                 'pager' => NULL,
             ],

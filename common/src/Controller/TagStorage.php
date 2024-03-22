@@ -143,11 +143,9 @@ class TagStorage  {
 
         }
         catch (\Exception $e) {
-            drupal_set_message(
-                t(
-                    'db_delete failed. Message = %message, query= %query', array('%message' => $e->getMessage(), '%query' => $e->query_string)
-                ), 'error'
-            );
+            \Drupal::messenger()->addError(
+                t('db_delete failed. Module '.$module.' ID: '.$entry_id )
+                );            
         }
         
         return $return_value;

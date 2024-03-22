@@ -20,6 +20,7 @@ class BlogDatatable {
 
         $sql_access ="";
         $sql_access2 = "";
+        $sql_access3 = "";
 
         if (!$isSiteAdmin) {   
             $sql_access =  "LEFT JOIN kicp_access_control aa ON (aa.record_id = b.blog_id AND aa.is_deleted = 0 AND aa.module = 'blog') 
@@ -73,7 +74,7 @@ class BlogDatatable {
     }
 
     
-    public static function getBlogEntryContent($entry_id) {
+    public static function getBlogEntryContent($entry_id="") {
 
         # return "false" if the entry_id is EMPTY
         if ($entry_id == "") {
@@ -82,20 +83,32 @@ class BlogDatatable {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
-            
-        //$isSiteAdmin = CommonUtil::isSiteAdmin();
-        
-        //$cond = $isSiteAdmin ? "" : " AND a.is_deleted = 0 ";
-        $cond = "";
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
-        $sql = '
-                SELECT b.blog_name, b.user_id, a.entry_id, a.entry_title, a.entry_content, a.created_by, a.blog_id, a.is_pub_comment, a.entry_create_datetime, a.entry_modify_datetime, c.user_name AS user_full_name, a.has_attachment, b.user_id
+        $sql_access ="";
+        $sql_access2 = "";
+        $sql_access3 = "";
+        $cond = "";
+        if (!$isSiteAdmin) {
+            $cond = " AND a.is_deleted = 0 ";   
+            $sql_access =  "LEFT JOIN kicp_access_control aa ON (aa.record_id = b.blog_id AND aa.is_deleted = 0 AND aa.module = 'blog') 
+            LEFT JOIN kicp_public_user_list e ON (aa.group_type='P' AND e.pub_group_id=aa.group_id AND e.is_deleted=0 AND e.pub_user_id = '".$my_user_id."'  )
+            LEFT JOIN kicp_buddy_user_list f ON (aa.group_type='B' AND aa.group_id = f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id = '".$my_user_id."'  )
+            LEFT JOIN kicp_public_group g ON (aa.group_type='P' AND g.pub_group_id=aa.group_id AND g.is_deleted=0 AND g.pub_group_owner  = '".$my_user_id."'  )
+            LEFT JOIN kicp_buddy_group h ON (aa.group_type='B' AND h.buddy_group_id=aa.group_id AND h.is_deleted=0 AND h.user_id  = '".$my_user_id."'  ) ";
+
+            $sql_access2 = " group by a.entry_id ";
+            $sql_access3 = " having b.user_id = '".$my_user_id."' OR COUNT(aa.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0 ";
+        }
+
+
+        $sql = "SELECT b.blog_name, b.user_id, a.entry_id, a.entry_title, a.entry_content, a.created_by, a.blog_id, a.is_pub_comment, a.entry_create_datetime, a.entry_modify_datetime, a.is_deleted, c.user_name AS user_full_name, a.has_attachment, b.user_id
                 FROM kicp_blog_entry a
                 LEFT JOIN kicp_blog b ON (a.blog_id=b.blog_ID)
-                LEFT JOIN xoops_users c ON (c.user_id=b.user_id)
-                WHERE a.entry_id = ' . $entry_id . '
-                AND a.is_archived = 0 AND a.is_banned = 0 '.$cond.' AND a.is_visible = 1
-                AND b.is_archived = 0 AND b.is_banned = 0 AND b.is_deleted = 0 AND b.is_visible = 1';
+                LEFT JOIN xoops_users c ON (c.user_id=b.user_id) $sql_access
+                WHERE a.entry_id = '$entry_id'
+                AND a.is_archived = 0 AND a.is_banned = 0 $cond AND a.is_visible = 1
+                AND b.is_archived = 0 AND b.is_banned = 0 AND b.is_deleted = 0 AND b.is_visible = 1 $sql_access2 $sql_access3 ";
 
         
         $database = \Drupal::database();
@@ -116,7 +129,8 @@ class BlogDatatable {
 
         try {
             $database = \Drupal::database();
-            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $database-> query($sql)->fetchAssoc();
+            return $result;
         }
         catch (\Exception $e) {
           \Drupal::messenger()->addStatus(
@@ -125,9 +139,6 @@ class BlogDatatable {
            return  NULL;
         }
 
-        foreach ($result as $record) {
-            return $record;
-        }
     }
 
     public static function getBlogIDByUserID($user_id = "") {
@@ -139,11 +150,12 @@ class BlogDatatable {
             $user_id = $authen->getUserId();
         }        
 
-        $sql="SELECT blog_id FROM kicp_blog WHERE user_id ='" . $user_id . "' AND is_deleted=0";
+
+        $sql="SELECT blog_id FROM kicp_blog WHERE user_id ='" . $user_id . "' AND is_deleted=0 order by blog_id limit 1";
 
         try {
             $database = \Drupal::database();
-            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $database-> query($sql)->fetchObject();
         }
         catch (\Exception $e) {
           \Drupal::messenger()->addStatus(
@@ -152,9 +164,7 @@ class BlogDatatable {
            return  NULL;
         }
 
-        foreach ($result as $record) {
-            return $record['blog_id'];
-        }        
+        return $result->blog_id;
 
     }
 
@@ -187,22 +197,32 @@ class BlogDatatable {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         try {
             $database = \Drupal::database();
-            $selected_query = $database-> select('kicp_blog_entry', 'a'); 
-            $selected_query -> join('kicp_blog', 'b', 'a.blog_id = b.blog_id');
-            $selected_query-> fields('a', ['entry_id', 'entry_title','entry_content','created_by', 'is_pub_comment', 'entry_create_datetime', 'entry_modify_datetime', 'has_attachment']);
-            $selected_query-> fields('b', ['blog_name', 'user_id']);
-            $selected_query-> condition('a.blog_id ', $blog_id, '=');
-            $selected_query-> condition('a.is_deleted', '0', '=');
-            $selected_query-> condition('b.is_deleted', '0', '=');
-            $selected_query-> orderBy('entry_modify_datetime', 'DESC');
-            $pager = $selected_query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(5);
+            $query = $database-> select('kicp_blog_entry', 'a'); 
+            $query -> leftjoin('kicp_blog', 'b', 'a.blog_id = b.blog_id');
+            if (!$isSiteAdmin) {          
+                $query -> leftjoin('kicp_access_control', 'ac', 'ac.record_id = b.blog_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'blog', ':is_deleted' => '0']);
+                $query -> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
+                $query -> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+                $query -> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+                $query -> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+                $query-> having('b.user_id = :user_id OR COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+              }      
+            $query-> fields('a', ['entry_id', 'entry_title','entry_content','created_by', 'is_pub_comment', 'entry_create_datetime', 'entry_modify_datetime', 'has_attachment']);
+            $query-> fields('b', ['blog_name', 'user_id']);
+            $query-> condition('a.blog_id ', $blog_id, '=');
+            $query-> condition('a.is_deleted', '0', '=');
+            $query-> condition('b.is_deleted', '0', '=');
+            $query-> groupBy('a.entry_id');
+            $query-> orderBy('entry_modify_datetime', 'DESC');
+            $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(5);
             $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($result as $record) {
                 $record["tags"] = $TagList->getTagsForModule('blog', $record["entry_id"]);   
-                $record["attachments"] = self::getAttachments($blog_id, $record["entry_id"]);
+                $record["attachments"] = self::getAttachments($record["user_id"], $record["entry_id"]);
                 $record["countlike"] = LikeItem::countLike('blog', $record["entry_id"]);
                 $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);
                 $output[] = $record;
@@ -211,7 +231,7 @@ class BlogDatatable {
 
         }   catch (\Exception $e) {
             \Drupal::messenger()->addStatus(
-               t('Unable to load blogs at this time due to datbase error. Please try again.')
+               t('Unable to load blogs at this time due to datbase error. Please try again.'.$e)
              );
            return  NULL;
          }
@@ -227,6 +247,12 @@ class BlogDatatable {
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $UserInfo = $authen->getKICPUserInfo($user_id);
+
+        if ($UserInfo==null) {
+            \Drupal::logger('blog')->error('uid not found for user_id: '.$user_id);       
+    
+        }
+
         $blog_owner_id = str_pad($UserInfo['uid'], 6, "0", STR_PAD_LEFT);
         $dirFile = array();
         $output = array();
@@ -498,7 +524,7 @@ class BlogDatatable {
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchObject();      
 
-            if ($result->user_id !=null && $result->user_id !="" )
+            if ($result !=null && $result->user_id !=null && $result->user_id !="" )
                 return true;
             else
                 return false;

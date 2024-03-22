@@ -11,6 +11,8 @@ use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
 use Drupal\common\Controller\TagList;
+use Drupal\Core\File\FileSystemInterface;
+
 class SurveyDatatable {
 
     public static function getSurveyList($tags=null) {
@@ -76,11 +78,15 @@ class SurveyDatatable {
     }
 
 
-    public static function getSurvey($survey_id = "") {
+    public static function getSurvey($survey_id = "", $my_user_id="") {
 
-        $cond = ($survey_id != "") ? " AND survey_id='" . $survey_id . "'" : "";
+        $cond = "";
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if (!$isSiteAdmin) {
+            $cond = " AND user_id = '$my_user_id' ";
+        }
 
-        $sql = "SELECT file_name,survey_id, title, description, survey_name, user_id, modify_datetime, start_date, expiry_date, is_visible, allow_copy, is_showDep, is_showPost, is_showname,start_survey FROM kicp_survey WHERE is_deleted = 0 " . $cond . ' ORDER BY survey_id DESC';
+        $sql = "SELECT file_name,survey_id, title, description, survey_name, user_id, modify_datetime, start_date, expiry_date, is_visible, allow_copy, is_showDep, is_showPost, is_showname,start_survey FROM kicp_survey WHERE is_deleted = 0 and survey_id = '$survey_id' $cond ORDER BY survey_id DESC";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
         return $result;
@@ -99,6 +105,19 @@ class SurveyDatatable {
         return $result;
     }
 
+
+    public static function getQuestion($kicp_survey_question = "") {
+
+        $cond = ($survey_id != "") ? " AND survey_id='" . $survey_id . "'" : "";
+
+        $sql = "SELECT id,survey_id, name, type_id, result_id, position, content, required, deleted, public, has_na, show_scale, show_legend, list_style_id,has_others, remark,file_name FROM kicp_survey_question WHERE deleted = 'N' " . $cond . ' ORDER BY position';
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
+
+        return $result;
+    }
+
+
     public static function getSurveyQuestion($survey_id = "", $position = "") {
 
         $cond = '';
@@ -107,8 +126,22 @@ class SurveyDatatable {
 
         $sql = "SELECT id,survey_id, name, type_id, result_id, position, content, required, deleted, public, has_na, show_scale, show_legend, list_style_id,has_others, remark,file_name FROM kicp_survey_question WHERE deleted = 'N' " . $cond . ' ORDER BY position';
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
 
+        if ($position != "") {
+            $result = $database-> query($sql)->fetchObject();   
+
+        } else {
+            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
+        }
+
+        return $result;
+    }
+
+    public static function getSurveyQuestionCount($survey_id = "") {
+
+        $sql = "SELECT count(1) as count FROM kicp_survey_question WHERE  deleted = 'N' and  survey_id='" . $survey_id . "'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchField();
         return $result;
     }
 
@@ -119,6 +152,13 @@ class SurveyDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
         return $result;    
+    }
+
+    public static function getSurveyChoiceCount($question_id = "") {
+        $sql = "SELECT count(1) as count FROM kicp_survey_question_choice WHERE  question_id='" . $question_id . "'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchField();
+        return $result;
     }
 
     public static function getSurveyRateView($question_id = "") {
@@ -204,5 +244,63 @@ class SurveyDatatable {
         return $return_value;
 
     }
+
+    public static function resetSurveyChoice($question_id = "") {
+
+        $query = \Drupal::database()->delete('kicp_survey_question_choice')
+                    ->condition('question_id', $question_id);
+                    $return_value = $query->execute();        
+
+        return $return_value;
+
+    }
+
+    public static function resetSurveyRate($question_id = "") {
+
+        $query = \Drupal::database()->delete('kicp_survey_question_rate')
+                    ->condition('question_id', $question_id);
+                    $return_value = $query->execute();      
+                    
+        return $return_value;                    
+
+    }
+
+
+    public static function saveAttach($filename, $this_filename, $survey_id, $question_id="", ) {
+
+        $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+        $this_question_id = $question_id!=""?"/".str_pad($question_id, 6, "0", STR_PAD_LEFT):"";
+
+        $file_system = \Drupal::service('file_system');   
+        $survey_path = 'private://survey/'.$this_survey_id.$this_question_id;
+        if (!is_dir($file_system->realpath( $survey_path))) {
+            // Prepare the directory with proper permissions.
+            if (!$file_system->prepareDirectory($survey_path, FileSystemInterface::CREATE_DIRECTORY)) {
+              throw new \Exception('Could not create the survey directory.');
+            }
+        }                  
+        
+        $validators = array(
+          'file_validate_extensions' => array('jpg jpeg gif png txt doc docx xls xlsx pdf ppt pptx pps odt ods odp zip'),
+          'file_validate_size' => array(15 * 1024 * 1024),
+          );
+
+        $delta = NULL; // type of $file will be array
+        $file = file_save_upload('filename', $validators, $survey_path,$delta);
+
+        // rename file, remove white space in filename
+        if(file_exists($survey_path."/".$filename) && $filename != $this_filename) {
+            exec("mv \"".$survey_path."/".$filename."\" \"".$survey_path."/".$this_filename."\"");     
+        }
+
+        $file[0]->setPermanent();
+        $file[0]->uid = $survey_id;
+        $file[0]->save();
+        $url = $file[0]->createFileUrl(FALSE);
+
+        return $url;
+
+    }
+
 
 }

@@ -30,3 +30,62 @@ survey.export_survey:
   options:
     no_cache: TRUE
 
+survey.survey_delete:
+  path: '/survey_delete/{survey_id}'
+  defaults:
+    _controller: '\Drupal\survey\Controller\SurveyController::deleteSurvey'
+    _title: 'Survey delete'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE   
+
+survey.survey_change_1:
+  path: '/survey_change_1/{survey_id}'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyChange1'
+    _title: 'Edit Survey'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+survey.survey_add_page1:
+  path: '/survey_add_page1'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyAddPage1'
+    _title: 'Add Sruvey'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+survey.survey_add_page2:
+  path: '/survey_add_page2'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyAddPage2'
+    _title: 'Question Details '
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+survey.survey_add_page3:
+  path: '/survey_add_page3'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyAddPage3'
+    _title: 'Question Sequence'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+survey.survey_add_page4:
+  path: '/survey_add_page4'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyAddPage4'
+    _title: 'Invite Participants'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

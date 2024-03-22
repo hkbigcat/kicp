@@ -24,7 +24,7 @@ class FileShareFolderAdd extends FormBase {
     public function __construct() {
       $AuthClass = "\Drupal\common\Authentication";
       $authen = new $AuthClass();
-      $this->$my_user_id = $authen->getUserId();      
+      $this->my_user_id = $authen->getUserId();      
         $this->module = 'fileshare';
     }
 
@@ -151,7 +151,7 @@ class FileShareFolderAdd extends FormBase {
 
         $query->values([
           $folder_name,
-          $this->$my_user_id,
+          $this->my_user_id,
           date('Y-m-d H:i:s', $current_time), 
           date('Y-m-d H:i:s', $current_time),
         ]);       

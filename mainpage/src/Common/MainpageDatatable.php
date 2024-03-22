@@ -203,7 +203,6 @@ class MainpageDatatable {
                 break;
 
                 case 'blog':
-                    $blog_user_id = str_pad($image_record->uid, 6, "0", STR_PAD_LEFT);
                     $record["img_path"] = ($record["image_name"] == "shadow.gif") ? "sites/default/files/public/default/shadow.gif" : 'system/files/blog/icon/' . $record["image_name"];
                     $record["countlike"] = LikeItem::countLike($record["module"], $record["record_id"]);
                     $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);

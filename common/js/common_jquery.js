@@ -1,6 +1,3 @@
-const app_path = '/kmapp2/kicp/';
-var loadingImg = '<img src="'+app_path+'modules/custom/common/images/loader.gif" border="0" width="40">';
-
 
 function getAddGroupMemberUI(module, record_id) {
     console.log("module: "+module);
@@ -256,12 +253,9 @@ function cpRateShow(x,y, rateID) {
 function cpRateShowBox(rateId, userId, rating, divName, module, type) {
     console.log("cpRateShowBox");
     var newRateDiv = newDisplayBox('newRateDiv', divName.parentNode);
-    console.log("newRateDiv: " + newRateDiv);
     try {
         xmlHttp = getXmlHttpObject(newRateDiv, 1);
-        //var ModulePath = document.getElementById("module_path").textContent;
-        //var url = ModulePath + '/cpProcess';
-        var url = '/cpProcess';
+        var url = app_path + 'cpProcess';
         
 
         jQuery.ajax({
@@ -398,10 +392,11 @@ function ajaxDivHandler(xmlHttp, divName) {
 }
 
 function cpRating(rateId, userId, rating, divName, module, type) {
+
     if (module != null && rateId != null) {
         //var ModulePath = document.getElementById("module_path").textContent;
-        var url =  '/updateCpRate';
-
+        var url =  app_path + 'updateCpRate';
+        console.log*(url);
         jQuery.ajax({
             type: 'POST',
             url: url,
@@ -412,18 +407,20 @@ function cpRating(rateId, userId, rating, divName, module, type) {
             success: function (data, status, xhr) {
                 showResult(module, data.result);
                 var x = 'cpRate_' + module + '_' + rateId;
+                console.log(x);
+                console.log(data.ratingpic);
                 document.getElementById(x).innerHTML = data.ratingpic;
             },
             error: function (error) {
                 jQuery("<div id='addrating-error'>Error, status:" + error.status + ", text:" + error.statusText + " </div>").appendTo("body");
                 jQuery("#addrating-error").dialog({
-                    title: msgtitle,
+                    title: 'Rating Error',
                     width: 400,
                     height: 225,
                     modal: true,
                     buttons: {
                         "OK": function () {
-                            page_url = ModulePath + "/" + module;
+                            page_url = app_path + "/" + module;
                             if (type != '') {
                                 page_url = page_url + "?type=" + type;
                             }

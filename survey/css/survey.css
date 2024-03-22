@@ -57,3 +57,8 @@ font-weight: bold;
 #edit-close {
   display: none;
 }
+
+.div_inline_column {
+    display:inline-block;
+    min-width: 260px;
+}

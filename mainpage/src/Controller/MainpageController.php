@@ -26,7 +26,7 @@ class MainpageController extends ControllerBase {
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->$my_user_id = $authen->getUserId();        
+        $this->my_user_id = $authen->getUserId();        
         $this->module = 'mainpage';
         $this->record_in_mainpage = 12;
         $this->tag_usage = 3;
@@ -48,7 +48,7 @@ class MainpageController extends ControllerBase {
 
         $editorChoice = MainpageDatatable::getEditorChoiceRecord();                
 
-        $latest = MainpageDatatable::getLatest($this->$my_user_id);
+        $latest = MainpageDatatable::getLatest($this->my_user_id);
 
         return [
             '#theme' => 'mainpage-home',
@@ -72,7 +72,7 @@ class MainpageController extends ControllerBase {
           }
         }
 
-        $latest = MainpageDatatable::getLatest($this->$my_user_id,$tags);
+        $latest = MainpageDatatable::getLatest($this->my_user_id,$tags);
 
         return [
             '#theme' => 'mainpage-tags',

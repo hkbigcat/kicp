@@ -29,7 +29,7 @@ class FileShareAdd extends FormBase  {
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->$my_user_id = $authen->getUserId();         
+        $this->my_user_id = $authen->getUserId();         
         $this->module = 'fileshare';
         $this->allow_file_type = 'doc docx ppt pptx pdf';
         $this->target_folder = 'fileshare';
@@ -91,7 +91,7 @@ class FileShareAdd extends FormBase  {
             '#required' => TRUE,
         ];
 
-        $folderAry = FileShareDatatable::getMyEditableFolderList($this->$my_user_id);
+        $folderAry = FileShareDatatable::getMyEditableFolderList($this->my_user_id);
               
         $form['folder_id'] = [
             '#type' => 'select',
@@ -195,8 +195,6 @@ class FileShareAdd extends FormBase  {
    public function submitForm(array &$form, FormStateInterface $form_state) {
 
 		//*************** File [Start]
-
-
 		$tmp_name = $_FILES["files"]["tmp_name"]['filename'];
 		$this_filename = str_replace(' ', '_', $_FILES["files"]["name"]['filename']);
 		$this_filename = str_replace("'", "", $this_filename);      // remove single quote
@@ -210,10 +208,7 @@ class FileShareAdd extends FormBase  {
 		$this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
 		$this_filename = str_replace('+', '', $this_filename);      // remove + sign
 		$this_filename = str_replace('=', '', $this_filename);      // remove = sign
-
-		
-		$file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));		
-
+		$file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));	
 		//*************** File [End]
 		
 		//*************** Thumbnail [Start]
@@ -221,23 +216,13 @@ class FileShareAdd extends FormBase  {
 		$this_imagename = str_replace('.'.$file_ext, '', $this_filename);
 		$this_pdfname = str_replace('.'.$file_ext, '.pdf', $this_filename);		
 
-        /****************************** */
-        /* update common util		    */
-        /****************************** */
-        /*
-		if(!in_array($file_ext, explode(' ',$this->allow_file_type))) {			
-			 \Drupal::messenger()->addError(t('File format not supported: '.$file_ext));
-		}		
-       */
 
        //Obtain the value as entered into the Form
        $title =  $form_state->getValue('title');
        $description =  $form_state->getValue('description');
        $folder_id =  $form_state->getValue('folder_id');
 	   $tags =  $form_state->getValue('tags');
-       $current_time =  \Drupal::time()->getRequestTime();
-
-
+       
        $entry = array(
         'title' => $title,
         'description' => $description,
@@ -245,42 +230,39 @@ class FileShareAdd extends FormBase  {
         'original_file_name' => $this_filename,
         'image_name' => $this_imagename,
         'folder_id' => $folder_id,
-        'user_id' => $this->$my_user_id,
-        'create_datetime' => date('Y-m-d H:i:s', $current_time),
-        'modify_datetime' => date('Y-m-d H:i:s', $current_time),
+        'user_id' => $this->my_user_id,
+        'create_datetime' => date('Y-m-d H:i:s'),
+        'modify_datetime' => date('Y-m-d H:i:s'),
         );
+
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();       
 
     try {        
 
-       $query = \Drupal::database()->insert('kicp_file_share')
+       $query = $database->insert('kicp_file_share')
        ->fields($entry);
 
        $file_id = $query->execute();
 	 
-	 if ($tags != '') {
-                    $entry1 = array(
-                      'module' => $this->module,
-                      'module_entry_id' => intval($file_id),
-                      'tags' => $tags,
-                    );
-                    $return1 = TagStorage::insert($entry1);
-                    
-                }
+       if ($tags != '') {
+           $entry1 = array(
+           'module' => $this->module,
+           'module_entry_id' => intval($file_id),
+           'tags' => $tags,
+           );
+           $return1 = TagStorage::insert($entry1);                        
+       }
 
 
 /////////////// FILE //////////////
-
-      //$ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
-      //$app_path = CommonUtil::getSysValue('app_path'); // app_path
   
       $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
       
       $file_system = \Drupal::service('file_system');  
       $FileshareUri = 'private://fileshare/';
 
-
       FileShareDatatable::createFileshareDir($FileshareUri, $this_file_id);
-
       
       $validators = array(
         'file_validate_extensions' => array('jpg jpeg gif png txt doc docx xls xlsx pdf ppt pptx pps odt ods odp zip'),
@@ -293,10 +275,12 @@ class FileShareAdd extends FormBase  {
       $file_path = $file_system->realpath($FileshareUri  . '/file/' . $this_file_id);
       $image_path = $file_system->realpath($FileshareUri  . '/image/' . $this_file_id);
       
-            // rename file, remove white space in filename
-      if(file_exists($file_path."/".$_FILES['files']['name']['filename'])) {
+      // rename file, remove white space in filename
+                  
+      if(file_exists($file_path."/".$_FILES['files']['name']['filename']) && $_FILES['files']['name']['filename'] != $this_filename) {
         exec("mv \"".$file_path."/".$_FILES['files']['name']['filename']."\" \"".$file_path."/".$this_filename."\"");    
       }
+      
 
       $file[0]->setPermanent();
       $file[0]->uid = $file_id;
@@ -387,12 +371,13 @@ class FileShareAdd extends FormBase  {
         \Drupal::messenger()->addError(
           t('Unable to save filess at this time due to datbase error. Please try again.')
         ); 
+        $transaction->rollBack();
 
     }
+    unset($transaction);
 
-    // Redirect to home.
-    //$form_state->setRedirect('<front>');
   }
+
     
 }
 

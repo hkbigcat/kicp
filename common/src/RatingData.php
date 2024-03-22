@@ -7,7 +7,6 @@ use Drupal;
 class RatingData {
 
     public function __construct() {
-        $this->domain_name = $_SERVER['SERVER_NAME'];
     }
 
     

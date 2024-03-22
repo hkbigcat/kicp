@@ -23,7 +23,7 @@
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ item['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
             {% endif %}
          </div>
-        <div class="entry_title"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}">{{item ['entry_title'] }}</a></div>
+        <div class="entry_title"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}">{{item ['entry_title'] | raw }}</a></div>
         <div class="entry_content">{{item ['entry_content'] | raw }}</div>
         <div>
         {% for attachment in item['attachments'] %}
@@ -39,8 +39,12 @@
    {% endfor %}
 
      {{ pager }}
+
+<Script>getiframe();</script>
+
 </div>
-<style>iframe { display:none; } </style>
+<!-- temp hide iframe -->
+<!--style>iframe { display:none; } </style-->
 
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}
 

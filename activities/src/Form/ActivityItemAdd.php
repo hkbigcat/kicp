@@ -333,7 +333,7 @@ class ActivityItemAdd extends FormBase  {
         
         $hasImage = false;
             
-        if ($_FILES['files']['name']['group_image'] != "") {
+        if (isset($_FILES['files']['name']['group_image']) && $_FILES['files']['name']['group_image'] != "") {
             $hasImage = true;
             $img_name = $_FILES['files']['name']['group_image'];
         }

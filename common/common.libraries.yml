@@ -5,10 +5,15 @@ common_key:
       css/common.css: {}
     header: true
   js:
+    js/basepath.js: {}   
     js/common.js: {} 
+    js/jquery-ui.min.js: {}
+    js/calendar/AnchorPosition.js: {}
+    js/calendar/CalendarPopup.js: {}
+    js/calendar/PopupWindow.js: {}
+    js/calendar/date.js: {}    
 
   dependencies:
-    - core/jquery
     - core/jquery
     - core/drupalSettings
     - core/drupal
@@ -34,7 +39,6 @@ common_modal:
     js/jquery.draggable.js: {}    
   dependencies:
     - core/jquery
-
 
 content_table:
   version: 1.x

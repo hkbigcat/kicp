@@ -567,8 +567,7 @@ class CommonController extends ControllerBase {
     public function addRatingRecord() {
      
         $request = \Drupal::request();   // Request from ajax call
-        $content = $request->getContent();   // Get request content, this should be JSON params as this is specified in the ajax call param "dataType: JSON"
-
+        $content = $request->getContent();   // Get request content, this should be JSON params as this is specified in the ajax call param "dataType: JSON"        
         $params = array();
         if (!empty($content)) {
             $params = json_decode($content, TRUE);  // Decode json input
@@ -595,11 +594,11 @@ class CommonController extends ControllerBase {
                 ->execute();
         }
         catch (\Exception $e) {
-            drupal_set_message(
-                t(
-                    'db_insert failed. Message = %message, query= %query', array('%message' => $e->getMessage(), '%query' => $e->query_string)
-                ), 'error'
-            );
+
+            \Drupal::messenger()->addError(
+                t('Unable to add rating. '.$id )
+                );
+
         }
 
         if ($return) {
@@ -610,17 +609,16 @@ class CommonController extends ControllerBase {
         }
 
         $RatingData = new RatingData();
-        $rating = $RatingData->getList('fileshare', $id);
+        $rating = $RatingData->getList($module, $id);
         
         $renderable = [
             '#theme' => 'common-rating',
             '#rating' => $rating,
-            '#user_id' => strtoupper($user),
+            '#user_id' => $user_id,
+            '#justsubmit' => 1,
           ];
           $rendered = \Drupal::service('renderer')->renderPlain($renderable);
                   
-
-
         //Construct json for output
         $response = array('result' => $err_code, 'ratingpic' => $rendered);
         return new JsonResponse($response);

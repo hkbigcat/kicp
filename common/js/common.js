@@ -1,5 +1,8 @@
 function module_item_delete(module, item_id) {
-  var page_url = module + "_delete/"+item_id;
+
+  const currentUrl = window.location.href;
+  console.log("currentUrl: "+currentUrl);
+  var page_url = app_path + module + "_delete/"+item_id;
 
   var msgtitle = '';  
 
@@ -12,25 +15,21 @@ function module_item_delete(module, item_id) {
       break;
     case 'blog':
         msgtitle = 'Blog';
-        page_url = "../"+module + "_delete/"+item_id;
       break;          
     case 'blog_delegate':
         msgtitle = 'Blog delegrate users';
       break;          
     case 'activities_item':
         msgtitle = 'KM Activities';
-        page_url = "../"+module + "_delete/"+item_id;
       break;          
     case 'activities_list':
         msgtitle = 'KM Activities';
       break;          
     case 'activities_category':
         msgtitle = 'KM Activities';
-        page_url = "../"+module + "_delete/"+item_id;        
       break;          
     case 'activities_cop':
         msgtitle = 'KM Activities';
-        page_url = "../"+module + "_delete/"+item_id;        
       break;          
     case 'activities_enroll':
         msgtitle = 'KM Activities';
@@ -38,15 +37,12 @@ function module_item_delete(module, item_id) {
       break;          
     case 'activities_photo':
         msgtitle = 'KM Activities Photo';
-        page_url = "../"+module + "_delete/"+item_id;
       break;
     case 'activities_deliverable':
         msgtitle = 'KM Activities Deliverable';
-        page_url = "../"+module + "_delete/"+item_id;
       break;
     case 'ppcactivities_item':
         msgtitle = 'PPC Activities';
-        page_url = "../"+module + "_delete/"+item_id;
       break;          
     case 'ppcactivities_category':
         msgtitle = 'PPC Activities';
@@ -60,11 +56,9 @@ function module_item_delete(module, item_id) {
       break;          
     case 'ppcactivities_photo':
         msgtitle = 'PPC Activities Photo';
-        page_url = "../"+module + "_delete/"+item_id;
       break;
     case 'ppcactivities_deliverable':
         msgtitle = 'PPC Activities Deliverable';
-        page_url = "../"+module + "_delete/"+item_id;
       break;             
     case 'video_event':
         msgtitle = 'Video Event';
@@ -76,6 +70,9 @@ function module_item_delete(module, item_id) {
        msgtitle = 'Group';
        page_url = "../"+module + "_delete/"+item_id.replace(/,/g, "/");
       break;     
+    case 'survey':
+        msgtitle = 'Survey';
+      break;       
     case 'profile_group':
        msgtitle = 'Profile Group';
        page_url = module + "_delete/"+item_id.replace(/,/g, "/");
@@ -100,14 +97,21 @@ function module_item_delete(module, item_id) {
     modal: true,
     buttons: {
       "OK": function () {
-        jQuery.post({url:page_url, success: function(result){
-              console.log(page_url);      
+
+        if (module=="blog") {
+          jQuery.post(page_url, {function(result){
               jQuery('#delete-confirm').dialog('close');
-              console.log("close dialog");
+              console.log("close dialog: "+result);
               window.location.reload();      
             }});
-            
-            
+          } else {
+        jQuery.post({url:page_url, success: function(result){
+            jQuery('#delete-confirm').dialog('close');
+            console.log("close dialog: "+result);
+            window.location.reload();      
+          }});
+
+          } 
       },
 
       Cancel: function () {
@@ -271,6 +275,90 @@ if (jQuery) {
   console.log("common.js jquery is loaded");
 } else {
   console.log("common.js  Not loaded");
+}
+
+var customCalendar = null;
+var outputTxt = null;
+var imageObject = null;
+
+function getCalendarDate(c_year, c_month, c_day) {
+    document.getElementById(outputTxt).value = c_year + '-' + LZ(c_month) + '-' + LZ(c_day);
+}
+
+function createCalendar(imgObj) {
+    
+  console.log("customCalendar");
+    customCalendar = new CalendarPopup('calendarDiv');
+    customCalendar.showNavigationDropdowns();
+    customCalendar.setReturnFunction('getCalendarDate');
+    customCalendar.setCssPrefix("TEST");
+    console.log("customCalendar "+customCalendar);
+
+    imageObject = imgObj;
+    txtObj = null;
+    if (imgObj.id == "CalExpiry")
+        txtObj = document.getElementById("edit-expirydate");
+    else if (imgObj.id == "CalStart")
+        txtObj = document.getElementById("edit-startdate");
+    if (txtObj.value != '') {
+        var dateParts = txtObj.value.split(".");
+        customCalendar.select(document.getElementById(outputTxt), 'calendarLink', 'MM/dd/yyyy', dateParts[1] + '/' + dateParts[0] + '/' + dateParts[2]);
+    }
+}
+
+
+function showCalendar() {
+    customCalendar.showCalendar('calendarLink');
+}
+
+function changeOutput(str) {
+    outputTxt = str;
+}
+
+
+function checkDate() {
+    var startDate = new Date();
+    var expiryDate = new Date();
+    var now = new Date();
+
+    var strStartDate = document.getElementById('startdate').value;
+    var strExpiryDate = document.getElementById('expirydate').value;
+    var startParts = strStartDate.split(".");
+    var expiryParts = strExpiryDate.split(".");
+    if (!startParts[0] || !startParts[1] || !startParts[2]) {
+        alert("Please enter the start date before submission.");
+        return false;
+    }
+    if (!expiryParts[0] || !expiryParts[1] || !expiryParts[2]) {
+        alert("Please enter the expiry date before submission.");
+        return false;
+    }
+
+    startDate.setFullYear(startParts[2], (startParts[1] - 1), startParts[0]);
+    expiryDate.setFullYear(expiryParts[2], (expiryParts[1] - 1), expiryParts[0]);
+
+    var eleDate = document.getElementById("sDate");
+    if (eleDate == null) {
+        if (now > startDate) {
+            alert("Start Date should not be earlier than today.");
+            return false;
+        }
+    } else {
+        if (now > startDate && strStartDate != eleDate.value) {
+            alert("Start Date should not be earlier than today.");
+            return false;
+        }
+    }
+
+    if (now > expiryDate) {
+        alert("End Date should not be earlier than today.");
+        return false;
+    }
+    if (startDate > expiryDate) {
+        alert("The Start Date should't be later than the End Date.");
+        return false;
+    }
+    return true;
 }
 
 

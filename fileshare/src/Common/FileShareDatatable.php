@@ -116,39 +116,37 @@ class FileShareDatatable extends ControllerBase {
 
       try {
         $database = \Drupal::database();
-        $selected_query = $database-> select('kicp_file_share', 'a'); 
-        $selected_query -> leftjoin('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
-        $selected_query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
+        $query = $database-> select('kicp_file_share', 'a'); 
+        $query -> leftjoin('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
+        $query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
         if (!$isSiteAdmin) {          
-          $selected_query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
-          $selected_query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
-          $selected_query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
-          $selected_query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-          $selected_query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+          $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
+          $query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
+          $query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+          $query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+          $query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+          $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
         }
-        $selected_query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
-        $selected_query-> fields('j', ['folder_name']);
-        $selected_query-> fields('u', ['user_displayname']);
-        $selected_query-> condition('a.is_deleted', '0', '=');
+        $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
+        $query-> fields('j', ['folder_name']);
+        $query-> fields('u', ['user_displayname']);
+        $query-> condition('a.is_deleted', '0', '=');
         
-        if (!$isSiteAdmin) {          
-          $selected_query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
-        }
-
-        $selected_query-> groupBy('a.file_id');
+        $query-> groupBy('a.file_id');
         if ($folder_id != NULL) {
-          $selected_query-> condition('a.folder_id', $folder_id, '=');
+          $query-> condition('a.folder_id', $folder_id, '=');
         }
         if ($file_id != NULL) {
-          $selected_query-> condition('file_id', $file_id, '=');
-          $entries =  $selected_query->execute()->fetch(\PDO::FETCH_ASSOC);
+          $query-> condition('file_id', $file_id);
+          $entries =  $query->execute()->fetch(\PDO::FETCH_ASSOC);
         } else {  
-          $selected_query-> orderBy('modify_datetime', 'DESC');
-          $pager = $selected_query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+          $query-> orderBy('modify_datetime', 'DESC');
+          $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
           $entries=array();
           $TagList = new TagList();
           $RatingData = new RatingData();
+
           foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('fileshare', $record["file_id"]);   
             $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
@@ -157,6 +155,7 @@ class FileShareDatatable extends ControllerBase {
             $record["rating"]['module'] = 'fileshare';          
             $entries[] = $record;
           }
+
           
         }
         if ($entries)  {
@@ -259,7 +258,69 @@ class FileShareDatatable extends ControllerBase {
     
   }
 
-  public static  function createFileshareDir($FileshareUri, $this_file_id) {
+
+  public static function getFilesIDInsideFolder($folder_id, $my_user_id) {
+
+    $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+    if($isSiteAdmin) {
+      $sql = "SELECT file_id FROM kicp_file_share WHERE folder_id='$folder_id'";
+    } else {
+      $sql = "SELECT file_id FROM kicp_file_share WHERE folder_id='$folder_id' AND user_id='$my_user_id'";
+    }
+
+    $database = \Drupal::database();
+    $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+    return $result;
+
+  }
+
+
+  public static function deleteFiles($file_id, $file_path) {
+    $actual_files = 0;
+    $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
+    $file_dir = $file_path.'/file/'.$this_file_id;
+    $image_dir =  $file_path.'/image/'.$this_file_id;
+    
+    // delete file from server physically
+    if (is_dir($file_dir)) {
+        $myFileList = scandir($file_dir);
+        foreach($myFileList as $filename) {
+            if($filename == "." || $filename == "..") {
+                continue;
+            }
+            unlink($file_dir.'/'.$filename);
+            $actual_files++;
+        }
+    }
+    
+    // delete thumbnail from server physically
+    if (is_dir($image_dir)) {
+        $myImageList = scandir($image_dir);
+        foreach($myImageList as $imagename) {
+            if($imagename == "." || $imagename == "..") {
+                continue;
+            }
+            unlink($image_dir.'/'.$imagename);
+            $actual_files++;
+        }
+    }
+
+    $file_uri = "private://fileshare/file/".$this_file_id."/";
+    $image_uri = "private://fileshare/image/".$this_file_id."/";
+    $database = \Drupal::database();
+    $query = $database->delete('file_managed');
+    $orGroup = $query->orConditionGroup()
+    ->condition('uri', $file_uri . '%', 'LIKE')
+    ->condition('uri', $image_uri . '%', 'LIKE');
+    $query->condition($orGroup)->execute();
+
+    return $actual_files;  
+
+  }
+
+
+  public static function createFileshareDir($FileshareUri, $this_file_id) {
      
 
     $file_system = \Drupal::service('file_system');

@@ -28,7 +28,9 @@ class BlogAdd extends FormBase  {
 
     public function __construct() {
         $this->module = 'blog';
-
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();   
     }
 
     /**
@@ -57,15 +59,11 @@ class BlogAdd extends FormBase  {
 
         $config = \Drupal::config('blog.settings'); 
 
-        
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();
+        $my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
 
-        $blog_id = BlogDatatable::getBlogIDByUserID($entry_id);
-
-
-        $myAccessibleBlog = BlogDatatable::myAccessibleBlog($user_id);
+        $myBlogInfo = BlogDatatable::getBlogInfo($my_blog_id);
+        $blogSelection[$my_blog_id] = $myBlogInfo['blog_name'];
+        $myAccessibleBlog = BlogDatatable::myAccessibleBlog($this->my_user_id);
 
         
         for ($i = 0; $i < count($myAccessibleBlog); $i++) {
@@ -184,12 +182,6 @@ class BlogAdd extends FormBase  {
         }
 
         $current_time =  \Drupal::time()->getRequestTime();
-
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();
-        
-
         $blog_owner_id = str_pad($blog_id, 6, "0", STR_PAD_LEFT);
 
         $hasAttach = (empty($files))?0:1; 
@@ -199,7 +191,7 @@ class BlogAdd extends FormBase  {
                 'blog_id' => $blog_id,
                 'entry_title' => $bTitle,
                 'entry_content' => $bContent['value'],
-                'created_by' => $user_id,
+                'created_by' => $this->my_user_id,
                 'has_attachment' => $hasAttach,
             );
 
@@ -237,8 +229,9 @@ class BlogAdd extends FormBase  {
 
 /////////// Handle image inside CKEditor [End] /////////////                            
 
+/////////// Handle attachment [Start] /////////////
             if ($hasAttach) {
-                /////////// Handle attachment [Start] /////////////
+
 
                 $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
                 if (!is_dir($file_system->realpath($createDir ))) {
@@ -248,23 +241,22 @@ class BlogAdd extends FormBase  {
                     }
                 }
 
-            foreach ($files as $file1) {
+                foreach ($files as $file1) {
 
-                if ($file1) {
-                    $NewFile = File::load($file1);
-                    $uuid = $NewFile->uuid();
-                    $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
-                    $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
-                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                        throw new \Exception('Could not move the generic placeholder image to the destination directory.');
-                    } else {
-                        $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                    if ($file1) {
+                        $NewFile = File::load($file1);
+                        $uuid = $NewFile->uuid();
+                        $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
+                        $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
+                        if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
+                            throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+                        } else {
+                            $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                        }
                     }
                 }
             }
-
-    /////////// Handle attachment [End] /////////////
-        }
+/////////// Handle attachment [End] /////////////
 
 //////////////  Handle Tags ///////////////////////////
         if ($tags != '') {
@@ -277,21 +269,28 @@ class BlogAdd extends FormBase  {
             
         }                
 
-//dump ($file);
+        \Drupal::logger('blog')->info('Created id: %id, title: %title, attachment: %attach.',   
+        array(
+            '%id' => $entry_id,
+            '%title' => $bTitle,
+            '%attach' => ($hasAttach)?'Y':'N',
+        ));     
+
 
         $url = Url::fromUserInput('/blog_entry/'.$entry_id);
         $form_state->setRedirectUrl($url);
 
 
         $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('Blog has been added. '. $oldImagePath . ' - '. $newImagePathWebAccess));
+        $messenger->addMessage( t('Blog has been added. '));
 
     }
     catch (\Exception $e) {
-        \Drupal::messenger()->addStatus(
-            t('Unable to save blog at this time due to datbase error. Please try again. ' )
-            );
-        
+        $variables = Error::decodeException($e);
+        \Drupal::messenger()->addError(
+          t('Blog is not created. ' )
+          );
+        \Drupal::logger('blog')->error('Blog is not created '  . $variables);                   
         }	
     }
 

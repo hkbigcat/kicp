@@ -3,7 +3,7 @@
     <div class="width:100%">
         <div class="type_item" style="width:393px;">
             <div style="display:inline-block;float:left;"><img src="{{ url('<front>') }}/system/files/activities/category/{{ copitem['img_name'] }}" border="0" alt="{{ copitem['cop_name'] }}" title="{{ copitem['cop_name'] }}" style="width:50px; height:50px;"></div>
-            <div style="display:inline-block;float:left;width:85%;padding-left:15px"><a href="{{ path('activities.content.item', {'type_id': 1, 'cop_id': copitem['cop_group_id'], 'item_id': copitem['cop_id']  }) }}">{{ copitem['cop_name'] }}</a></div>
+            <div style="display:inline-block;float:left;width:85%;padding-left:15px"><a href="{{ path('activities.content.cop', {'type_id': 1, 'cop_id': copitem['cop_group_id'], 'item_id': copitem['cop_id']  }) }}">{{ copitem['cop_name'] }}</a></div>
         </div>
     </div>
     {% endfor %}        

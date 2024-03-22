@@ -24,7 +24,7 @@ function blog_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
 
-        if ( str_contains($path, '/blog_entry')  ) {
+        if ( str_contains($path, '/blog_entry') || str_contains($path, '/blog_view')  ) {
             $page['#attached']['library'][] = 'blog/blog_form';
             $page['#attached']['library'][] = 'blog/blog_gallery';
         }	

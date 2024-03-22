@@ -287,4 +287,35 @@ class VideoController extends ControllerBase {
 
     }
 
+    public static function getEventSelection($evt_type="", $returnAry=false) {
+        
+        if($evt_type != "") {
+            $evt_type = $evt_type;
+        } else if(isset($_REQUEST['evt_type']) && $_REQUEST['evt_type'] != "") {
+            $evt_type = $_REQUEST['evt_type'];
+        }
+        
+        $output = '';
+        $output .= '<option value="0">Please select Event</option>';
+        $output_ary = array();
+        $output_ary[0] = 'Please select Event';
+        
+        $evtItemAry = VideoDatatable::getAllActivityByEventType($evt_type);
+        foreach($evtItemAry as $record) {
+
+            $output .= '<option value="'.$record['evt_id'].'">'.$record['evt_name'].'</option>';
+
+            $output_ary[$record->evt_id] = $record['evt_name'];
+        }
+        
+        
+        if($returnAry == false) {
+            $response = new Response();
+            $response->setContent($output);
+            return $response;
+        } else {
+            return $output_ary;
+        }
+    }
+
 }

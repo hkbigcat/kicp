@@ -10,8 +10,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\common\TagList;
-use Drupal\common\TagStorage;
+use Drupal\common\Controller\TagList;
+use Drupal\common\Controller\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\common\AccessControl;
 use Drupal\survey\Common\SurveyDatatable;
@@ -22,10 +22,9 @@ class SurveyController extends ControllerBase {
 
     public function __construct() {
         $this->module = 'survey';
-        $this->domain_name = CommonUtil::getSysValue('domain_name');
-        $this->ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
-        $this->app_path = CommonUtil::getSysValue('app_path'); // app_path
-    
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();    
     }
 
     public function SurveyContent() {
@@ -42,11 +41,13 @@ class SurveyController extends ControllerBase {
             }
           }
 
+
         $surveys = SurveyDatatable::getSurveyList($tags);          
 
         return [
             '#theme' => 'survey-home',
             '#items' => $surveys,
+            '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
             '#tagsUrl' => $tmp,
             '#pager' => ['#type' => 'pager',
@@ -54,6 +55,82 @@ class SurveyController extends ControllerBase {
         ];   
 
     }
+
+    public function deleteSurvey($survey_id) {
+
+
+        $survey = SurveyDatatable::getSurvey($survey_id,  $this->my_user_id);
+        if ($survey->title == null) {
+            \Drupal::messenger()->addError(
+                t('Unable to delete this survey: '.$survey_id )
+                );
+      
+              $response = array('result' => 0);
+              return new JsonResponse($response);
+        }
+
+        $database = \Drupal::database();
+
+        try {
+            
+            $query = \Drupal::database()->update('kicp_survey')->fields([
+                'is_deleted'=>1 , 
+                'modify_datetime' => date('Y-m-d H:i:s'),
+              ])
+
+            ->condition('survey_id', $survey_id);
+            $row_affected = $query->execute();        
+
+            if ($row_affected) {
+                $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+                $survey_dir = 'private://survey/'.$this_survey_id;
+                        
+                // delete file from server physically
+                if (is_dir($survey_dir)) {
+                    $myFileList = scandir($survey_dir);
+                    foreach($myFileList as $filename) {
+                        if($filename == "." || $filename == "..") {
+                            continue;
+                        }
+                        unlink($survey_dir.'/'.$filename);
+                        $actual_files++;
+                    }
+                }
+
+                // delete tags  
+                $return2 = TagStorage::markDelete($this->module, $survey_id);
+            
+                \Drupal::logger('survey')->info('Deleted id: %id, title: %title.',   
+                array(
+                    '%id' => $survey_id,    
+                    '%title' => $survey->title,
+                ));       
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Survey has been deleted: '.$survey_id));    
+            } else {
+
+                \Drupal::messenger()->addError(
+                    t('Unable to delete survey at this time due to datbase error. Please try again. ' )
+                    );
+                \Drupal::logger('survey')->error('Survey is not deleted: '.$survey_id);   
+                    
+
+            }
+        }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addError(
+                t('Unable to delete survey: '.$survey_id )
+                );
+            \Drupal::logger('survey')->error('Survey is not deleted: '.$survey_id);   
+            
+        }
+
+        $response = array('result' => 1);
+        return new JsonResponse($response);
+
+
+    }
+
 
     public function exportSurvey($survey_id) {
 

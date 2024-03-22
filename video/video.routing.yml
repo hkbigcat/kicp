@@ -64,7 +64,7 @@ video.delete_event_data:
     _controller: '\Drupal\video\Controller\VideoController::VideoEventDelete'
     _title: 'Delete Event'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE
 
@@ -104,6 +104,26 @@ video.delete_event_privilege_data:
     _controller: '\Drupal\video\Controller\VideoController::EventPrivilegeDelete'
     _title: 'Delete Event Privilege'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE        
+
+video.video_get_event_select:
+  path: '/video_get_event_select'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::getEventSelection'
+    _title: 'Video Event Selection'
+  requirements:
+   _permission: 'access administration pages' 
+  options:
+    no_cache: TRUE    
+
+video.add_event_data:
+  path: '/video_event_add'
+  defaults:
+    _form: '\Drupal\video\Form\VideoEventAdd'
+    _title: 'Add Event'
+  requirements:
+   _permission: 'access administration pages' 
+  options:
+    no_cache: TRUE

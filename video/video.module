@@ -27,6 +27,11 @@ function video_page_attachments_alter(&$page) {
         if($routeName === 'video.video_list' || $routeName === 'video.video_tag' || $routeName === 'video.admin_content' || $routeName === 'video.admin_video_content' || $routeName === 'video.video_event_privilege') {
             $page['#attached']['library'][] = 'common/content_table';
         }
+
+        if($routeName === 'video.add_event_data') {
+            $page['#attached']['library'][] = 'common/content_tags';
+        }
+
     }
     
 

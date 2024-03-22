@@ -16,6 +16,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\bookmark\Common\BookmarkDatatable;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
+use Drupal\common\Controller\TagStorage;
+use Drupal\common\RatingStorage;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
@@ -38,7 +40,7 @@ class BookmarkController extends ControllerBase {
       
         $tagsUrl = \Drupal::request()->query->get('tags');
 
-        $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id, $bid); 
+        $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id); 
         
         if ($tagsUrl) {
           $tags = json_decode($tagsUrl);
@@ -74,36 +76,39 @@ class BookmarkController extends ControllerBase {
 
       }
 
-      $current_time =  \Drupal::time()->getRequestTime();
-
       // delete record
   
       try {
         $database = \Drupal::database();
         $query = $database->update('kicp_bookmark')->fields([
           'is_deleted'=>1 , 
-          'bModified' => date('Y-m-d H:i:s', $current_time),
+          'bModified' => date('Y-m-d H:i:s'),
         ])
         ->condition('bid', $bid)
         ->execute();
 
-        // delete tags
-        $query = $database->update('kicp_tags')->fields([
-          'is_deleted'=>1 , 
-        ])
-        ->condition('fid', $bid)
-        ->condition('module', 'bookmark')
-        ->execute();
+        // delete tags  
+        $return2 = TagStorage::markDelete($this->module, $bid);
+
+        // delete rating
+        $rating = RatingStorage::markDelete($this->module, $bid);
+
+        \Drupal::logger('bookmark')->info('Deleted id: %id, title: %title.',   
+        array(
+            '%id' => $bid,
+            '%title' => $bookmark['bTitle'],
+        ));       
 
         $messenger = \Drupal::messenger(); 
         $messenger->addMessage( t('Bookmark has been deleted'));
 
       }
       catch (\Exception $e) {
-
+          $variables = Error::decodeException($e);
           \Drupal::messenger()->addError(
               t('Unable to delete bookmark at this time due to datbase error. Please try again. ' )
               );
+          \Drupal::logger('bookmark')->error('Bookmark is not deleted: ' . $variables);   
           
           }
         $response = array('result' => 1);

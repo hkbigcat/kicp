@@ -229,6 +229,9 @@ class CommonUtil {
             $sql .= " from kicp_module where module_name = '" . $module . "'";
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchObject();
+            ///Ben added
+            if ($result==null)
+                return $output;
             foreach ($result as $record) {
                 if ($field == 'ALL') {
                     $output = array('allow_rating' => intval($record->allow_rating), 'allow_tag' => intval($record->allow_rating), 'upload_folder' => $record->upload_folder);
@@ -243,5 +246,29 @@ class CommonUtil {
             }
         }
         return $output;
-    }    
+    }
+    
+    
+    static function file_remove_character($filename) {
+
+        if ($filename==null || $filename=="") {
+            return $filename;
+        }
+
+        $this_filename = str_replace(' ', '_', $filename);
+        $this_filename = str_replace("'", "", $this_filename);      // remove single quote
+        $this_filename = str_replace('"', '', $this_filename);      // remove double quote
+        $this_filename = str_replace('&', '_', $this_filename);      // remove & sign
+        $this_filename = str_replace('!', '', $this_filename);      // remove ! sign
+        $this_filename = str_replace('@', '', $this_filename);      // remove @ sign
+        $this_filename = str_replace('#', '', $this_filename);      // remove # sign
+        $this_filename = str_replace('$', '', $this_filename);      // remove $ sign
+        $this_filename = str_replace('%', '', $this_filename);      // remove % sign
+        $this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
+        $this_filename = str_replace('+', '', $this_filename);      // remove + sign
+        $this_filename = str_replace('=', '', $this_filename);      // remove = sign
+
+        return $this_filename;
+
+    }
 }
