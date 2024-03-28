@@ -127,3 +127,24 @@ video.add_event_data:
    _permission: 'access administration pages' 
   options:
     no_cache: TRUE
+
+video.add_video_data:
+  path: '/video_add/{media_event_id}'
+  defaults:
+    _form: '\Drupal\video\Form\VideoAdd'
+    _title: 'Add Video'
+  requirements:
+   _permission: 'access administration pages' 
+  options:
+    no_cache: TRUE    
+
+video.change_video_data:
+  path: '/video_change/{media_id}'
+  defaults:
+    _form: '\Drupal\video\Form\VideoChange'
+    _title: 'Edit Video'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+

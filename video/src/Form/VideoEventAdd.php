@@ -61,11 +61,13 @@ class VideoEventAdd extends FormBase {
 
         $form['eDate'] = array(
           '#title' => t('Event Date'),
-          '#type' => 'textfield',
+          '#type' => 'date',
           '#size' => 14,
           '#maxlength' => 10,
-          '#default_value' => date('d.m.Y'),
-          '#description' => 'Date Format: DD.MM.YYYY',
+          '#date_date_format' => 'd.m.Y',
+          '#date_format' => 'd.m.Y',          
+          '#default_value' => date('Y-m-d'),
+          '#description' => 'Date Format: DD/MM/YYYY',
           '#required' => TRUE,
         );
 
@@ -179,30 +181,6 @@ class VideoEventAdd extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-        foreach ($form_state->getValues() as $key => $value) {
-            $$key = $value;
-        }
-
-
-        $pos_first = strpos($eDate, ".");
-        $pos_last = strrpos($eDate, ".");
-
-        if ($pos_first == "" || $pos_last == "" || $pos_first == $pos_last) {
-            $form_state->setErrorByName(
-                'eDate', $this->t("Event Date format is invalid (DD.MM.YYYY)")
-            );
-        }
-        else {
-            $dateAry = explode('.', $eDate);
-            $validDateFormat = checkdate($dateAry[1], $dateAry[0], $dateAry[2]);
-
-            if (!$validDateFormat) {
-                $form_state->setErrorByName(
-                    'eDate', $this->t("Event Date is invalid")
-                );
-            }
-        }
-
         
     }
 
@@ -293,7 +271,7 @@ class VideoEventAdd extends FormBase {
               \Drupal::messenger()->addError(
                 t('Event (Video) is not created. ' )
                 );
-                \Drupal::logger('video')->error('Event (Video) is not created (3)');
+                \Drupal::logger('video')->error('Event  is not created (3)');
             }
         }
         catch (Exception $e) {
@@ -301,7 +279,7 @@ class VideoEventAdd extends FormBase {
             \Drupal::messenger()->addError(
               t('Event (Video) is not created. ' )
               );
-            \Drupal::logger('video')->error('Event (Video) is not created '  . $variables);    
+            \Drupal::logger('video')->error('Event is not created '  . $variables);    
 
         }
     }

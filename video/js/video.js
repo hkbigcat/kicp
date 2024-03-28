@@ -51,13 +51,12 @@ function getAllEventItem(val) {
 
     jQuery.ajax({
         type: "POST",
-        url: 'video_get_event_select',
+        url: app_path+'video_get_event_select',
         data: {
             evt_type: val
         },
         success: function (option_data)
         {
-            //jQuery("#div_evt_cop_id").html(data);
             var select = jQuery('#edit-eid');
             select.empty().append(option_data);
         },

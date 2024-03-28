@@ -42,9 +42,8 @@ class SurveyDatatable {
         }
 
         //$query -> leftjoin('kicp_access_control', 'c', 'a.survey_id = c.record_id AND c.is_deleted= :is_deleted AND c.module= :module', [':is_deleted' => 0, ':module' => 'survey'] );
-
-        if (!$isSiteAdmin) {          
             $query-> leftjoin('kicp_access_control', 'ac', 'ac.record_id = a.survey_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'survey', ':is_deleted' => '0']);
+        if (!$isSiteAdmin) {          
             $query-> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);

@@ -285,8 +285,25 @@ class VideoDatatable {
         return $result;
     }    
 
+    public static function getVideoInfo($media_id="") {
+        $returnAry = array();
+
+        if ($media_id == "") {
+            return $returnAry;
+        }
+
+        $sql = "SELECT media_id, media_title, media_description, media_duration, media_postdate, media_file_path, is_visible, is_banned, media_img, sort_field, media_event_id FROM kicp_media_info WHERE is_deleted=0 AND media_id=" . $media_id;
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAssoc();
+
+        return $result;
+
+    }
+
+    
+
     public static function getMaxEventSortOrder() {
-        
+
         $sql = "SELECT max(media_event_sequence) as max_order FROM kicp_media_event_name";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
@@ -299,5 +316,17 @@ class VideoDatatable {
 
     }
 
+    public static function getMaxVideoSortOrder($media_event_id) {
+        $sql = "SELECT max(sort_field) as max_order FROM kicp_media_info WHERE media_event_id=" . $media_event_id;
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        $sort_order = 0;
+        if ($result!=null) {
+            $sort_order = $result->max_order;
+        }
+
+        return $sort_order;
+    }
 
 }

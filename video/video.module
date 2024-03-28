@@ -28,7 +28,7 @@ function video_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'common/content_table';
         }
 
-        if($routeName === 'video.add_event_data') {
+        if($routeName === 'video.add_event_data' || $routeName === 'video.change_event_data') {
             $page['#attached']['library'][] = 'common/content_tags';
         }
 
@@ -74,6 +74,7 @@ function video_theme($existing, $type, $theme, $path) {
         'video-admin-video' =>[
             'variables' => [
                 'items' => NULL,
+                'media_event_id'  => NULL,
                 'eventname' => NULL,
                 'pager' => NULL,
             ],
@@ -86,7 +87,12 @@ function video_theme($existing, $type, $theme, $path) {
                 'pager' => NULL,
             ],
         ],
-
+        'video-event.selection' =>[
+            'variables' => [
+                'items' => NULL,
+            ],
+        ],
+        
     ];
 
 }

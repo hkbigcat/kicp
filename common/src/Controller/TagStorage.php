@@ -30,15 +30,8 @@ class TagStorage  {
             if ($tag != '') {
 
                 $sql = "SELECT count(1) as TOTAL FROM kicp_tags WHERE module = '" . $entry['module'] . "' and fid = " . $entry['module_entry_id'] . " and tag = '$tag' and is_deleted = 0";				
-				$result = $database-> query($sql); 
+                $result = $database-> query($sql)->fetchObject();
           
-		  /*
-                $j = 0;
-                foreach ($result as $record) {
-                    $j++;
-                    break;
-                }
-            */
                 if ($result->TOTAL == 0) {
                     // insert distinct tag
                     $entry1 = array(

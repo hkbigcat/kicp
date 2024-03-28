@@ -271,4 +271,29 @@ class CommonUtil {
         return $this_filename;
 
     }
+
+    public static function isTime($time) {
+        //return preg_match("#([0-1]{1}[0-9]{1}|[2]{1}[0-3]{1}):[0-5]{1}[0-9]{1}#", $time);
+        $timeAry = explode(':', $time);
+
+        if (!isset($timeAry[0]) || $timeAry[0] == "" || !isset($timeAry[1]) || $timeAry[1] == "" || !isset($timeAry[2]) || $timeAry[2] == "") {
+            return false;
+        }
+
+        $hour = $timeAry[0];
+        $min = $timeAry[1];
+        $sec = $timeAry[2];
+
+        if ($hour < 0 || $hour > 23 || !is_numeric($hour)) {
+            return false;
+        }
+        if ($min < 0 || $min > 59 || !is_numeric($min)) {
+            return false;
+        }
+        if ($sec < 0 || $sec > 59 || !is_numeric($sec)) {
+            return false;
+        }
+        return true;
+    }
+
 }

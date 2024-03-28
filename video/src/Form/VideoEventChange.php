@@ -40,7 +40,6 @@ class VideoEventChange extends FormBase {
 
         // display the form
 
-
         $record = VideoDatatable::getVideoEventInfo($media_event_id);
 
         $form['eTitle'] = array(
@@ -72,14 +71,16 @@ class VideoEventChange extends FormBase {
           '#value' => $record->media_event_sequence,
         );
 
-        $newDate = date("d.m.Y", strtotime($record->media_event_date));  
+        //$newDate = date("d.m.Y", strtotime($record->media_event_date));  
         $form['eDate'] = array(
           '#title' => t('Event Date'),
-          '#type' => 'textfield',
+          '#type' => 'date',
+          '#date_date_format' => 'd.m.Y',
+          '#date_format' => 'd.m.Y',             
           '#size' => 30,
           '#maxlength' => 10,
-          '#default_value' => $newDate,
-          '#description' => 'Date Format: DD.MM.YYYY',
+          '#default_value' => date('Y-m-d',$newDate),
+          '#description' => 'Date Format: DD/MM/YYYY',
           '#required' => TRUE,
         );
         
@@ -282,9 +283,6 @@ class VideoEventChange extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
@@ -296,7 +294,6 @@ class VideoEventChange extends FormBase {
             $creator = ($eCreatedBy == "") ? $this->default_creator : strtoupper($eCreatedBy);
 
             $entry = array(
-              'media_event_id' => $media_event_id,
               'media_event_name' => $eTitle,
               'media_event_sequence' => $eSortOrder,
               'media_event_date' => $newDateFormat,
@@ -305,7 +302,6 @@ class VideoEventChange extends FormBase {
               'evt_id' => $eId,
               'evt_type' => $eType,
               'user_id' => $creator,
-              //'modify_datetime' => date('Y-m-d H:i:s'),
             );
 
             // update image only if there is another image is selected
@@ -319,20 +315,19 @@ class VideoEventChange extends FormBase {
                 $entry['modify_datetime'] = date('Y-m-d H:i:s');
             }
 
-            $return = VideoDatatable::updateVideoEventRecord($entry);
+            $query = \Drupal::database()->update('kicp_media_event_name')
+            ->fields( $entry)
+            ->condition ('media_event_id',$media_event_id );
+            $eId = $query->execute();
 
-            if ($return) {
+            if ($eId) {
                 
                 if ($tags != $tags_prev) {
                     // rewrite tags
-                    if ($tags_prev != '') {
-                        $entry2 = array(
-                          'module' => $this->module,
-                          'module_entry_id' => $media_event_id,
-                          'tags' => $tags_prev,
-                          'is_deleted' => 1,
-                        );
-                        $return2 = TagStorage::change($entry2);
+                    if ($tags_prev != '') 
+                    {
+                      // delete tags
+                      $return2 = TagStorage::markDelete($this->module, $media_event_id);
                     }
 
                     if ($tags != '') {
@@ -345,95 +340,69 @@ class VideoEventChange extends FormBase {
                     }
                 }
 
+                $filename = "/";
                 //-----------------------------------
                 if ($_FILES['files']['name']['eImage'] != "") {
                     /////////// Handle attachment [Start] /////////////
 
-                    $validators = array(
-                      'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
-                      'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
-                    );
-                    $delta = NULL; // type of $file will be array
-                    $ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
-                    $newImagePath = CommonUtil::getSysValue('app_path') . '/sites/default/files/private/' . $this->module . '/image';    // store in "Private" folder
-                    //$this_uid = $authen->getUId();
-                    //$this_uid = str_pad($this_uid, 6, "0", STR_PAD_LEFT);
                     $this_eid = str_pad($media_event_id, 6, "0", STR_PAD_LEFT);
-
-                    $doc_folder = $ServerAbsolutePath . $newImagePath;
-                    if (!file_exists($doc_folder)) {
-                        mkdir($doc_folder, 0777);
+                    $file_system = \Drupal::service('file_system');   
+                    $eImage_path = 'private://video/image/'.$this_eid;
+                    if (!is_dir($file_system->realpath($eImage_path))) {
+                        // Prepare the directory with proper permissions.
+                        if (!$file_system->prepareDirectory($eImage_path, FileSystemInterface::CREATE_DIRECTORY)) {
+                          throw new \Exception('Could not create the eImage directory.');
+                        }
                     }
-                    /*
-                      $doc_folder .= '/' . $this_uid;
-                      if (!file_exists($doc_folder)) {
-                      mkdir($doc_folder, 0777);
-                      }
-                     */
-                    $doc_folder .= '/' . $this_eid;
-                    if (!file_exists($doc_folder)) {
-                        mkdir($doc_folder, 0777);
-                    }
-
-                    //$storeLocation = 'private://' . $this->module . '/image/' . $this_uid . '/' . $this_eid;		 // store in "Private" folder
-                    $storeLocation = 'private://' . $this->module . '/image/' . $this_eid;   // store in "Private" folder
-                    // move attachment from temp folder to destination
-
-                    $doc_file = $_FILES['files']['name']['eImage'];
-
-                    $file = file_save_upload('eImage', $validators, $storeLocation, $delta, FILE_EXISTS_REPLACE);
-
-
-                    if (!isset($file[0]) or $file[0] == '') {
-                        // e.g. doc_folder is missing 
-                        $transaction->rollback();
-                        drupal_set_message('Event is not created.', 'error');
-                        \Drupal::logger('error')->notice('Event is not created (4)');
-                        drupal_set_message('File "' . $doc_file . '" not uploaded.', 'error');
-                        \Drupal::logger('error')->notice('File is not uploaded (4)');
-                        return;
-                    }
-                    //Change the file status to permanent to prevent from deleting by daily system cron job
-                    $file[0]->status = FILE_STATUS_PERMANENT;
-                    //save to db
+                      
+                    $validators = array(
+                        'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
+                        'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
+                      );
+                    
+                    $delta = NULL; // type of $file will be array
+                    $file = file_save_upload('eImage', $validators, $eImage_path, $delta);
+              
+                    $file[0]->setPermanent();
+                    $file[0]->uid = $eId;
                     $file[0]->save();
-
-                    $_file = explode('.', $doc_file);
-                    $file_extension = end($_file);
+                    $url = $file[0]->createFileUrl(FALSE);                    
+                    $filename = $_FILES['files']['name']['eImage'];
 
                     /////////// Handle attachment [End] /////////////
                 }
                 //-----------------------------------
                 // write logs to common log table
-                $entry3 = array(
-                  'module_name' => $this->module,
-                  'record_id' => $media_event_id,
-                  'action' => 'Update',
-                  'description' => 'Updated event, id=' . $media_event_id . ', title=' . $eTitle,
-                  'log_user_id' => $authen->getUserId(),
-                );
-                $return3 = CommonUtil::InsertLog($entry3);
+                \Drupal::logger('video')->info('Updated id: %id, title: %title, file: %filename',   
+                array(
+                    '%id' => $eId,
+                    '%title' => $eTitle,
+                    '%filename' => $filename,
+                ));    
 
-                // if common log record cannot be created
-                if (!$return3) {
-                    $transaction->rollback();
-                    drupal_set_message(t('Event is not updated.'), 'error');
-                    \Drupal::logger('error')->notice('Event is not updated (4)');
-                    return;
-                }
+                $url = Url::fromUserInput('/video_admin/');
+                $form_state->setRedirectUrl($url);
+        
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Video Event has been update: '.$media_event_id));
 
-                drupal_set_message(t('Event is updated. Id.=' . $media_event_id));
             }
             else {
+              \Drupal::messenger()->addError(
+                t('Event  is not updated. ' )
+                );
+                \Drupal::logger('video')->error('Event is not updated (3)');
+
                 drupal_set_message(t('Event is not updated.'), 'error');
                 \Drupal::logger('error')->notice('Event is not updated (3)');
             }
         }
         catch (Exception $e) {
-            $transaction->rollback();
-            $variables = Error::decodeException($e);
-            drupal_set_message(t('Event is not updated.'), 'error');
-            \Drupal::logger('error')->notice('Event is not updated: ' . $variables);
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+            t('Event  is not updated. ' )
+            );
+          \Drupal::logger('video')->error('Event is not updated '  . $variables);   
         }
     }
 

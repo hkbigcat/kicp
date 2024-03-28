@@ -1,4 +1,5 @@
 <div style="width: 35%; float:right; text-align:right;margin-top:-20px;">
+    <button class="kicp_button size-2" onClick="self.location.href='{{ path('video.add_video_data' , {'media_event_id': media_event_id }) }}'"><i class="fa-solid fa-circle-plus"></i> Add Video</button>
     <button class="kicp_button size-1" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa fa-calendar" aria-hidden="true"></i> Event List Management</button> 
 </div>
 <h2 style="display:inline;">{{ eventname }}</h2>
@@ -27,7 +28,7 @@
         <div style="width:7%;float:left;display:block;">{{ item['is_visible']?'Yes':'No' }}</div>
         <div style="width:15%;float:left;display:block;text-align:center;">{{ item['is_banned']?'Yes':'No' }}</div>
     	<div style="width:20%;float:left;display:block;">
-            <button class="kicp_button size-2" onclick="self.location.href='update_videoevent/{{ item['media_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
+            <button class="kicp_button size-2" onclick="self.location.href='../video_change/{{ item['media_id'] }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
             <button class="kicp_button size-2" onclick="module_item_delete('video','{{ item['media_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
 		</div>
     </div>

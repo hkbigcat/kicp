@@ -130,6 +130,7 @@ class VideoController extends ControllerBase {
 
         return [
                 '#theme' => 'video-admin-video',
+                '#media_event_id' => $media_event_id,
                 '#items' => $videolist,
                 '#eventname' => $EventInfo->media_event_name,
                 '#empty' => t('No entries available.'),
@@ -218,7 +219,9 @@ class VideoController extends ControllerBase {
             $privilege_group = VideoDatatable::getVideoPrivilegeGroup($search_str);
         }
 
+        
 
+        
         return [
                 '#theme' => 'video-admin-privilege',
                 '#items' => $video_privilege,
@@ -287,35 +290,31 @@ class VideoController extends ControllerBase {
 
     }
 
-    public static function getEventSelection($evt_type="", $returnAry=false) {
+    public static function getEventSelection($evt_type="") {
         
-        if($evt_type != "") {
-            $evt_type = $evt_type;
-        } else if(isset($_REQUEST['evt_type']) && $_REQUEST['evt_type'] != "") {
-            $evt_type = $_REQUEST['evt_type'];
+    
+        if($evt_type == "") {
+            if(isset($_REQUEST['evt_type']) && $_REQUEST['evt_type'] != "") {
+                $evt_type = $_REQUEST['evt_type'];
+            }
         }
-        
-        $output = '';
-        $output .= '<option value="0">Please select Event</option>';
-        $output_ary = array();
-        $output_ary[0] = 'Please select Event';
-        
+
+    
         $evtItemAry = VideoDatatable::getAllActivityByEventType($evt_type);
-        foreach($evtItemAry as $record) {
 
-            $output .= '<option value="'.$record['evt_id'].'">'.$record['evt_name'].'</option>';
+        $renderable = [
+            '#theme' => 'video-event.selection',
+            '#items' => $evtItemAry,
+          ];
 
-            $output_ary[$record->evt_id] = $record['evt_name'];
-        }
-        
-        
-        if($returnAry == false) {
-            $response = new Response();
-            $response->setContent($output);
-            return $response;
-        } else {
-            return $output_ary;
-        }
+        $output = \Drupal::service('renderer')->renderPlain($renderable);
+
+        $response = new Response();
+        $response->setContent($output);
+
+    
+        return $response;
+
     }
 
 }

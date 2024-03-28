@@ -67,6 +67,7 @@ class SurveyAddPage1 extends FormBase {
           '#maxlength' => 200,
           '#attributes' => array('id' => 'edit-startdate'), 
           '#required' => TRUE,
+          '#default_value' => date('Y-m-d'),
         );
 
         $datestring = ' <td align="left">'
@@ -135,7 +136,7 @@ class SurveyAddPage1 extends FormBase {
           '#type' => 'checkbox',
           '#default_value' => 1,
           '#attributes' => array('style' => 'display:inline-block;float:left; margin-right:10px;'),
-          '#prefix' => '<div class="div_inline_column">',
+          '#prefix' => '<div>',
         );
         $form['PostUnit'] = array(
           '#title' => t('Post Unit'),
