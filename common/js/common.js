@@ -271,12 +271,6 @@ function checkAll(cb, which) {
 }
 
 
-if (jQuery) {
-  console.log("common.js jquery is loaded");
-} else {
-  console.log("common.js  Not loaded");
-}
-
 var customCalendar = null;
 var outputTxt = null;
 var imageObject = null;
@@ -363,3 +357,6 @@ function checkDate() {
 
 
 
+jQuery(document).ready(function(){
+    jQuery('li.menu-item.menu-item-level-1:nth-child(7) a').attr('target', '_blank');
+});
