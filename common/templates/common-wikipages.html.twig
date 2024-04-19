@@ -1,0 +1,24 @@
+<div class="content">
+  <script type="text/javascript">jQuery("li.menu-item.menu-item-level-1:nth-child(7)").addClass("active");</script>
+
+{% include '@common/common-tags.html.twig' %}
+    <input type="hidden" name="tag_page" id="tag_page" value="{{ path('common.kicpedia_tag') }}">
+    <input type="hidden" name="notag_page" id="notag_page" value="mediawiki/"> 
+
+  <div id="DivContentTable" style="display:table;">
+    <div class="common_table_header" style="margin-top:20px;">
+      <div style="width:54%;text-align:left; margin-left:48px;">KICPedia Page Title</div>
+      <div style="width:40%;text-align:left;">Tag</div>
+    </div>
+
+  {% for item in items %}    
+    <div class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:100%;">
+      <div style="width:30%;float:left;display:block; margin-left:30px;"><a href="mediawiki/index.php/{{ item['page_title'] }}" target="_blank">{{ item['page_title'] }} ({{ item['page_id'] }})</a></div>
+      {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] , nolable: 1}  %}
+    </div>
+  {% endfor %} 
+
+  </div>
+</div>
+
+  <div style="float:right; margin:20px;">{{ pager }}</div>

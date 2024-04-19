@@ -17,6 +17,7 @@ use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Database\Query\PagerSelectExtender;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Drupal\common\Follow;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -24,22 +25,26 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class VideoController extends ControllerBase {
     
     public function __construct() {
-        //$Paging = new Paging();
-        //$DefaultPageLength = $Paging->getDefaultPageLength();
 
         $this->module = 'video';
         $this->pagesize = 5;        
+
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();              
     }
     
     public function content() {
 
         $EventListAry = VideoDatatable::getVideoEventList($this->pagesize); // get most updated events
         $EventListRight = VideoDatatable::getVideoEventList($limit="", $start=($this->pagesize+1));
-
+        $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
         return [
             '#theme' => 'video-home',
             '#items' => $EventListAry,
             '#items_right' => $EventListRight,
+            '#my_user_id' => $this->my_user_id,
+            '#following' => $following,            
             '#empty' => t('No entries available.'),
         ];        
 

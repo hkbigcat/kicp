@@ -1,11 +1,10 @@
-
 function getAddGroupMemberUI(module, record_id) {
     console.log("module: "+module);
     jQuery("ul.menu").css("display","none");
     jQuery("#modal-body").html("");
     jQuery.ajax({
         type: "POST",
-        url: 'get_add_group_member_ui',
+        url: app_path + 'get_add_group_member_ui',
         data: JSON.stringify({"module": module, "record_id": record_id}),
         cache: false,
         success: function (data)
@@ -97,7 +96,7 @@ function key_press_search_public_group(evt){
 }
 
 
-function disableEditorFormat(){
+function disableEditormat(){
     var editorList = jQuery('select.editor');
     for (var i = 0; i < editorList.length; i++) {
         var editorOptions = jQuery(editorList[i]).find('option');
@@ -488,7 +487,23 @@ function showResult(module, result) {
     }).showModal();
 }
 
-
+function updateFollowUserStatus(this_user_id, status, this_elem) {
+    let tmp = this_elem.parentElement;
+    //console.log("tmp : "+tmp.innerHTML);
+    jQuery.ajax({
+        type: "POST",
+        url: app_path+'update_follow_status',
+        data: {
+            contributor_id: this_user_id,
+            status: status
+        },
+        success: function (data)
+        {
+           console.log("update follow status : "+data.following);
+           tmp.innerHTML = data.following;
+        }
+    });
+} 
 
 
 

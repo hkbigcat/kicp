@@ -1,0 +1,9 @@
+{% if my_user_id != contributor_id %}
+{% if following %}
+<button class="button size-small unfollow"onclick=" updateFollowUserStatus('{{ contributor_id }}', 0, this)">Following</button>
+{% else %}
+<button class="button size-small follow"onclick=" updateFollowUserStatus('{{ contributor_id }}', 1, this)">Follow</button>
+{% endif %}
+{% endif %}
+
+

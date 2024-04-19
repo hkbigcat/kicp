@@ -4,6 +4,8 @@ fileshare_key:
     theme:
       css/fileshare.css: {}
   header: true
+  js:
+    js/fileshare.js: {}    
 
 fileshare_slides:
   version: 1.x

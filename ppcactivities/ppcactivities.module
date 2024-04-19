@@ -15,6 +15,7 @@ function ppcactivities_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'ppcactivities/ppcactivities_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
+        $page['#attached']['library'][] = 'common/common_assets';           
         
 
         if ( str_contains($path, 'ppcactivities_item_add') || str_contains($path, 'ppcactivities_item_change')  || str_contains($path, 'ppcactivities_detail') || str_contains($path, 'ppcactivities_tag') || str_contains($path, 'ppcactivities_deliverable_add') || str_contains($path, 'ppcactivities_deliverable_change') ) {
@@ -41,6 +42,8 @@ function ppcactivities_theme($existing, $type, $theme, $path) {
                 'events' => NULL,
                 'categories' => NULL,
                 'cop_id' => NULL,
+                'my_user_id' => NULL,
+                'following' => NULL,                
             ],
         ],
         'ppcactivities-admin-photos' =>[

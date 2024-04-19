@@ -45,6 +45,7 @@ function blog_theme($existing, $type, $theme, $path) {
         'blogs-entry' =>[
             'variables' => [
                 'items' => NULL,
+                'my_user_id' => NULL,
                 'tags' => NULL,
                 'archive' => NULL,
             ],

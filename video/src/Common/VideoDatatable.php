@@ -84,6 +84,11 @@ class VideoDatatable {
         if ($admin==1)  return $result;
 
         $entries=array();
+
+        if (!$result) {
+            return null;
+        }
+
         $TagList = new TagList();
         foreach ($result as $record) {
           $record["tags"] = $TagList->getTagsForModule('video_video', $record["media_id"]);   
@@ -160,6 +165,10 @@ class VideoDatatable {
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
 
           //$result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+          if (!$result) {
+            return null;
+          }
 
           foreach ($result as $record) {
             if ($record["is_event"]) {

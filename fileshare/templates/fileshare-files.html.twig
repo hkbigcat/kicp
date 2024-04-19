@@ -1,8 +1,13 @@
 
 <div class="content">
-     <div style="float:right">
-          <button class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_add') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
-          <button  class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_folder') }}'"><i class="fa-solid fa-folder-open"></i> Folder</button>
+     <div class="text-right">
+        {% if (myRecordOnly) %}
+        <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
+        {% else %}        
+        <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
+        {% endif %}
+        <button class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_add') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
+        <button  class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_folder') }}'"><i class="fa-solid fa-folder-open"></i> Folder</button>
      </div>
 
 {% include '@common/common-tags.html.twig' %}
@@ -13,22 +18,21 @@
 
   {% for item in items %}
      {% if item['title']   %}
-      <div class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }}">
-        
-          <div style="width:18%;float:left;display:block;"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}" style="border-bottom:0px;"><img src="{{ url('<front>') }}/system/files/fileshare/image/{{ '%06d' | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200px;"></a></div>
-          <div style="width:50%;float:left;display:block;">
+      <div class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }} columns">
+          <div class="w20"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}" style="border-bottom:0px;"><img src="{{ url('<front>') }}/system/files/fileshare/image/{{ '%06d' | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200px;"></a></div>
+          <div class="w50">
                <div class="entry_title"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}">{{ item['title'] }}</a></div>
                <div class="entry_content">{{ item['description'] }}</div>
                <div><span class="entry_subtitle">Folder: </span><a href="fileshare?folder_id={{ item['folder_id'] }}">{{ item['folder_name'] }}</a></div>
-               <div><span class="entry_subtitle">Uploaded by: </span> {{ item['user_displayname'] }} <span id="DivFollow_{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{items['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+               <div><span class="entry_subtitle">Uploaded by: </span> {{ item['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
                <div><span class="entry_subtitle">Date: </span>{{ item['modify_datetime'] }}</div>
                {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
           </div>
-          <div style="width:27%;float:right;display:block;margin-left:20px;">
-          {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
+          <div class="w30">
+               {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
                <span><button class="kicp_button" onclick="self.location.href='{{ path('fileshare.fileshare_change', {'file_id': item['file_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                <span style="margin-bottom:15px;"><button class="kicp_button" onClick="module_item_delete('fileshare',{{ item['file_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
-          {% endif %}               
+               {% endif %}               
                <div id="cpRate_fileshare_{{ item['file_id'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' with {rating: item['rating'], user_id: my_user_id}  %}</div>
           </div>
           

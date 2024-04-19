@@ -2,16 +2,24 @@
 
 
 .homepage_div {
-        width: 20%;
-        min-width:305px;
-        min-height: 1614px;
-        float:left;
+        width:385px;
         border: 1px solid #DDDDDD;
         padding: 15px;
-        margin: 10px;
         border-radius: 10px;
         box-shadow: 2px 2px 5px #E6E6E6;
+        display: table-cell;
+        vertical-align: top;
 }
+
+.leftpanel {
+        width:250px;
+}
+
+.div_container{
+        display: table;
+        border-spacing: 10px;
+        width:100%;
+    }
 
 .homepage_div:hover {
         background: #F6F6F6;
@@ -31,21 +39,21 @@
         display: inline-table;
         padding: 5px;
         width: 100%;
+        margin-bottom:20px;
 }
 .blog_image {
         width: 64px;
         height: 64px;
         border:1px solid #E0E0E0;
         display: inline-block;
-        float: left;
 } 
 
 .blog_text {
         font-family: Gerorgia;
         vertical-align: top;
-        padding-left: 6px;
+        padding: 0 5px;
         float: left;
-        width:180px;
+        width:75%;
 }
 
 .title_link {
@@ -60,16 +68,13 @@
 }
 
 #MainEntryContainer {
-        float:left;
-        width:70%;
-        /*min-width:900px;*/
+        width:80%;
         margin:8px;
         display:inline-block;
 }
 
 #blogCommentContainer {
         width: 70%;
-        float: left;
         display: inline-block;
         border: 1px solid #FFFFFF;
 }
@@ -123,7 +128,6 @@ ul, li {
 }
 
 .like_text_div {
-        float: right;
         display: inline-block;
 }
 
@@ -162,3 +166,4 @@ ul, li {
     margin-top:-6px;
     max-width:720px;
 }
+

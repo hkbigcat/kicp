@@ -17,6 +17,7 @@ use Drupal\fileshare\Common\FileShareDatatable;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
 use Drupal\common\Controller\TagStorage;
+use Drupal\common\Follow;
 use Drupal\common\RatingData;
 use Drupal\common\RatingStorage;
 use Drupal\Core\Entity\EntityInterface;
@@ -56,7 +57,6 @@ class FileShareController extends ControllerBase {
 
    $table_rows = FileShareDatatable::load_folder($this->my_user_id);
    $table_rows['type'] = 'folders';
-
    $search_str = \Drupal::request()->query->get('search_str');
    $table_rows['search_str'] =  $search_str;
    
@@ -80,12 +80,14 @@ class FileShareController extends ControllerBase {
   public function getShareFile() {
 
     $table_rows_file = FileShareDatatable::getSharedFile();
-    
+    $myRecordOnly = \Drupal::request()->query->get('my');
+        
     return [
         '#theme' => 'fileshare-files',
         '#items' => $table_rows_file,
         '#my_user_id' => $this->my_user_id,
         '#empty' => t('No entries available.'),
+        '#myRecordOnly' => $myRecordOnly,
         '#pager' => ['#type' => 'pager',
                     ],
     ];
@@ -100,7 +102,7 @@ class FileShareController extends ControllerBase {
    */
   public function viewShareFile($file_id) {
 
-    $table_rows_file = FileShareDatatable::getSharedFile($file_id);
+    $table_rows_file = FileShareDatatable::getSharedFile($file_id, $this->my_user_id);
     if ($table_rows_file == null ) {
       return [
         '#markup' => '<p>You are not authorize to access this file or file does no exisit</p>',
@@ -138,7 +140,8 @@ class FileShareController extends ControllerBase {
   $rating = $RatingData->getList('fileshare', $file_id);
 
   $table_rows_file['tagURL'] = $tagURL;
-  
+  $table_rows_file["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
+
   $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $this->my_user_id);
   $rating['rsHadRate'] = $rsHadRate;
   $rating['module'] = 'fileshare';

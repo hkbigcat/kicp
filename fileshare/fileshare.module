@@ -17,6 +17,7 @@ function fileshare_page_attachments_alter(&$page) {
     if (explode(".", $routeName)[0] === 'fileshare') {
     
         $page['#attached']['library'][] = 'fileshare/fileshare_key';
+        $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
@@ -43,6 +44,7 @@ function fileshare_theme($existing, $type, $theme, $path) {
                 'my_user_id' => NULL,
                 'pager' => NULL,
                 'tagsUrl' => NULL,
+                'myRecordOnly' => NULL,
             ],
         ],
         'fileshare-foldertable' =>[

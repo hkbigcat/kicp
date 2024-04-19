@@ -22,6 +22,18 @@
     color: #A3A3A3;
 }
 
+.mainpage_image {
+    width:13%;
+    float:left;
+    display:block;
+}
+
+.mainpage_info{
+    width:50%;
+    float:left;
+    display:block;
+}
+
 .mainpage_div .mainpage_image img{
     
     width: 100px;
@@ -144,7 +156,6 @@
 .follower_name {
     font-size: 9pt;
     display: inline-block;
-    float:left;
     width:92%;
     padding-left:3px;
 }
@@ -239,4 +250,10 @@ tr td, tr th {
     padding: 4px 9px;
     text-align: left;
     border: 1px solid #fff;
+}
+
+#editor_choice {
+    background-color:#DBF8FF; 
+    border: 1px solid #7A9ACC;
+    padding-top:35px;
 }

@@ -8,7 +8,7 @@ var hrefAry = new Array();
 var data_sub_htmlAry = new Array();
 var srcAry = new Array();
 
-var PhotoPerPageConst = 12;
+var PhotoPerPageConst = 15;
 var totalPages = new Array();
 var currentPage = new Array();
 
@@ -78,7 +78,7 @@ function replaceToDiv(iframe_id, iframe, iframeSrc, AlbumName){
                 srcAry[iframe_id].push($(this).attr("src"));
             });
             
-            console.log("frame" + iframe_id + " Total href:" + hrefAry[iframe_id].length);
+            //console.log("frame" + iframe_id + " Total href:" + hrefAry[iframe_id].length);
             
             totalPages[iframe_id] = Math.ceil(hrefAry[iframe_id].length/PhotoPerPageConst);
             currentPage = 1;

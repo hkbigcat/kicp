@@ -12,6 +12,7 @@ use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
 use Drupal\common\Controller\TagList;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\common\Follow;
 
 class SurveyDatatable {
 
@@ -70,6 +71,7 @@ class SurveyDatatable {
             $record["tags"] = $TagList->getTagsForModule('survey', $record["survey_id"]);   
             $record["countlike"] = LikeItem::countLike('survey', $record["survey_id"]);
             $record["liked"] = LikeItem::countLike('survey', $record["survey_id"],$my_user_id);
+            $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id);
             $output[] = $record;
         }
         return $output; 

@@ -15,6 +15,7 @@ function activities_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'activities/activities_key';
         $page['#attached']['library'][] = 'common/common_key';
         $page['#attached']['library'][] = 'common/content_table';
+        $page['#attached']['library'][] = 'common/common_assets';   
         
 
         if ( str_contains($path, 'activities_item_add') || str_contains($path, 'activities_item_change')  || str_contains($path, 'activities_detail') || str_contains($path, 'activities_tag') || str_contains($path, 'activities_deliverable_add') || str_contains($path, 'activities_deliverable_change') ) {
@@ -41,6 +42,8 @@ function activities_theme($existing, $type, $theme, $path) {
                 'types' => NULL,
                 'events' => NULL,
                 'copitems' => NULL,
+                'my_user_id' => NULL,
+                'following' => NULL,
             ],
         ],
         'activities-admin-photos' =>[

@@ -1,3 +1,6 @@
+var KICPadvertisement1 = 'Simply click the link below.%0a';
+var KICPadvertisement2 = 'Enjoy!%0a';
+
 function module_item_delete(module, item_id) {
 
   const currentUrl = window.location.href;
@@ -88,7 +91,8 @@ function module_item_delete(module, item_id) {
   console.log('msgtitle: '+msgtitle);
   console.log('module: '+module);
   console.log('page_url: '+page_url);
-
+  let position = page_url.search('blog_delete');
+  
 
   jQuery("#delete-confirm").dialog({
     title: 'Delete '+ msgtitle,
@@ -102,7 +106,8 @@ function module_item_delete(module, item_id) {
           jQuery.post(page_url, {function(result){
               jQuery('#delete-confirm').dialog('close');
               console.log("close dialog: "+result);
-              window.location.reload();      
+              let redirect_page = page_url.substring(0, position) + 'blog';
+              window.location.href=redirect_page;      
             }});
           } else {
         jQuery.post({url:page_url, success: function(result){
@@ -155,9 +160,10 @@ function addTagUrl(thisTag) {
 
   tags = [];
   if (selected_tag != "") {
-    selected_tag.replaceAll("&","%26");
+    selected_tag = selected_tag.replaceAll("&","%26");
     tags = selected_tag.split(';');
   } 
+  console.log("selected_tag: "+ selected_tag);
   if (thisTag != "" && !tags.includes(thisTag)) {
     tags.push(thisTag.replaceAll("&","%26"));
   } 
@@ -167,7 +173,6 @@ function addTagUrl(thisTag) {
   self.location.href=tag_page+'?tags='+JSON.stringify(tags);
 
 }
-
 
 function RemovetagUrl(thisTag) {
 
@@ -180,6 +185,8 @@ function RemovetagUrl(thisTag) {
 
   
   if (selected_tag == "") return;
+  selected_tag = selected_tag.replaceAll("&","%26");
+  thisTag = thisTag.replaceAll("&","%26");
   let tags = selected_tag.split(';');
   
   var newtag = [];
@@ -356,7 +363,89 @@ function checkDate() {
 }
 
 
+function copyTextToClipboard() {
+  var txt = self.location.href;
+
+  // creating new textarea element and giveing it id 't'
+  let t = document.createElement('textarea');
+  t.id = 't';
+  // Optional step to make less noise in the page, if any!
+  t.style.border = 0;
+  t.style.height = 1;
+  t.style.margin = 0;
+  t.style.padding = 0;
+
+  // You have to append it to your page somewhere, I chose <body>
+  document.body.appendChild(t);
+  // Copy whatever is in your div to our new textarea
+  t.value = txt;
+
+  // Now copy whatever inside the textarea to clipboard
+  let selector = document.querySelector('#t');
+  selector.select();
+  var copySuccess = document.execCommand('copy');
+
+  // Remove the textarea
+  t.style.height = 0;
+
+  return false;
+}
+
+function mailto(sub, body) {
+  var txt = self.location.href;
+
+  switch (sub) {
+      case 0: //kicppedia
+          sub = 'Your friend would like to share with you a KICPedia page in KICP';
+          break;
+      case 1: //taxonomy
+          sub = 'Your friend would like to share with you a document in KICP';
+          break;
+      case 2: //KM
+          sub = 'Your friend would like to share with you a KM activity in KICP';
+          break;
+      case 3: //Blog
+          sub = 'Your friend would like to share with you a blog in KICP';
+          break;
+      case 4: //Blog Entry
+          sub = 'Your friend would like to share with you a blog entry in KICP';
+          break;
+      case 5: //Forum
+          sub = 'Your friend would like to share with you a forum in KICP';
+          break;
+      case 6: //News
+          sub = 'Your friend would like to share with you an internal news in KICP';
+          break;
+      case 7: //Video
+          sub = 'Your friend would like to share with you a video in KICP';
+          break;
+      case 8: //Survey
+          sub = 'Your friend would like to share with you a survey in KICP';
+          break;
+      case 9: //Vote
+          sub = 'Your friend would like to share with you a vote in KICP';
+          break;
+      case 10: //Bookmark
+          sub = 'Your friend would like to share with you a bookmark in KICP';
+          break;
+      case 11: //PPC Activity
+          sub = 'Your friend would like to share with you a PPC Activity in KICP';
+          break;
+      default:
+          sub = sub;
+  }
+  msg = "The corresponding URL has been copied into the clipboard\n\nDo you also want to send this URL through mail e.g. Microsoft Outlook?";
+  if (confirm(msg)) {
+      window.location.href = "mailto:?Subject=" + sub + "&Body=" + KICPadvertisement1 + "%0a" + escape(txt) + "%0a%0a" + KICPadvertisement2 + "%0a";
+  }
+}
+
 
 jQuery(document).ready(function(){
-    jQuery('li.menu-item.menu-item-level-1:nth-child(7) a').attr('target', '_blank');
+    jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
+    if (location.pathname == app_path || location.pathname == app_path + "tag")
+      jQuery('#block-thex-kicp-main-menu li.menu-item.menu-item-level-1:first-child').addClass( "active" );  
+
 });
+
+

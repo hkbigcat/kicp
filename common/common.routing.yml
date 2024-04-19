@@ -111,3 +111,24 @@ common.addrating:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+
+common.kicpedia_tag:
+  path: '/kicpedia_tag'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::getKicpediaTag'
+    _title: 'KICPedia Tag'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+    
+common.update_follow_status:
+  path: '/update_follow_status'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::updateFollowStatus'
+    _title: 'Update Follow Status'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

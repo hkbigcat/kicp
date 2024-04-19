@@ -11,7 +11,7 @@ use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
 use Drupal\common\Controller\TagList;
-
+use Drupal\common\Follow;
 
 
 class ForumDatatable {
@@ -38,7 +38,7 @@ class ForumDatatable {
         }
 
 
-        $sql = " SELECT MAX(a.post_id) AS post_id, MAX(a.post_id) AS this_post_id, b.title, COUNT(a.post_id) AS total_post, b.topic_id, b.forum_id, c.forum_name, x.user_name, b.counter, IF(COUNT(a.post_id)>0,(COUNT(a.post_id)-1),0) AS total_reply, b.create_datetime, IF(d.is_guest=1,d.poster_name,x.user_name) AS poster_name
+        $sql = " SELECT MAX(a.post_id) AS post_id, MAX(a.post_id) AS this_post_id, b.title, COUNT(a.post_id) AS total_post, b.topic_id, b.forum_id, b.user_id, c.forum_name, x.user_name, b.counter, IF(COUNT(a.post_id)>0,(COUNT(a.post_id)-1),0) AS total_reply, b.create_datetime, IF(d.is_guest=1,d.poster_name,x.user_name) AS poster_name
         FROM kicp_forum_post a 
         LEFT JOIN kicp_forum_topic b ON (a.topic_id=b.topic_id AND b.is_deleted=0) 
         LEFT JOIN kicp_forum_forum c ON (b.forum_id=c.forum_id)
@@ -52,7 +52,16 @@ class ForumDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
 
-        return $result;
+        if (!$result)
+          return null;
+
+        $output=array();
+        foreach ($result as $record) {
+            $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
+            $output[] = $record;
+
+        }
+        return $output;
 
     }
 
@@ -123,6 +132,8 @@ class ForumDatatable {
         foreach ($result as $record) {
             $record["countlike"] = LikeItem::countLike('forum', $record["topic_id"]);
             $record["liked"] = LikeItem::countLike('forum', $record["topic_id"],$my_user_id);
+            $record["liked"] = LikeItem::countLike('forum', $record["topic_id"],$my_user_id);
+            $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
             $output[] = $record;
         }
         return $output;
@@ -136,6 +147,10 @@ class ForumDatatable {
         $output=array();
         $TagList = new TagList();
         $database = \Drupal::database();
+
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();        
 
         $query = $database-> select('kicp_forum_topic', 'a'); 
         
@@ -174,6 +189,7 @@ class ForumDatatable {
 
         foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('forum', $record["topic_id"]);   
+            $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
             $output[] = $record;
         }
 

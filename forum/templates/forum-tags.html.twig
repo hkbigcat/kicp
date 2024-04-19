@@ -14,7 +14,7 @@
         <div style="width:30%;float:left;display:block;"><a href="{{ path('forum.forum_view_topic', {'topic_id': post['topic_id'] }) }}">{{ post['title'] }}</a></div>
         <div style="width:17%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': post['forum_id'] }) }}">{{ post['forum_name'] }}</a></div>
         <div style="width:20%;float:left;display:block;">{{ post['user_name'] }} 
-            <span id="DivFollow_{{ post['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ post['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span>
+            <span>{% include '@common/common-follow.html.twig'  with {contributor_id: post['user_id'], following: post['follow']}  %}</span>    
         </div>
         <div style="width:28%;float:left;display:block;"> {% include '@common/common-tags-list.html.twig' with {tags: post ['tags'] , nolable: 1}  %} </div>
     </div>

@@ -9,7 +9,7 @@
   {% for thread in threads %}
     <div class="EntryContainer  {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%;">
         <div class="forum_hightlight">
-            <div style="width:35%;float:left;">{{ thread['poster_name'] }}</div>
+            <div style="width:35%;float:left;">{{ thread['poster_name'] }}<span>{% include '@common/common-follow.html.twig'  with {contributor_id: thread['user_id'], following: thread['follow']}  %}</span></div>
             <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
         </div>
         <div class="forum_post_content">

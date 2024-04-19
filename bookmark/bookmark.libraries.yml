@@ -4,4 +4,7 @@ bookmark_key:
     theme:
       css/bookmark.css: {}
   header: true
-  
+  js:
+    js/bookmark.js: {} 
+  dependencies:
+    - core/jquery

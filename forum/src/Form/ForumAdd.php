@@ -108,6 +108,7 @@ class ForumAdd extends FormBase {
           '#title' => t('Message'),
           '#type' => 'text_format',
           '#format' => 'full_html',
+          '#allowed_formats' => ['full_html'],
           '#rows' => 6,
           '#cols' => 60,
           '#default_value' => $quoteMsg,

@@ -38,6 +38,7 @@ class BookmarkController extends ControllerBase {
         $tags = array();
         $tmp = null;
       
+        $myRecordOnly = \Drupal::request()->query->get('my');
         $tagsUrl = \Drupal::request()->query->get('tags');
 
         $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id); 
@@ -54,6 +55,7 @@ class BookmarkController extends ControllerBase {
             '#items' => $bookmarks,
             '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
+            '#myRecordOnly' => $myRecordOnly,
             '#tagsUrl' => $tmp,
             '#pager' => ['#type' => 'pager',
           ],

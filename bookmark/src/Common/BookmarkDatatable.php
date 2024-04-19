@@ -17,8 +17,9 @@ use Drupal\common\RatingData;
 
 class BookmarkDatatable extends ControllerBase {
 
-  public static function getBookmarks($my_user_id=null,$bid=null, ) {
+  public static function getBookmarks($my_user_id=null,$bid=null ) {
 
+    $myRecordOnly = \Drupal::request()->query->get('my');
     $tagsUrl = \Drupal::request()->query->get('tags');
     if ($bid==null && $tagsUrl) {
       $tags = json_decode($tagsUrl);
@@ -50,11 +51,15 @@ class BookmarkDatatable extends ControllerBase {
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
-        if (!$isSiteAdmin) {
-          $orGroup = $query->orConditionGroup()
-          ->condition('a.user_id', $my_user_id)
-          ->condition('a.bStatus', 0);
-          $query->condition($orGroup);
+        if ($myRecordOnly) {
+          $query->condition('a.user_id', $my_user_id);
+        } else {
+          if (!$isSiteAdmin) {
+            $orGroup = $query->orConditionGroup()
+            ->condition('a.user_id', $my_user_id)
+            ->condition('a.bStatus', 0);
+            $query->condition($orGroup);
+          }
         }
 
         if ($bid!=null) {

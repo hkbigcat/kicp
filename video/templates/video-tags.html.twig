@@ -3,9 +3,9 @@
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('video.video_tag') }}">
      <input type="hidden" name="notag_page" id="notag_page" value="{{ path('video.video_entrylist') }}">
      <div style="clear:both"></div>
-     <div id="DivContentTable" style="display:table;">
+     <div id="DivContentTable">
     {% for item in items %}
-        <div class="homepage_div {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%; min-width:auto; min-height:auto;">
+        <div class="homepage_div {{ loop.index0 is odd ? 'odd' : 'even' }}">
             <div style="float:left; padding-right:20px;">
 
             {% if item['is_event']==1   %}

@@ -13,7 +13,7 @@
   <div class="DivContentTable_item  odd " style="width:100%;">
     <div style="width:25%;float:left;display:block;"><a href="{{ path('forum.forum_view_topic', {'topic_id': item['topic_id'] }) }}">{{ item['title'] }}</a></div>
     <div style="width:20%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': item['forum_id'] }) }}">{{ item['forum_name'] }}</a></div>
-    <div style="width:20%;float:left;display:block;">{{ item['user_name'] }} <span id="DivFollow_KMU.OGCIO"><a href="javascript:void(0);" onclick="updateFollowUserStatus('KMU.OGCIO', 1, this)" style="border-bottom:0px;"><img src="modules/custom/common/images/icon_follow.png" border="0" title="Click icon to follow Contributor" alt="Click icon to follow Contributor" style="vertical-align:middle;"></a></span></div>
+    <div style="width:20%;float:left;display:block;">{{ item['user_name'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
     <div style="width:8%;float:left;display:block;">{{ item['total_reply'] }}</div>
     <div style="width:10%;float:left;display:block;">{{ item['counter'] }}</div>
     <div style="width:14%;float:left;display:block;">{{ item['create_datetime'] }}</div>

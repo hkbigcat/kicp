@@ -40,15 +40,13 @@ class MainpageController extends ControllerBase {
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass');
-
+        $myRecordOnly = \Drupal::request()->query->get('my');
         $taglist = new TagList();
         $cop_tags = $taglist->getCOPTagList();
-
         $other_tags = $taglist->getOtherTagList();
-
         $editorChoice = MainpageDatatable::getEditorChoiceRecord();                
-
         $latest = MainpageDatatable::getLatest($this->my_user_id);
+        $myFollower = Follow::getMyFollower($user_id);
 
         return [
             '#theme' => 'mainpage-home',
@@ -56,6 +54,9 @@ class MainpageController extends ControllerBase {
             '#items' => $latest,
             '#cop_tags' => $cop_tags,
             '#other_tags' => $other_tags,
+            '#my_user_id' => $this->my_user_id,
+            '#followers'=> $myFollower,
+            '#myRecordOnly' => $myRecordOnly,
         ];  
     }
 

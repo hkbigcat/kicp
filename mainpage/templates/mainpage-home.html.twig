@@ -1,54 +1,45 @@
-<div class="mainpage_div" style="background-color:#DBF8FF; border: 1px solid #7A9ACC;">
-    <div style="width:99%;text-align:justify;margin-top:20px;"> 
+<div class="mainpage_div" id="editor_choice">
     {{ editor_choice | raw }}
-    </div>
 </div>
-
-<h2 style="font-size:16pt;margin-top:3em;margin-bottom:1em;">The Latest Updates </h2>
-
+<div class="spacer"></div>
+<div class="width90">
+   <div id="DivNoOfMyFollower" style="">Number of users following me: <strong>{{followers}}</strong> </div>
+</div>
+<div class="spacer"></div>
+<div class="text-right">
+    {% if (myRecordOnly) %}
+    <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
+    {% else %}        
+    <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
+    {% endif %}
+</div>
+<h2 style="font-size:1.3em">The Latest Updates </h2>
  {% for item in items %}
 <div class="mainpage_div {{ loop.index0 is odd ? 'even' : 'odd' }}">
-    <div style="display:inline-block;width:65%">
-        <table>
-            <tbody>
-                <tr style="background-color:transparent;border:0">
-                    <td style="width: 15%;border:none; position:absolute"><div class="mainpage_image" style="width:100px;"><a href="{{item['link']}}" style="border-bottom:0px;">
-                    {% if item['module'] == 'bookmark' %}
-                        <i class="fa-solid fa-bookmark" style="font-size:40px; margin:auto; width:100%; color:#00ff00"></i>
-                    {% else %}
-                        <img src="{{item['img_path']}}" border="0" width="100">
-                    {% endif %}
-                    </a></div> </td>
-                    <td style="width: 85%;border:none">
-                        <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_time'] | date('j F, Y, g:i') }}</span>
-                        <span class="title2"><strong>[{{ item['module'] | capitalize  }}]</strong></span>
-                        <span class="title2_2"> <a href="{{item['link']}}">{{ item['Title'] }}</a></span>
-                        <div class="author">Created By: <span class="author_name">{{item['user_displayname']}}</span> <span id="{{item['user_id']}}"><a href="javascript:void(0);" onClick="updateFollowUserStatus('{{item['user_id']}}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
-                         <div class="mainpage_tag">{% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] }  %} </div>
-                        <div class="mainpage_highlight2"></div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="mainpage_image"><a href="{{item['link']}}"><img src="{{item['img_path']}}" border="0" width="100"></a></div>    
+    <div class="mainpage_info">
+        <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_time'] | date('j F, Y, g:i') }}</span>
+        <span class="title2"><strong>[{{ item['module'] | capitalize  }}]</strong></span>
+        <span class="title2_2"> <a href="{{item['link']}}">{{ item['Title'] }}</a></span>
+        <div class="author">Created By: <span class="author_name">{{item['user_displayname']}}</span> <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
+        <div class="mainpage_tag">{% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] }  %} </div>
+        <div class="mainpage_highlight2"></div>
     </div>
-    
-    
-        {% if item['module'] in ['blog', 'forum'] %}
-        <div style="width:8%;display:inline-block;float:right;">
-        {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
-        {% elseif item['module'] in ['fileshare', 'fookmark'] %}
-        <div style="width:33%;display:inline-block;float:right;">
-        {% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}
-        {% endif %}
-        </div>
-
+    {% if item['module'] in ['blog', 'forum'] %}
+    <div style="width:8%;display:inline-block;float:right;">
+    {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
+    {% elseif item['module'] in ['fileshare', 'bookmark'] %}
+    <div style="width:33%;display:inline-block;float:right;">
+    {% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}
+    {% endif %}
+    </div>
 </div>
 {% endfor %}
 
 
 
 <input type="hidden" name="tag_page" id="tag_page" value="tag">
-<div style="width:100%;">
+<div>
 <fieldset class="mainpage_fieldset">
 <legend class="mainpage_legend">&nbsp;All Tags&nbsp;</legend>
 {% include '@common/common-tags-cop.html.twig'  %}

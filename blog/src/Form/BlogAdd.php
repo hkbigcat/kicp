@@ -103,6 +103,7 @@ class BlogAdd extends FormBase  {
             '#cols' => 30,
             //'#attributes' => array('style' => 'height:400px;'),
             '#required' => TRUE,
+            '#allowed_formats' => ['full_html'],
         ];
 
         $validators = array(
@@ -181,8 +182,9 @@ class BlogAdd extends FormBase  {
             $$key = $value;
         }
 
-        $current_time =  \Drupal::time()->getRequestTime();
-        $blog_owner_id = str_pad($blog_id, 6, "0", STR_PAD_LEFT);
+
+        $blog_owner_id = BlogDatatable::getUIdByBlogId($blog_id);
+        $blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);
 
         $hasAttach = (empty($files))?0:1; 
 
@@ -231,8 +233,6 @@ class BlogAdd extends FormBase  {
 
 /////////// Handle attachment [Start] /////////////
             if ($hasAttach) {
-
-
                 $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
                 if (!is_dir($file_system->realpath($createDir ))) {
                     // Prepare the directory with proper permissions.
@@ -240,7 +240,6 @@ class BlogAdd extends FormBase  {
                     throw new \Exception('Could not create the blog image - entry id directory.');
                     }
                 }
-
                 foreach ($files as $file1) {
 
                     if ($file1) {
@@ -275,7 +274,6 @@ class BlogAdd extends FormBase  {
             '%title' => $bTitle,
             '%attach' => ($hasAttach)?'Y':'N',
         ));     
-
 
         $url = Url::fromUserInput('/blog_entry/'.$entry_id);
         $form_state->setRedirectUrl($url);

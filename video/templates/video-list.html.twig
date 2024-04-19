@@ -1,7 +1,7 @@
 <div> 
     <h2 class="video_title">Event Name: {{ event_info.media_event_name }}</h2>
     <strong>Event Date: </strong> {{ event_info.media_event_date | date('d.m.Y') }}
-    <div id="DivFollower">Knowledge Management Unit <span id="DivFollow_3232"><a href="javascript:;" onclick="updateFollowUserStatus('{{ event_info.user_id }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+    <div id="DivFollower">Knowledge Management Unit <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'KMU.OGCIO'}  %}</span></div>
     {% include '@common/common-tags-list.html.twig' %}    
     {% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="../video_tag">

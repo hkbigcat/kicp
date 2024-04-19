@@ -1,3 +1,4 @@
+<div class="div_container">
 {% include '@blog/leftmenu.html.twig' %}
 
 {% include '@common/common-tags.html.twig' %}
@@ -11,7 +12,7 @@
       <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
       <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     </div>
-    <div class="BlogName">{{ items ['blog_name'] }}<span id="DivFollow_{{ items ['user_id'] }}"><a href="javascript:;" onclick="updateFollowUserStatus('{{ items ['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+    <div><span class="BlogName">{{ items ['user_full_name'] }}</span><span>{% include '@common/common-follow.html.twig'  with {contributor_id: items['user_id'], following: items['follow'] }  %}</span></div>
     
     <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
         <div style="float:right">
@@ -51,5 +52,5 @@
         <input type="Reset" name="cancelBtn" id="cancelBtn" value="Cancel">  
       </div>
   </form>
-
+</div>
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}

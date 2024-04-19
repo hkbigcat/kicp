@@ -11,6 +11,7 @@ use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
 use Drupal\common\Controller\TagStorage;
+use Drupal\common\Follow;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Pager\PagerManagerInterface;
@@ -31,6 +32,7 @@ class ActivitiesController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();      
         
     }
     
@@ -58,6 +60,8 @@ class ActivitiesController extends ControllerBase {
         if ($type_id==1 & $item_id!="" || $type_id!=1 )
             $events = ActivitiesDatatable::getEventItemByTypeId($type_id);
 
+        $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
+
         return [
             '#theme' => 'activities-main',
             '#items' => $activityInfo,
@@ -65,6 +69,8 @@ class ActivitiesController extends ControllerBase {
             '#events' => $events,
             '#types' => $activitiesType,
             '#copitems' => $COPitems,
+            '#my_user_id' => $this->my_user_id,
+            '#following' => $following,
             '#empty' => t('No entries available.'),
         ];                
 
@@ -259,7 +265,7 @@ class ActivitiesController extends ControllerBase {
         }  else if($type == 'photo') {
              
             $photos = ActivitiesDatatable::getEventPhotoByEventId($evt_id);
-            $PhotoPerPage = 15;
+            $PhotoPerPage = 18;
             $renderable = [
                 '#theme' => 'activities-photo',
                 '#items' => $photos,

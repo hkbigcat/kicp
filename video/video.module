@@ -54,6 +54,8 @@ function video_theme($existing, $type, $theme, $path) {
                 'rating' => NULL,
                 'tags' => NULL,
                 'event_info' => NULL,
+                'my_user_id' => NULL,
+                'following' => NULL,                
                 'pager' => NULL,
             ],
         ],

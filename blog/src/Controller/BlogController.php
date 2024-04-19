@@ -40,7 +40,6 @@ class BlogController extends ControllerBase {
     
     public function content() {
 
-        
         $ThematicBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'T', $this->BlogHomepageDisplayNo);
         $PersonalBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'P', $this->BlogHomepageDisplayNo);
         $LatestBlogContent = BlogDatatable::getHomepageBlogList($this->my_user_id, 'ALL', $this->BlogHomepageDisplayNo);
@@ -64,29 +63,31 @@ class BlogController extends ControllerBase {
 
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
 
-        if ($entry==null) {
+        if (!$entry ) {
             return [
                 '#type' => 'markup',
                 '#markup' => $this->t('Blog entry not avaiable'),
               ];
-        }
+        } else {
 
-        $entry['my_blog_id'] = $this->my_blog_id;
-        $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
-        $entry['comments'] = $entryCommentAry;
-        $blog_id = BlogDatatable::getBlogIDByEntryID($entry_id);
+            $entry['my_blog_id'] = $this->my_blog_id;
+            $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
+            $entry['comments'] = $entryCommentAry;
+            $blog_id = BlogDatatable::getBlogIDByEntryID($entry_id);
 
-        $archive = BlogDatatable::getBlogArchiveTree($blog_id);
-        $TagList = new TagList();
-        $taglist = $TagList->getTagsForModule('blog', $entry_id);        
-       
-        return [
-            '#theme' => 'blogs-entry',
-            '#items' => $entry,
-            '#archive' => $archive,
-            '#tags' => $taglist,
-            '#empty' => t('No entries available.'),
-        ];        
+            $archive = BlogDatatable::getBlogArchiveTree($blog_id);
+            $TagList = new TagList();
+            $taglist = $TagList->getTagsForModule('blog', $entry_id);        
+        
+            return [
+                '#theme' => 'blogs-entry',
+                '#items' => $entry,
+                '#archive' => $archive,
+                '#tags' => $taglist,
+                '#my_user_id' => $this->my_user_id,
+                '#empty' => t('No entries available.'),
+            ];      
+       }  
 
     }
 
@@ -154,6 +155,7 @@ class BlogController extends ControllerBase {
             \Drupal::messenger()->addError(
                 t('you cannot delete this blog ' )
                 );
+
                 $response = array('result' => 0);
                 return new JsonResponse($response);    	        
         } else if ($entry['is_deleted']==1) {
@@ -174,27 +176,19 @@ class BlogController extends ControllerBase {
                 ->condition('entry_id', $entry_id);
                 $row_affected = $query->execute();        
 
-                if ($row_affected) {
-
-                    // delete tags  
-                    $return2 = TagStorage::markDelete($this->module, $entry_id);
-                
-                    // write logs to common log table
-                    \Drupal::logger('blog')->info('Deleted id: %id, title: %title',   
-                    array(
-                        '%id' => $entry_id,
-                        '%title' =>  $entry['entry_title'],
-                    ));    
-
-                    $messenger = \Drupal::messenger(); 
-                    $messenger->addMessage( t('Blog has been deleted'));
-                } else {
-                    \Drupal::messenger()->addError(
-                        t('Unable to delete blog ' )
-                        );
-                    \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
-                        
-                }
+                // delete tags  
+                $return2 = TagStorage::markDelete($this->module, $entry_id);
+            
+                // write logs to common log table
+                \Drupal::logger('blog')->info('Row : %row, Deleted id: %id, title: %title',   
+                array(
+                    '%row' => $row_affected,
+                    '%id' => $entry_id,
+                    '%title' =>  $entry['entry_title'],
+                ));    
+   
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Blog has been deleted') );
 
             }
             catch (\Exception $e) {
@@ -205,6 +199,7 @@ class BlogController extends ControllerBase {
                 }
             $response = array('result' => 1);
             return new JsonResponse($response);    	
+
         }
     }
 

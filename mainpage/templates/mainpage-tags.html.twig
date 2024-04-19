@@ -8,16 +8,19 @@
  {% for item in items %}
 
 <div class="EntryContainer  {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
-    <div style="width:65%;float:left;display:inline-block;"
-        ><span class="entry_module">[{{ item['module'] | capitalize  }}]</span> 
+    <div class="mainpage_info">
+         <span class="entry_module">[{{ item['module'] | capitalize  }}]</span> 
          <span class="entry_title2" style="width:100%;"><a href="{{item['link']}}">{{ item['Title'] }}</a></span>
          <div class="bookmark_column2" style="word-wrap: break-word;"><span class="bookmark_subtitle">{% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] }  %}</div>
     </div>
     
-    <div style="width:5%;float:right;display:inline-block;">
-        {% if item['module'] in ['blog', 'forum'] %}
-         {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
-         {% endif %}
+    {% if item['module'] in ['blog', 'forum'] %}
+    <div style="width:8%;display:inline-block;float:right;">
+        {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
+    {% elseif item['module'] in ['fileshare', 'bookmark'] %}
+    <div style="display:inline-block;float:right;width:33%;margin-right:50px;">
+    {% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}
+    {% endif %}
     </div>
 </div>
  

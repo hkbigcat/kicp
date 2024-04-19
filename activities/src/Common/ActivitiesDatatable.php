@@ -131,7 +131,11 @@ class ActivitiesDatatable {
 
         $sql = 'SELECT evt_id, evt_name, evt_start_date, evt_end_date, evt_logo_url, allow_likes, num_likes FROM kicp_km_event WHERE evt_type_id = \'' . $type_id . '\' AND is_deleted = 0 AND is_visible = 1 AND is_archived = 0 ' . $cond . ' ORDER BY evt_start_date DESC, evt_end_date DESC, evt_name';       
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        
+        if (!$result) 
+          return null;
+
         foreach ($result as $record) {
             $record["countlike"] = LikeItem::countLike('activities', $record["evt_id"]);
             $record["liked"] = LikeItem::countLike('activities', $record["evt_id"],$my_user_id);
@@ -227,6 +231,9 @@ class ActivitiesDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
         
+        if (!$result) 
+          return null;
+
         foreach($result as $record) {
             $output[$record['reply']] = $record['display'];
         }
@@ -254,6 +261,9 @@ class ActivitiesDatatable {
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
 
+            if (!$result) 
+              return null;
+  
             $TagList = new TagList();
             foreach ($result as $record) {
                 $record["tags"] = $TagList->getTagsForModule('activities_deliverable', $record["evt_deliverable_id"]);
@@ -400,6 +410,9 @@ class ActivitiesDatatable {
 
 
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        
+        if (!$result) 
+          return null;        
         
         foreach ($result as $record) {
             if ($record["is_activity"]) {

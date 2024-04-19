@@ -7,7 +7,7 @@
         <button class="kicp_button" onclick="self.location.href='{{ path('activities.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
         {% endif %}
         <div style="text-align:right;margin-top:5px;">
-            <div id="DivFollower">Knowledge Management Unit <span id="DivFollow_3232"><a href="javascript:;" onclick="updateFollowUserStatus('KMU.OGCIO', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+            <div id="DivFollower">Knowledge Management Unit <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'KMU.OGCIO'}  %}</span></div>
         </div>
     </div>
     <div class="type_title">{{ items['evt_type_name']}}</div>
@@ -28,7 +28,4 @@
         {% endif %}
 
     {% endif %}
-
-
-
 </div>

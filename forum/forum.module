@@ -38,12 +38,14 @@ function forum_theme($existing, $type, $theme, $path) {
             'variables' => [
                 'latest' => NULL,
                 'forums' => NULL,
+                'my_user_id'=> NULL,
             ],
         ],
         'forum-forum' =>[
             'variables' => [
                 'posts' => NULL,
                 'forum_info' => NULL,
+                'my_user_id'=> NULL,
                 'pager' => NULL,
             ],
         ],
@@ -52,6 +54,7 @@ function forum_theme($existing, $type, $theme, $path) {
                 'posts' => NULL,
                 'tags' => NULL,
                 'tagsUrl' => NULL,
+                'my_user_id'=> NULL,
                 'pager' => NULL,
             ],
         ],        

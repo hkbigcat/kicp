@@ -42,10 +42,20 @@ function hook_file_move($file, $source, $destination="") {
 
 use Drupal\Core\Routing\RouteMatchInterface;
 
-function common_page_attachments_alter(&$page) {
-    $page['#attached']['library'][] = 'common/common_key';	
-}
 
+function common_page_attachments_alter(&$page) {
+
+	$path = $current_path = \Drupal::service('path.current')->getPath();
+	$routeName = \Drupal::routeMatch()->getRouteName();  
+
+    $page['#attached']['library'][] = 'common/common_key';	
+
+	if (str_contains($path, '/kicpedia_tag')  ) {
+		$page['#attached']['library'][] = 'common/content_tags';
+		$page['#attached']['library'][] = 'common/content_table';
+	}
+
+}
 
 /**
  * Implements hook_help().
@@ -99,6 +109,21 @@ function common_theme($existing, $type, $theme, $path) {
 				'rating' => NULL,
 				'user_id' => NULL,
 				'justsubmit' => NULL,
+			],
+        ],
+		'common-wikipages' =>[
+            'variables' => [
+                'items' => NULL,
+                'tags' => NULL,
+                'tagsUrl' => NULL,
+                'pager' => NULL,
+			],
+        ],
+		'common-follow' =>[
+            'variables' => [
+                'following' => NULL,
+                'contributor_id' => NULL,
+				'my_user_id' => NULL,
 			],
         ],
 

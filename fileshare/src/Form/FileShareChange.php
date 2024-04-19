@@ -120,7 +120,7 @@ class FileShareChange extends FormBase {
 
         $form['folder_id_prev'] = array(
           '#type' => 'hidden',
-          '#value' => $file->folder_id,
+          '#value' => $file['folder_id'],
         );        
 
         $form['file_id'] = array(

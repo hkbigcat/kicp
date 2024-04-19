@@ -7,7 +7,7 @@
         <button class="kicp_button" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
         {% endif %}
         <div style="text-align:right;margin-top:5px;">
-            <div id="DivFollower">PPCIS.OGCIO <span id="DivFollow_2615"><a href="javascript:;" onclick="updateFollowUserStatus('PPCIS.OGCIO', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+            <div id="DivFollower">PPCIS.OGCIO <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'PPCIS.OGCIO'}  %}</span></div>
         </div>
     </div>
 

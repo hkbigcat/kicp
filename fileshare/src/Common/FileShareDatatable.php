@@ -14,6 +14,7 @@ use Drupal\Core\Database\Query\Condition;
 use \Drupal\Core\Routing;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\Controller\TagList;
+use Drupal\common\Follow;
 use Drupal\common\RatingData;
 
 
@@ -74,7 +75,7 @@ class FileShareDatatable extends ControllerBase {
     }
 
 
-    public static function getMyEditableFolderList($my_user= null) {
+    public static function getMyEditableFolderList($my_user_id = null) {
 
       $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
       if($isSiteAdmin) {
@@ -105,10 +106,10 @@ class FileShareDatatable extends ControllerBase {
   }
 
 
-     public static function getSharedFile($file_id = NULL) {
+     public static function getSharedFile($file_id = NULL, $my_user_id="") {
 
       $folder_id = \Drupal::request()->query->get('folder_id');
-      
+      $myRecordOnly = \Drupal::request()->query->get('my');
       $AuthClass = "\Drupal\common\Authentication";
       $authen = new $AuthClass();
       $my_user_id = $authen->getUserId();
@@ -119,13 +120,19 @@ class FileShareDatatable extends ControllerBase {
         $query = $database-> select('kicp_file_share', 'a'); 
         $query -> leftjoin('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
         $query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
-        if (!$isSiteAdmin) {          
-          $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
-          $query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
-          $query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
-          $query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-          $query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-          $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+
+
+        if ($myRecordOnly) {
+          $query->condition('a.user_id', $my_user_id);
+        } else {        
+          if (!$isSiteAdmin) {          
+            $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
+            $query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+          }
         }
         $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
         $query-> fields('j', ['folder_name']);
@@ -152,7 +159,8 @@ class FileShareDatatable extends ControllerBase {
             $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
             $rsHadRate = $RatingData->checkUserHadRate('fileshare', $record["file_id"], $my_user_id);
             $record["rating"]['rsHadRate'] = $rsHadRate;
-            $record["rating"]['module'] = 'fileshare';          
+            $record["rating"]['module'] = 'fileshare';         
+            $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
             $entries[] = $record;
           }
 

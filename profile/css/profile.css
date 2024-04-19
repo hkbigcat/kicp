@@ -4,7 +4,6 @@
     width: 30%;
     min-width:220px;
     min-height: 600px;
-    float: left;
     display: inline-block;
     border: 1px solid #DDDDDD;
     padding: 8px;
@@ -27,7 +26,6 @@
 }
 
 #MainEntryContainer {
-        float:left;
         width:70%;
         margin:8px;
         display:inline-block;
@@ -39,7 +37,6 @@
 }
 
 #RightContainer {
-    float:left;
     width:78%;
     margin:8px;
     display:inline-block;

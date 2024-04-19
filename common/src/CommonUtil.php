@@ -123,7 +123,7 @@ class CommonUtil {
 
 
         $oldImagePath = ($oldImagePath=="")?base_path() . 'sites/default/files/public/inline-images': $oldImagePath;
-
+       
         $file_system = \Drupal::service('file_system');   
         if (!is_dir($file_system->realpath($createDir ))) {
             // Prepare the directory with proper permissions.

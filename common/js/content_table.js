@@ -1,9 +1,7 @@
 jQuery(document).ready(function() {
     
     var emt = document.getElementsByName('search_str')[0];
-    
-    console.log("content_table");
-        
+            
     jQuery('#search_str').keydown(function(event) {
         if (event.keyCode == 13) {
             this.form.page.value = 0;

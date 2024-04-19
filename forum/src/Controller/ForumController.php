@@ -20,6 +20,9 @@ class ForumController extends ControllerBase {
 
     public function __construct() {
         $this->module = 'forum';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();        
     }
     
     public function content() {
@@ -30,6 +33,7 @@ class ForumController extends ControllerBase {
             '#theme' => 'forum-home',
             '#latest' => $latest5Topic,
             '#forums' => $kicpForum,
+            '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
         ];
 
@@ -47,6 +51,7 @@ class ForumController extends ControllerBase {
             '#forum_info' => [ 'forum_id' => $forum_id, 'forum_name' => $forumName, ],
             '#posts' => $forumPosts,
             '#empty' => t('No entries available.'),
+            '#my_user_id' => $this->my_user_id,
             '#pager' => ['#type' => 'pager',
             ],
         ];        
@@ -65,6 +70,7 @@ class ForumController extends ControllerBase {
             '#threads' => $forumThreads,
             '#forum_info' => $forumInfo,
             '#tags' => $taglist,
+            '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
         ];        
 

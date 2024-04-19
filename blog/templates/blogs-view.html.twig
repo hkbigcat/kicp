@@ -1,3 +1,4 @@
+<div class="div_container">
 {% include '@blog/leftmenu.html.twig' %}
 
 {% include '@common/common-tags.html.twig' %}
@@ -6,12 +7,12 @@
 <input type="hidden" name="notag_page" id="notag_page" value="../blog">
 
 <div id="MainEntryContainer">
-   <div style="float:right;">
+    <div style="float:right;">
        <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     </div>
     {% if  items['blog'] %}
-    <div class="BlogName">{{ items['blog']['blog_name'] }}<span id="DivFollow>{{ items['blog']['user_id'] }}"><a href="javascript:void(0);" onclick="updateFollowUserStatus('{{ items['blog']['user_id'] }}', 1, this)" style="border-bottom:0px;"><i class="fa-solid fa-user-plus"></i></a></span></div>
+    <div><span class="BlogName">{{ items['blog']['user_full_name'] }}</span><span>{% include '@common/common-follow.html.twig'  with {contributor_id: items['blog']['user_id'], following: items['blog']['follow']}  %}</span></div>
     {% endif %}
 
  {% for item in items %}
@@ -38,13 +39,15 @@
     {% endif %}
    {% endfor %}
 
-     {{ pager }}
 
 <Script>getiframe();</script>
 
+  </div>
 </div>
-<!-- temp hide iframe -->
-<!--style>iframe { display:none; } </style-->
+
+     {{ pager }}
+
 
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}
 
+{{ dump()}}

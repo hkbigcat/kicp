@@ -1,6 +1,7 @@
 jQuery(document).ready(function () {
-    console.log("activity jquery ready");
+    jQuery("li.menu-item.menu-item-level-1:nth-child(7)").addClass("active");
 });
+
 
 
 function updateEnrollStatus() {

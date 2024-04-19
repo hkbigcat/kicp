@@ -21,6 +21,7 @@ use Drupal\common\LikeItem;
 use Drupal\common\Controller\TagList;
 use Drupal\common\RatingData;
 use Drupal\common\Common\CommonDatatable;
+use Drupal\common\Follow;
 
 class CommonController extends ControllerBase {
 
@@ -623,5 +624,99 @@ class CommonController extends ControllerBase {
         $response = array('result' => $err_code, 'ratingpic' => $rendered);
         return new JsonResponse($response);
     }    
+
+
+    public function getKicpediaTag() {
+
+        $tags = array();
+        $tagsUrl = \Drupal::request()->query->get('tags');
+        
+        $wikipage = CommonDatatable::getWikiTags();
+    
+        if ($tagsUrl) {
+          $tags = json_decode($tagsUrl);
+          if ($tags && count($tags) > 0 ) {
+            $tmp = $tags;
+          }
+        }
+    
+        return [
+            '#theme' => 'common-wikipages',
+            '#items' => $wikipage,
+            '#tags' => $tags,
+            '#empty' => t('No entries available.'),
+            '#tagsUrl' => $tmp,
+            '#pager' => ['#type' => 'pager',
+                        ],
+        ];            
+
+    }
+
+    public function updateFollowStatus() {
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $user_id = $authen->getUserId();
+        
+        $contributor_id = (isset($_REQUEST['contributor_id']) && $_REQUEST['contributor_id'] != "") ? $_REQUEST['contributor_id'] : "";
+        $status = (isset($_REQUEST['status']) && $_REQUEST['status'] != "") ? $_REQUEST['status'] : "";
+        
+        $err_code = 0;
+        // if current user wants to follow himeself/herself, then return "0" (i.e. fail)
+        if($user_id == $contributor_id) {
+            $err_code = 1;
+        } else {
+        
+            // add follow
+            if($status == 1) {
+
+                $followDetail = array('user_id'=>$user_id, 'contributor_id'=>$contributor_id, 'is_deleted'=>0, 'create_datetime'=>date('Y-m-d h:m:s'));
+                $return = Follow::addFollow($followDetail);
+
+                // write logs to common log table
+                \Drupal::logger('mainpage')->info('Insert follow list, user_id : %user_id, contributor_id: %contributor_id',   
+                array(
+                    '%user_id' => $user_id,
+                    '%contributor_id' => $contributor_id,
+
+                ));   
+
+
+            } else if($status == 0) {
+                // cancel follow
+                $followDetail = array('user_id'=>$user_id, 'contributor_id'=>$contributor_id);
+                $return = Follow::updateFollow($followDetail);
+
+                // write logs to common log table
+                \Drupal::logger('mainpage')->info('Delete follow list, user_id : %user_id, contributor_id: %contributor_id',   
+                array(
+                    '%user_id' => $user_id,
+                    '%contributor_id' => $contributor_id,
+
+                ));   
+
+            }
+        }
+        
+        if ($err_code == 1) {
+            \Drupal::logger('mainpage')->error('Follow status is not updated (1)');
+            $messenger = \Drupal::messenger(); 
+            $messenger->addError( t('follow is not updated.'));
+
+        }
+        $following = Follow::getFollow($contributor_id, $user_id);
+
+        $renderable = [
+            '#theme' => 'common-follow',
+            '#following' => $following,
+            '#contributor_id' => $contributor_id,
+            '#my_user_id' => $user_id,
+        ];
+        $rendered = \Drupal::service('renderer')->renderPlain($renderable);
+
+        $response = array('result' => $err_code, 'following' => $rendered);
+        return new JsonResponse($response);
+                
+    }
+
 
 }

@@ -6,15 +6,15 @@ body, table, tr, td, div, span {
     font-family: Georgia,"Times New Roman",Times,serif;
 }
 
-
+/*
 .menu-item {
-    font-size: 1.25em;
+    font-size: 1.25em; -- no need
+    font-size: 1em;
 }
-
+*/
 
 #block-usernameblock {
     display: inline-block;
-    float:right;
     position:relative;
     margin-top:-17px;
 }
@@ -31,7 +31,6 @@ body, table, tr, td, div, span {
 
 #block-kicpicon-2 {
     display: inline-block;
-    float:left;
     margin-top: -20px;
 }
 /* override the oroginal layout CSS [End] */
@@ -209,7 +208,6 @@ table.row_table {
 }
 
 .group_member_list > .group_close {
-    float:right;
     display:inline-block;
     margin-right:5px;
     font-size:13pt;
@@ -293,27 +291,48 @@ table.row_table {
 
 
 .kicp_button {
-    
+/*    
     background-image: linear-gradient(to bottom,rgb(158,195,207),rgb(71 103 145));
     color:#fff;
     margin:5px;
     border-radius: 7px;
-    /*height:40px;*/
-    /*padding:10px 13px;*/
-    /*font-size: 16px;*/
+*/
+    color:#fff;
+    margin:5px;
+    border-radius: 5px;
+    /* From https://css.glass */
+    background: rgba(38, 56, 181, 0.96);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(38, 56, 181, 0.43);
 }
 
 .kicp_button:hover {
-    background-image: linear-gradient(to bottom,rgb(143, 84, 167),rgb(46, 6, 36));
-    box-shadow: 0 10px 10px 0 grey;
+    /* From https://css.glass */
+    background: rgba(53, 56, 78, 0.96);
 }
 
 
-.kicp_button > .svg-inline--fa {
-    color:rgb(209 205 225);
+.kicp_button2 {
+    color:#fff;
+    margin:5px;
+    border-radius: 3px;
+    /* From https://css.glass */
+    background: rgba(6, 88, 109, 0.96);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(17, 148, 133, 0.43);    
+}
+
+.kicp_button2:hover {
+    background: rgba(32, 56, 53, 0.59);
+}
+
+.kicp_button > .svg-inline--fa, .kicp_button2 > .svg-inline--fa {
     margin: 0 10px;
 }
-
 
 
 #DivFollower {
@@ -329,3 +348,38 @@ table.row_table {
     border-color: #DBDBDB;
     background-color:#F2F2F2;
 }
+
+.follow > a, .unfollow > a {
+    color:#fff;
+    font-size: 10px;
+    vertical-align: middle;
+}
+
+.follow > a:hover, .unfollow > a:hover {
+    color:#fff;
+}
+
+.follow, .unfollow {
+    margin-left: 10px;
+    font-family: Helvetica,Arial,sans-serif;
+    border: 1px solid #6e6e6e !important;
+    background-color: #1383d3;
+    color:#fff;
+    border-radius: 30px;
+    width:80px;
+}
+
+.unfollow {
+    margin-left: 10px;
+    font-family: Helvetica,Arial,sans-serif;
+    border: 1px solid #6e6e6e !important;
+    background-color: #396585;
+    color:#fff;
+    border-radius: 30px;
+    width:80px;    
+}
+
+.follow:hover, .unfollow:hover {
+    background-color:#04092238;
+}
+

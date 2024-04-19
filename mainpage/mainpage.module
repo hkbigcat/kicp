@@ -12,7 +12,6 @@ function mainpage_page_attachments_alter(&$page) {
     $path = $current_path = \Drupal::service('path.current')->getPath();
     $routeName = \Drupal::routeMatch()->getRouteName();
 
-
     if (explode(".", $routeName)[0] === 'mainpage') {
 
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
@@ -35,6 +34,9 @@ function mainpage_theme($existing, $type, $theme, $path) {
                 'items' => NULL,
                 'cop_tags' => NULL,
                 'other_tags' => NULL,
+                'my_user_id' => NULL,
+                'followers' => NULL,
+                'myRecordOnly' => NULL,
             ],
         ],
         'mainpage-tags' =>[

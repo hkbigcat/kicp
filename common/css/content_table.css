@@ -1,12 +1,10 @@
 /************ Record Style [Start] **************/
 .EntryContainer {
     border: 1px solid #DDDDDD;
-    padding: 15px;
-    /*margin-bottom: 4px;*/
-    margin-top:10px;
+    padding: 2em;
+    margin-top:2em;
     display: inline-block;
     border-radius: 10px;
-    /*box-shadow: 5px 5px 10px #C7C7C7;*/
     box-shadow: 2px 2px 5px #E6E6E6;
     width:100%;
 }
@@ -20,7 +18,7 @@
 .EntryContainer .entry_title {
     font-weight: bold;
     color: #0071b3;
-    font-size: 14pt;
+    font-size: 1.2em;
 }
 
 .EntryContainer .entry_title2 {
@@ -81,18 +79,6 @@ font-style: italic;
 
 
 /************ Record Style [End] **************/
-
-#DivContentTable {
-/*border: 1px solid #ECECEC;*/
-width:100%;
-font-size:0.85em;
-}
-
-.DivContentTable {
-    /*border: 1px solid #ECECEC;*/
-    width:100%;
-    font-size:0.85em;
-    }
 
 .row_table_style {
 border: 1px solid #ECECEC;

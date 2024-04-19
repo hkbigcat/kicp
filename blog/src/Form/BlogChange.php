@@ -69,11 +69,6 @@ class BlogChange extends FormBase  {
         $config = \Drupal::config('blog.settings'); 
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
         
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();
-
-
         if ($entry['entry_title'] == null) {
             $form['intro'] = array(
               '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> Blog enrty not found'),
@@ -81,17 +76,11 @@ class BlogChange extends FormBase  {
             return $form; 
            }
 
-
         $BlogFileUri = 'private://blog/file';
-
-        $blog_id = BlogDatatable::getBlogIDByUserID($user_id);
-                
-        $file_system = \Drupal::service('file_system');   
-        $filePath = $file_system->realpath($BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id);
-
+             
         $form['blog_id'] = [
             '#type' => 'hidden',
-            '#value' => $blog_id,
+            '#value' => $entry['blog_id'],
         ];
 
         $form['entry_id'] = [
@@ -110,7 +99,7 @@ class BlogChange extends FormBase  {
 
         $form['bTitle_prev'] = [
             '#type' => 'hidden',
-            '#value' => $entry_title,
+            '#value' => $entry['entry_title'],
         ];
             
         $form['bContent'] = [
@@ -122,17 +111,18 @@ class BlogChange extends FormBase  {
             //'#attributes' => array('style' => 'height:400px;'),
             '#default_value' =>  $entry['entry_content'],
             '#required' => TRUE,
+            '#allowed_formats' => ['full_html'],
         ];
 
         $form['bContent_prev'] = [
             '#type' => 'hidden',
-            '#value' => $entry_content,
+            '#value' => $entry['entry_content'],
         ];
 
 
         $attachments = array();
         if ($entry['has_attachment']) {
-            $attachments = BlogDatatable::getAttachments($blog_id, $entry_id);
+            $attachments = BlogDatatable::getAttachments($entry['blog_id'], $entry_id);
             $form['help'] = [
                 '#type' => 'item',
                 '#title' => t('Current Attachment(s)'),
@@ -153,6 +143,7 @@ class BlogChange extends FormBase  {
 
         $form['delete_doc_id'] = [
             '#type' => 'hidden',
+            '#default_value' => '',            
         ];
 
         $form['files'] = [
@@ -226,14 +217,23 @@ class BlogChange extends FormBase  {
 
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $user_id = $authen->getUserId();
+
+
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
 
-        $aa= $delete_doc_id;
+        $UserInfo = $authen->getKICPUserInfo($user_id);
+        if ($UserInfo==null) {
+            \Drupal::logger('blog')->error('uid not found for user_id: '.$user_id);       
+    
+        }
 
-        $blog_owner_id = str_pad($blog_id, 6, "0", STR_PAD_LEFT);
-
+        $blog_owner_id = BlogDatatable::getUIdByBlogId($blog_id);
+        $blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);        
 
 ////////////  Handle image inside CKEditor [Start] ////////////
         
@@ -269,6 +269,7 @@ class BlogChange extends FormBase  {
 
         ///// Delete attachment [Start] ///////
 
+        $delAttach = 0;
         if ($delete_doc_id != "") {
             $delAttach = BlogDatatable::DeleteBlogEntryAttachment($delete_doc_id, $blog_owner_id, $this_entry_id_path);
         }
@@ -309,12 +310,12 @@ class BlogChange extends FormBase  {
 
         $entry = array();
         // if any changes in content, update the timestamp
-        if($bTitle != $bTitle_prev || $content != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || !empty($files) ) {
+        if($bTitle != $bTitle_prev || $bContent['value'] != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || !empty($files) ) {
             $entry['entry_modify_datetime'] = date('Y-m-d H:i:s');
             if ($bTitle != $bTitle_prev) {
                 $entry['entry_title'] = $bTitle;
             }
-            if ($content != $bContent_prev) {
+            if ($bContent['value'] != $bContent_prev) {
                 $entry['entry_content'] = $content;
             }
             $entry['has_attachment'] = $hasAttach;
@@ -346,8 +347,6 @@ class BlogChange extends FormBase  {
                     $return1 = TagStorage::insert($entry1);                
                 }
             }            
-
-//dump ($file);
 
             $url = Url::fromUserInput('/blog_entry/'.$entry_id);
             $form_state->setRedirectUrl($url);
