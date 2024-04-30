@@ -290,9 +290,15 @@ class SurveyDatatable {
         $delta = NULL; // type of $file will be array
         $file = file_save_upload('filename', $validators, $survey_path,$delta);
 
+        \Drupal::logger('survey')->info('save original file: '.$survey_path."/".$filename. " new file: ".$survey_path."/".$this_filename. " exist:".file_exists($survey_path."/".$filename));
+
         // rename file, remove white space in filename
-        if(file_exists($survey_path."/".$filename) && $filename != $this_filename) {
-            exec("mv \"".$survey_path."/".$filename."\" \"".$survey_path."/".$this_filename."\"");     
+        $source = $file_system->realpath($survey_path . '/'. $filename);
+        $destination = $file_system->realpath($survey_path . '/'. $this_filename);      
+        if(file_exists( $source) && $filename != $this_filename) {
+            if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
+                throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+            }
         }
 
         $file[0]->setPermanent();
