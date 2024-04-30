@@ -62,7 +62,7 @@ blog.blog_tag:
   path: '/blog_tag'
   defaults:
     _controller: '\Drupal\blog\Controller\BlogController::ViewBlogByTag'
-    _title: 'Blog'
+    _title: 'Blog Tag'
   requirements:
     _permission: 'access content'
   options:

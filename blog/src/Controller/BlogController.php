@@ -256,7 +256,7 @@ class BlogController extends ControllerBase {
 
     public function ViewAllBlogList() {
 
-        $entry = BlogDatatable::getAllEntry();
+        $entry = BlogDatatable::getAllEntry($this->my_user_id);
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($this->my_blog_id);
         $search_str = \Drupal::request()->query->get('search_str');
@@ -266,6 +266,7 @@ class BlogController extends ControllerBase {
             '#theme' => 'blogs-all',
             '#items' => $entry,
             '#archive' => $archive,
+            '#my_user_id' => $this->my_user_id,
             '#empty' => t('No entries available.'),
             '#pager' => ['#type' => 'pager',
             ],
@@ -275,8 +276,6 @@ class BlogController extends ControllerBase {
 
 
     public function BlogDelegateList() {
-
-        
         $entry = BlogDatatable::getBlogDelegate($this->my_blog_id);
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($this->my_blog_id);

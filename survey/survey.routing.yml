@@ -89,3 +89,13 @@ survey.survey_add_page4:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+survey.survey_copy:
+  path: '/survey_copy/{survey_id}'
+  defaults:
+    _form: '\Drupal\survey\Form\SurveyCopy'
+    _title: 'Copy Survey'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

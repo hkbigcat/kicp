@@ -4,3 +4,10 @@ mainpage_key:
     theme:
       css/mainpage.css: {}
   header: true
+  js:
+    js/mainpage.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog  

@@ -68,8 +68,8 @@
 }
 
 #MainEntryContainer {
-        width:80%;
-        margin:8px;
+        width:76%;
+        margin:0 8px;
         display:inline-block;
 }
 
@@ -95,7 +95,7 @@
 #blogNewCommentContainer {
         margin-left: 20px; 
         padding: 5px;
-        width: 25%;
+        width: 60%;
         float: left;
 }
 

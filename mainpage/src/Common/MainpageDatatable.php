@@ -28,6 +28,16 @@ class MainpageDatatable {
     public static function getLatest($my_user_id="", $tags=null) {
 
         $myRecordOnly = \Drupal::request()->query->get('my');
+        $myfollowed = \Drupal::request()->query->get('my_follow');
+
+        if ($myfollowed) {
+            $following_all = Follow::getFolloweringList($my_user_id);
+            if ($following_all!=null)
+              $following = array_column($following_all, 'contributor_id');
+            else {
+                return null;
+            }
+        } 
 
         if ($tags==null)
             $tags = array();
@@ -51,6 +61,8 @@ class MainpageDatatable {
         
         if ($myRecordOnly) {
             $query->condition('a.user_id', $my_user_id);
+        } else if ($myfollowed && $following != null) {
+            $query-> condition('a.user_id', $following, 'IN');
         } else {        
             if (!$isSiteAdmin) {
                 $orGroup1 = $query->orConditionGroup()
@@ -76,6 +88,8 @@ class MainpageDatatable {
 
         if ($myRecordOnly) {
             $query_blog->condition('b1.user_id', $my_user_id);
+        } else if ($myfollowed  && $following != null) {
+            $query_blog-> condition('b1.user_id', $following, 'IN');
         } else {            
             if (!$isSiteAdmin) {
                 $blog_unaccess = BlogDatatable::myUnAccessibleBlog($my_user_id);
@@ -90,6 +104,8 @@ class MainpageDatatable {
         
         if ($myRecordOnly) {
             $query_file->condition('a2.user_id', $my_user_id);
+        } else if ($myfollowed && $following != null) {
+            $query_file-> condition('a2.user_id', $following, 'IN');
         } else {            
             if (!$isSiteAdmin) {     
                 $query_access = $database-> select('kicp_file_share', 's2');
@@ -124,6 +140,8 @@ class MainpageDatatable {
 
         if ($myRecordOnly) {
             $query_forum->condition('a3.user_id', $my_user_id);
+        } else if ($myfollowed) {
+            $query_forum-> condition('a3.user_id', $following, 'IN');
         } else {    
             if (!$isSiteAdmin) {     
                 $query_access3 = $database-> select('kicp_forum_forum', 's3');
@@ -150,6 +168,42 @@ class MainpageDatatable {
         $query_forum ->addExpression(":module4", 'module', array(":module4"=>"forum" ));
         $query_forum ->condition('a3.is_deleted', '0');
 
+
+        /***********    Wiki   ************/
+        $query_wiki = $database-> select('wikipage', 'a4');
+        $query_wiki ->addField('a4', 'page_title','Title');
+        $query_wiki ->addField('a4', 'page_id','record_id');
+        $query_wiki ->addField('a4', 'page_title','link');
+        $query_wiki ->addExpression('null', 'user_id');
+        $query_wiki ->addExpression('null', 'user_displayname');
+        $query_wiki ->addExpression("CONVERT_TZ(DATE_FORMAT(a4.page_touched,'%Y-%m-%d %H:%i:%s'),'+00:00','+08:00')", 'record_time');
+        $query_wiki ->addExpression('null', 'image_name');
+        $query_wiki ->addExpression(":module5", 'module', array(":module5"=>"wiki" ));
+        $query_wiki ->condition('a4.page_namespace', '0');
+
+        if ($myRecordOnly) {
+            $query_wiki -> leftjoin('wikirevision', 'w4', 'a4.page_latest = w4.rev_id');
+            $query_wiki -> leftjoin('wikiactor', 'u4', 'w4.rev_actor = u4.actor_id');
+            $query_wiki->condition('u4.actor_name', $my_user_id);
+        } else if ($myfollowed) {
+            $query_wiki -> leftjoin('wikirevision', 'w4', 'a4.page_latest = w4.rev_id');
+            $query_wiki -> leftjoin('wikiactor', 'u4', 'w4.rev_actor = u4.actor_id');
+            $query_wiki-> condition('u4.actor_name', $following, 'IN');
+        } else {
+            if (!$isSiteAdmin) {     
+                $query_access4 = $database-> select('wikipage', 's4');
+                $query_access4 -> leftjoin('kicp_access_control', 'b4', 'b4.record_id = s4.page_id AND b4.module = :module5 AND b4.is_deleted = :is_deleted', [':module5' => 'wiki', ':is_deleted' => '0']);
+                $query_access4 -> leftjoin('kicp_public_group', 'g4', 'b4.group_id = g4.pub_group_id AND b4.group_type= :typeP AND g4.is_deleted = :is_deleted', [':is_deleted' => '0', ':typeP' => 'P']);
+                $query_access4 -> leftjoin('kicp_buddy_group', 'h4', 'b4.group_id = h4.buddy_group_id AND b4.group_type= :typeB AND h4.is_deleted = :is_deleted', [ ':is_deleted' => '0', ':typeP' => 'P']);
+                $query_access4 -> leftjoin('kicp_public_user_list', 'e4', 'b4.group_id = e4.pub_group_id AND b4.group_type= :typeP AND e4.is_deleted = :is_deleted AND e4.pub_user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+                $query_access4 -> leftjoin('kicp_buddy_user_list', 'f4', 'b4.group_id = f4.buddy_group_id AND b4.group_type= :typeB AND f4.is_deleted = :is_deleted AND f4.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+                $query_access4 -> groupBy('s4.page_id');
+                $query_access4 -> addField('s4', 'page_id');
+                $query_access4 -> having(' COUNT(b4.id)=0 OR COUNT(e4.pub_user_id)> 0 OR COUNT(f4.buddy_user_id)> 0 ');
+                $result4 =  $query_access4->execute()->fetchCol();
+                $query_wiki-> condition('a4.page_id', $result4, 'IN');
+            }             
+        }        
 
         /***********   Tags   ************/
         if ($tags && count($tags) > 0 ) {    
@@ -191,18 +245,28 @@ class MainpageDatatable {
             $tags4-> groupBy('t4.fid');
             $tags4-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
             $query_forum-> condition('topic_id', $tags4, 'IN');
+
+            $tags5 = $database-> select('kicp_tags', 't5');
+            $tags5-> condition('tag', $tags, 'IN');
+            $tags5-> condition('t5.is_deleted', '0');
+            $tags5-> condition('t5.module', 'wiki');
+            $tags5-> addField('t5', 'fid');
+            $tags5-> groupBy('t5.fid');
+            $tags5-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
+            $query_wiki-> condition('page_id', $tags5, 'IN');
+
         }        
 
         $query->union($query_blog);
         $query->union($query_forum);
         $query->union($query_file);
+        $query->union($query_wiki);
         
         $query-> orderBy('record_time', 'DESC');
         
         if ($tags && count($tags) > 0 ) {
             $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
             $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
-
         } else {
             $query->range(0, 12);
             $result = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
@@ -245,6 +309,14 @@ class MainpageDatatable {
                         $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);    
                         $record["link"] = "forum_view_topic/".$record["link"];
                     break;
+
+                    case 'wiki':
+                        $record["img_path"] = "mediawiki/resources/assets/kicpedia_logo.png";
+                        $record["countlike"] = LikeItem::countLike($record["module"], $record["record_id"]);
+                        $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);    
+                        $record["link"] = "mediawiki/index.php/".$record["link"];
+                    break;
+
 
                     default:
                     break;

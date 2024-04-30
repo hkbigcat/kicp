@@ -1,0 +1,5 @@
+{% if  items is not empty %}
+ {% for item in items %}
+<span class="tagBullet"><a style="font-size:107%; font-style: normal; text-decoration:none" href="javascript:;"  onClick="addTag(this);">{{item}}</a></span>
+{% endfor %}
+{% endif %}                

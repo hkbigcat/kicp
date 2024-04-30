@@ -162,8 +162,9 @@ class VideoChange extends FormBase {
             '#value' => $VideoInfo['is_banned'],
         );
             
-        $taglist = new TagList();
-        $tags = $taglist->getTagListByRecordId('video_video', $media_id, $returnInArray=0);
+        // Tag List
+        $TagList = new TagList();
+        $tags = $TagList->getTagListByRecordId('video_video', $media_id, $returnInArray=0);
         
         $form['tags'] = array(
             '#title' => t('Tags'),
@@ -203,29 +204,29 @@ class VideoChange extends FormBase {
         );
         
 
-        // Tag List
-        $taglist = new TagList();
-
+        $taglist = $TagList->getListCopTagForModule();
         $form['t3'] = array(
-            '#title' => t('COP Tags'),
-            '#type' => 'details',
-            '#open' => true,
-            '#description' => t($taglist->getListCopTagForModule()),
-            '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6;'),
+          '#title' => t('COP Tags'),
+          '#type' => 'details',
+          '#open' => true,
+          '#description' =>  $taglist,
+          '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6;'),
         );
         
+        $taglist = $TagList->getList($this->module);        
         $form['t1'] = array(
-            '#title' => t('Video Tags'),
-            '#type' => 'details',
-            '#open' => true,
-            '#description' => t($taglist->getList($this->module)),
+          '#title' => t('Video Tags'),
+          '#type' => 'details',
+          '#open' => true,
+          '#description' =>  $taglist,
         );
 
+        $taglist = $TagList->getList('ALL');
         $form['t2'] = array(
-            '#title' => t('All Tags'),
-            '#type' => 'details',
-            '#open' => false,
-            '#description' => t($taglist->getList('ALL')),
+          '#title' => t('All Tags'),
+          '#type' => 'details',
+          '#open' => false,
+          '#description' =>  $taglist,
         );
 
 

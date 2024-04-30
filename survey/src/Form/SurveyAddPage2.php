@@ -133,6 +133,7 @@ class SurveyAddPage2 extends FormBase {
           '#title' => t('Section:</p>  Here, you could input some descriptive text or instructions for a group of questions.[For example, Q2-Q8 are of similar nature]'),
           '#type' => 'text_format',
           '#format' => 'basic_html',
+          '#allowed_formats' => ['basic_html'],
           '#rows' => 10,
           '#cols' => 30,
           '#attributes' => array('style' => 'height:400px;'),
@@ -428,7 +429,7 @@ class SurveyAddPage2 extends FormBase {
         $form['actions']['submit'] = array(
           '#type' => 'submit',
           '#value' => t('Save'),
-          '#attributes' => array('style' => 'top:-18px; margin-left:30px;', ),
+          '#attributes' => array('style' => 'margin-left:30px;', ),
         );
 
         $jsOutput = '<script>showDiv(' . $resultQuestionarry['answerType'] . ');</script>';
@@ -691,10 +692,10 @@ class SurveyAddPage2 extends FormBase {
                     SurveyDatatable::saveAttach( $_FILES['files']['name']['filename'], $this_filename, $get_survey_id, $question_id);
                   }
                   // write logs to common log table
-                  \Drupal::logger('survey')->info('update question id: %id, title: %title, filename: %filename.',   
+                  \Drupal::logger('survey')->info('update question id: %id, name: %name, filename: %filename.',   
                   array(
                       '%id' => $question_id,
-                      '%title' => $title,
+                      '%name' =>  $name['value'],
                       '%filename' => $this_filename,
                   )); 
                   //update choice

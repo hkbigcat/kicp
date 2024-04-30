@@ -110,10 +110,20 @@ class FileShareDatatable extends ControllerBase {
 
       $folder_id = \Drupal::request()->query->get('folder_id');
       $myRecordOnly = \Drupal::request()->query->get('my');
+      $myfollowed = \Drupal::request()->query->get('my_follow');
       $AuthClass = "\Drupal\common\Authentication";
       $authen = new $AuthClass();
       $my_user_id = $authen->getUserId();
       $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+      if ($myfollowed) {
+        $following_all = Follow::getFolloweringList($my_user_id);
+        if ($following_all!=null)
+          $following = array_column($following_all, 'contributor_id');
+        else {
+            return null;
+        }
+      } 
+
 
       try {
         $database = \Drupal::database();
@@ -124,6 +134,8 @@ class FileShareDatatable extends ControllerBase {
 
         if ($myRecordOnly) {
           $query->condition('a.user_id', $my_user_id);
+        } else if ($myfollowed && $following != null) {
+          $query-> condition('a.user_id', $following, 'IN');
         } else {        
           if (!$isSiteAdmin) {          
             $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);

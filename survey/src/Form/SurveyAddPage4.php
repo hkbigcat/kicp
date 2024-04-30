@@ -23,8 +23,10 @@ use Drupal\common\AccessControl;
 class SurveyAddPage4 extends FormBase {
 
     public function __construct() {
-        \Drupal::logger('php')->notice('Check page access - survey');
         $this->module = 'survey';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();             
     }
 
     /**
@@ -39,17 +41,19 @@ class SurveyAddPage4 extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
+        $output = "";
         $survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
 
+        /*
         $form['intro'] = array(
           '#markup' => $output,
         );
+        */
 
         // display the form
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
 
         //Page 4
-
         $access_control = 'Access Control';
         $output .= '<table><td style="background: rgba(0,0,0,0.063);"><div style="width:15%;float:left;display:block;text-align:center;"><div class="entry_title">If no Access Control is configured, all users can participate in the Survey</a></div><!--<a href="access_control?this_module=survey&record_id=' . $survey_id . '">' . $access_control . '</a>--><a href="#add-record" onClick="getAddGroupMemberUI(\'survey\',' . $survey_id . ');">' . $access_control . '</a></div></td></table><p>';
         $output .= AccessControl::getAccessControlModalElement();
@@ -99,7 +103,7 @@ class SurveyAddPage4 extends FormBase {
         $query = \Drupal::database()->update('kicp_survey')->fields([
           'is_completed' => 1,
           'modify_datetime' => date('Y-m-d H:i:s'),
-          'modified_by' => $record_user_id,
+          'modified_by' => $this->my_user_id,
         ])
         ->condition('survey_id', $survey_id);
         $return = $query->execute();    

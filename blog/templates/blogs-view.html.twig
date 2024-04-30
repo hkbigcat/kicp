@@ -3,8 +3,8 @@
 
 {% include '@common/common-tags.html.twig' %}
 
-<input type="hidden" name="tag_page" id="tag_page" value="../blog_tag">
-<input type="hidden" name="notag_page" id="notag_page" value="../blog">
+<input type="hidden" name="tag_page" id="tag_page" value="{{ path('blog.blog_tag') }}">
+<input type="hidden" name="notag_page" id="notag_page" value="{{ path('blog.blog_content') }}">
 
 <div id="MainEntryContainer">
     <div style="float:right;">
@@ -25,13 +25,16 @@
             {% endif %}
          </div>
         <div class="entry_title"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}">{{item ['entry_title'] | raw }}</a></div>
+        {% if  item['user_displayname'] %}
+        <div class="blog_subtitle">{{ item['user_displayname'] }}</div>
+        {% endif %}
         <div class="entry_content">{{item ['entry_content'] | raw }}</div>
         <div>
         {% for attachment in item['attachments'] %}
          <a href="/download/blog/{{ item ['entry_id'] }}?fname={{ attachment | url_encode }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
         {% endfor %}
         </div>
-        <div class="entry_comment"><a href="blog_view?entry_id=1397#comment_area">Comment (0)</a></div><br>
+        <div class="entry_comment"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}#comment_area">Comment ({{item['comment_total']}})</a></div><br>
             {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
         <div class="entry_time"><span class="blog_subtitle">Publish Date:</span> {{item ['entry_modify_datetime'] }}</div>
         {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  item['entry_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
@@ -50,4 +53,3 @@
 
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}
 
-{{ dump()}}

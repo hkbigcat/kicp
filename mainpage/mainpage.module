@@ -13,12 +13,11 @@ function mainpage_page_attachments_alter(&$page) {
     $routeName = \Drupal::routeMatch()->getRouteName();
 
     if (explode(".", $routeName)[0] === 'mainpage') {
-
         $page['#attached']['library'][] = 'common/common_assets';    // for "Rating"
         $page['#attached']['library'][] = 'mainpage/mainpage_key';
         $page['#attached']['library'][] = 'common/content_table';
         $page['#attached']['library'][] = 'common/content_tags';
-
+        $page['#attached']['library'][] = 'common/common_modal';
         
     }
     
@@ -37,6 +36,8 @@ function mainpage_theme($existing, $type, $theme, $path) {
                 'my_user_id' => NULL,
                 'followers' => NULL,
                 'myRecordOnly' => NULL,
+                'myfollowed' => NULL,
+                'myFollowing' => NULL,
             ],
         ],
         'mainpage-tags' =>[
@@ -45,6 +46,13 @@ function mainpage_theme($existing, $type, $theme, $path) {
                 'tags' => NULL,
                 'tagsUrl' => NULL,
                 'pager' => NULL,                
+            ],
+        ],
+        'mainpage-follow-table'=>[
+            'variables' => [
+                'items' => NULL,
+                'choices' => NULL,
+                'my_user_id' => NULL,
             ],
         ],
     ];

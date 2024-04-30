@@ -6,10 +6,10 @@
 </div>
 <div id="DivContentTable">
   {% for item in items %}
-    <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns">
-        <div class="w70">
+    <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns space-between">
+        <div class="w60 padding_right_45">
             <div class="entry_title"><a href="{{ path('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}">{{ item['title'] }}</a></div>
-            {% set text = item['description'] |render|striptags %}
+            {% set text = item['description'] |render %}
             <div class="entry_content">{{ text |length > 300 ?  text | slice(0, 300) | raw ~ '...' : text | raw }}</div>
             <div>{% include '@common/common-tags-list.html.twig' with {tags: item ['tags']  }  %} </div>
             <div style="margin-top:10px;"><span class="entry_subtitle">Uploaded by: </span>{{ item['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
@@ -20,10 +20,12 @@
           {% include '@common/common-like.html.twig'  with {module: 'survey', 'record_id':  item['survey_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
           <div style="display:block;float:left;"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
         </div>  
-        <div class="w10">
+        <div class="w20">
+          <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
+          <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_copy', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-copy"></i>Copy</button></span>
           {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_change_1', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
-          <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.export_survey' , {'survey_id': item['survey_id'] }  ) }}'">Export</button></span>
+          <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.export_survey' , {'survey_id': item['survey_id'] }  ) }}'"><i class="fa-solid fa-file-excel"></i>Export</button></span>
           <span><button class="kicp_button" onClick="module_item_delete('survey',{{ item['survey_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
           {% endif %}
 

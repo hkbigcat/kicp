@@ -81,13 +81,14 @@ class FileShareController extends ControllerBase {
 
     $table_rows_file = FileShareDatatable::getSharedFile();
     $myRecordOnly = \Drupal::request()->query->get('my');
-        
+    $myfollowed = \Drupal::request()->query->get('my_follow');        
     return [
         '#theme' => 'fileshare-files',
         '#items' => $table_rows_file,
         '#my_user_id' => $this->my_user_id,
         '#empty' => t('No entries available.'),
         '#myRecordOnly' => $myRecordOnly,
+        '#myfollowed' =>  $myfollowed,        
         '#pager' => ['#type' => 'pager',
                     ],
     ];
@@ -135,7 +136,8 @@ class FileShareController extends ControllerBase {
         
   $TagList = new TagList();
   $taglist = $TagList->getTagsForModule('fileshare', $file_id);
-  $tagURL = http_build_query($taglist);
+  if ($taglist)
+    $tagURL = http_build_query($taglist);
   $RatingData = new RatingData();
   $rating = $RatingData->getList('fileshare', $file_id);
 

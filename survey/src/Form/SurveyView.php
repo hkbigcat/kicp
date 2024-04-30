@@ -38,11 +38,36 @@ class SurveyView extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $survey_id = \Drupal::request()->query->get('survey_id');
-
         $survey = SurveyDatatable::getSurvey($survey_id);
         $questionInfo = SurveyDatatable::getSurveyQuestionAll($survey_id);
 
-        
+        $dateType_start = new \DateTime($survey->start_date);
+        $dateType_expiry = new \DateTime($survey->expiry_date);
+        $currentdate = new \DateTime(date('Y-m-d 00:00:00'));        
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        $isShowSubmit = true;
+        if ($dateType_start > $currentdate) {
+            $isShowSubmit = false;
+            if (!$isShowSubmit) {
+            $form['intro'] = array(
+                '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey does not start yet.'),
+              );
+              return $form; 
+            }
+        }
+        if ($dateType_expiry < $currentdate) {
+            $isShowSubmit = false;
+            if (!$isShowSubmit) {
+                $form['intro'] = array(
+                    '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey is ended.'),
+                  );
+                  return $form; 
+                }
+        }
+
+//page 1     
         $form['SurveyTitle'] = array(
             '#markup' => '<span class="titleView">' . $survey->title . '</span><p>',
         );
@@ -55,6 +80,13 @@ class SurveyView extends FormBase {
             '#markup' => '<p><strong>Question marked with <span class="redstar">&nbsp;*</span> is mandatory.</strong></p>',
         );
    
+        if ($survey->file_name != '') {
+            $file_path = 'download/survey/' . $survey_id;
+            $form['filePath'] = array(
+              '#markup' => '<p><a href="' . $file_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $survey->file_name . '</a></p>',
+            );
+        }
+
         $redstar = '<span class="redstar1">&nbsp;*</span>';
         $questionCounter = 0;
         $i=1;
@@ -101,6 +133,18 @@ class SurveyView extends FormBase {
             }
             $questionTitle .= $content;
 
+            $form['QuestionName' . $i] = array(
+                '#markup' => t($record['name']),
+              );
+  
+            if ($record['file_name'] != '') {
+                $file_question_path = 'download/survey_question/' . $survey_id . '/' . $record['id'] .'?question='.$record['id'];
+                 
+                $form['fileQuestionPath' . $i] = array(
+                  '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i>&nbsp;' . $record['file_name'] . '</a></p>',
+                );
+            }
+
                     
             switch ($type_id) {
                 case 1: {
@@ -114,7 +158,6 @@ class SurveyView extends FormBase {
                           '#type' => 'select',
                           '#options' => $yesno,
                         );
-
                         break;
                     }
                 case 2: {
@@ -502,7 +545,7 @@ class SurveyView extends FormBase {
                 }
                 if (${'other' . $i} != '') {
                     $QuestionEntry = array(
-                      'question_id' => $record->id,
+                      'question_id' => $record['id'],
                       'response' => ${'other' . $i},
                       'create_datetime' => date('Y-m-d H:i:s'),
                       'modify_datetime' => date('Y-m-d H:i:s'),
@@ -529,7 +572,7 @@ class SurveyView extends FormBase {
                     $j++;
                     if (${'other' . $i} != '') {
                         $QuestionEntry = array(
-                          'question_id' => $record->id,
+                          'question_id' => $record['id'],
                           'response' => ${'other' . $i},
                           'rank' => ${'other' . $i},
                           'create_datetime' => date('Y-m-d H:i:s'),

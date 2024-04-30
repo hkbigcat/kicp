@@ -1,0 +1,15 @@
+vote_key:
+  version: 1.x
+  css:
+    theme:
+      css/vote.css: {}
+      css/calendar.css: {}
+      css/print.css: { media: print }
+  header: true
+  js:
+    js/vote.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

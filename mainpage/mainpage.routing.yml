@@ -19,3 +19,25 @@ mainpage.mainpage_tag:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+mainpage.follow:
+  path: '/get_follow'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::getFollow'
+    _title: 'Follow'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+mainpage.follow_no:
+  path: '/get_follow_no'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::getFollowNo'
+    _title: 'Follow No'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE 

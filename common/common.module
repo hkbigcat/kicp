@@ -126,7 +126,14 @@ function common_theme($existing, $type, $theme, $path) {
 				'my_user_id' => NULL,
 			],
         ],
-
+		'common-tag-getlistcoptagmodule' =>[
+            'variables' => [
+                'items' => NULL,			],
+        ],
+		'common-tag-getlist' =>[
+            'variables' => [
+                'items' => NULL,			],
+        ],
 	];
 }
 

@@ -125,6 +125,12 @@ text-align:center;
 display: inline-block;
 }
 
+.common_table_header2 {
+    background-color: #7A7A7A;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
 .access_control_table {
 border: 1px solid #DDDDDD;
 padding: 3px;

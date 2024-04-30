@@ -1,11 +1,17 @@
 
 <div class="content">
      <div class="text-right">
-        {% if (myRecordOnly) %}
+    {% if (myRecordOnly) %}
+      <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content' , {'my_follow': 1 }  ) }}'"><i class="fa-solid fa-people-group"></i> My Circle</button>
+      <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
+    {% else %}        
+        <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
+        {% if (myfollowed) %}
         <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
         {% else %}        
-        <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
+        <button class="kicp_button2" onclick="self.location.href='{{ path('fileshare.fileshare_content' , {'my_follow': 1 }  ) }}'"><i class="fa-solid fa-people-group"></i> My Circle</button>
         {% endif %}
+    {% endif %}  
         <button class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_add') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
         <button  class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_folder') }}'"><i class="fa-solid fa-folder-open"></i> Folder</button>
      </div>
@@ -15,7 +21,11 @@
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_tag') }}">
      <input type="hidden" name="notag_page" id="notag_page" value="{{ path('fileshare.fileshare_content') }}"> 
 
-
+ {% if items is empty %}
+    <div class="spacer"></div> 
+    <div class="text-center">Sorry. No Entries</div>
+    <div class="spacer"></div> 
+ {% else %}
   {% for item in items %}
      {% if item['title']   %}
       <div class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }} columns">
@@ -40,8 +50,9 @@
 
      {% endif %}
    {% endfor %}
-
   <div style="float:right; margin:20px;">{{ pager }}</div>
+{% endif %}
+
 
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'file'}  %}
 

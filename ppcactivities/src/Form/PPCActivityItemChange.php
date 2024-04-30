@@ -376,7 +376,7 @@ class PPCActivityItemChange extends FormBase  {
             '#title' => t('COP Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' =>  t($taglist),
+            '#description' =>  $taglist,
             '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6; margin-top:40px;'),
         );
 
@@ -386,7 +386,7 @@ class PPCActivityItemChange extends FormBase  {
             '#title' => t('PPC Activities Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' =>  t($taglist),
+            '#description' =>  $taglist,
         );
 
         $taglist = $TagList->getList('ALL');
@@ -394,7 +394,7 @@ class PPCActivityItemChange extends FormBase  {
             '#title' => t('All Tags'),
             '#type' => 'details',
             '#open' => false,
-            '#description' => t($taglist),
+            '#description' => $taglist,
         );          
 
         return $form;        

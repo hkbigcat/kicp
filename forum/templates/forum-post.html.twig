@@ -5,10 +5,10 @@
 {% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('forum.forum_tag') }}">
      <input type="hidden" name="notag_page" id="notag_page" value="{{ path('forum.forum') }}">   
-<div id="DivContentTable" style="display:table;">
+<div id="DivContentTable" style="display:table; width:100%">
   {% for thread in threads %}
     <div class="EntryContainer  {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%;">
-        <div class="forum_hightlight">
+        <div class="forum_hightlight" style="padding:10px;">
             <div style="width:35%;float:left;">{{ thread['poster_name'] }}<span>{% include '@common/common-follow.html.twig'  with {contributor_id: thread['user_id'], following: thread['follow']}  %}</span></div>
             <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
         </div>

@@ -57,21 +57,58 @@ class Follow {
         }
     } 
     
-    public static function getMyFollower($user_id="") {
+
+    public static function getFolloweringList($user_id="") {
         
-        if($user_id == "") {
-            $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-            $authen = new $AuthClass();
-            $user_id = $authen->getUserId();
-        }
-               
-        //$sql = "SELECT b.user_id, b.user_name FROM kicp_follow a LEFT JOIN xoops_users b ON (a.user_id=b.user_id) WHERE a.contributor_id='".$user_id."' AND a.is_deleted = 0 ORDER BY b.user_name";
+        $sql = "SELECT a.contributor_id, b.user_displayname FROM kicp_follow a left join xoops_users b on a.contributor_id = b.user_id  WHERE a.user_id='".$user_id."' AND a.is_deleted = 0 and a.contributor_id <> ''";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $output = array();
+        if ($result != null ) {
+            foreach ($result as $record) {
+                $record["follow"] = self::getFollow($record["contributor_id"], $user_id);
+                $output[] = $record;
+            }
+        }        
+
+        return $output;
+
+    }
+
+
+    public static function getMyFollowerList($user_id="") {
+                       
+        $sql = "SELECT a.user_id, b.user_displayname FROM kicp_follow a left join xoops_users b on a.user_id = b.user_id WHERE a.contributor_id='".$user_id."' AND a.is_deleted = 0";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $output = array();
+        if ($result != null ) {
+            foreach ($result as $record) {
+                $record["follow"] = self::getFollow($record["user_id"], $user_id);
+                $output[] = $record;
+            }
+        }        
+
+        return $output;
+    }
+
+
+    public static function getMyFollower($user_id="") {
+                       
         $sql = "SELECT count(1) as followers FROM kicp_follow WHERE contributor_id='$user_id' AND is_deleted = 0";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
         return $result->followers;
 
     }
-    
+
+    public static function getMyFollowering($user_id="") {
+                       
+        $sql = "SELECT count(1) as following FROM kicp_follow WHERE user_id='$user_id' AND is_deleted = 0 AND contributor_id <> ''";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result->following;
+
+    }    
         
 }

@@ -1,0 +1,20 @@
+vote.vote_content:
+  path: '/vote'
+  defaults:
+    _controller: '\Drupal\vote\Controller\VoteController::VoteContent'
+    _title: 'Vote'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+vote.vote_view:
+  path: '/vote_view'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteView'
+    _title: 'Vote'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

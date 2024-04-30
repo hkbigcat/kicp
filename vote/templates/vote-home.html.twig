@@ -1,0 +1,32 @@
+{% include '@common/common-tags.html.twig' %}
+
+<input type="hidden" name="tag_page" id="tag_page" value="../survey">
+<div class="text-right">
+    
+</div>
+<div id="DivContentTable">
+  {% for item in items %}
+    <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns">
+        <div class="w70">
+            <div class="entry_title"><a href="{{ path('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}">{{ item['title'] }}</a></div>
+            {% set text = item['description'] |render|striptags %}
+            <div class="entry_content">{{ text |length > 300 ?  text | slice(0, 300) | raw ~ '...' : text | raw }}</div>
+            <div>{% include '@common/common-tags-list.html.twig' with {tags: item ['tags']  }  %} </div>
+            <div style="margin-top:10px;"><span class="entry_subtitle">Uploaded by: </span>{{ item['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
+            <div style="margin-top:5px;"><span class="entry_subtitle">Start Date: </span>{{ item['start_date'] | date('d.m.Y')  }}</div>
+            <div style="margin-top:5px;"><span class="entry_subtitle">Expiry Date: </span>{{ item['expiry_date'] | date('d.m.Y')  }}</div>
+        </div>
+        <div class="w20">
+          {% include '@common/common-like.html.twig'  with {module: 'vote', 'record_id':  item['vote_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
+          <div style="display:block;float:left;"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
+        </div>  
+        <div class="w10">
+          <div style="margin:10px;"><a href="#add-record" onclick="getAddGroupMemberUI('vote',{{ item['vote_id'] }});">{{ item['vote_access']?'Restricted':'Public' }}</a></div>
+        </div>
+    </div>
+ {% endfor %}  
+</div>
+
+<div style="float:right; margin:20px">{{ pager }}</div>
+{% include '@common/common-confirm-delete.html.twig'  with {module: 'vote'}  %}    
+{% include '@common/common-accesscontrol-modal.html.twig' %}

@@ -1,31 +1,55 @@
+<div class="width90">
+   <div id="DivNoOfMyFollower">
+    <span>
+        <a href="javascript:;" onclick="getFollow('following')">Following me: <span id="following">({{followers}})</span></a>
+    </span>
+    <div class="w30px"></div>
+    <span>
+        <a href="javascript:;" onclick="getFollow('followed')">I followed: <span id="followed">({{myFollowing}})</span></a>
+    </span>
+</div>
+
 <div class="mainpage_div" id="editor_choice">
     {{ editor_choice | raw }}
 </div>
 <div class="spacer"></div>
-<div class="width90">
-   <div id="DivNoOfMyFollower" style="">Number of users following me: <strong>{{followers}}</strong> </div>
 </div>
-<div class="spacer"></div>
+<div id="follow_list" class="modal center width30"></div>
 <div class="text-right">
     {% if (myRecordOnly) %}
+    <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main' , {'my_follow': 1 }  ) }}'"><i class="fa-solid fa-people-group"></i> My Circle</button>
     <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
     {% else %}        
-    <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
-    {% endif %}
+          <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
+        {% if (myfollowed) %}
+        <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main') }}'"><i class="fa-solid fa-fingerprint"></i> View All Entries</button>
+        {% else %}        
+            <button class="kicp_button2" onclick="self.location.href='{{ path('mainpage.main' , {'my_follow': 1 }  ) }}'"><i class="fa-solid fa-people-group"></i> My Circle</button>
+        {% endif %}
+    {% endif %}  
 </div>
+
 <h2 style="font-size:1.3em">The Latest Updates </h2>
+ {% if items is empty %}
+    <div class="spacer"></div> 
+    <div class="text-center">Sorry. No Entries</div>
+    <div class="spacer"></div> 
+ {% else %}
  {% for item in items %}
-<div class="mainpage_div {{ loop.index0 is odd ? 'even' : 'odd' }}">
-    <div class="mainpage_image"><a href="{{item['link']}}"><img src="{{item['img_path']}}" border="0" width="100"></a></div>    
+ {% set linktarget = item['module']=='wiki'?'target="_blank"':'' %}
+ <div class="mainpage_div {{ loop.index0 is odd ? 'even' : 'odd' }}">
+    <div class="mainpage_image"><a href="{{item['link']}}" {{linktarget}}><img src="{{item['img_path']}}" border="0" width="100"></a></div>    
     <div class="mainpage_info">
         <span class="mainpage_date" style="display:block;margin-bottom:12px;">{{ item['record_time'] | date('j F, Y, g:i') }}</span>
         <span class="title2"><strong>[{{ item['module'] | capitalize  }}]</strong></span>
-        <span class="title2_2"> <a href="{{item['link']}}">{{ item['Title'] }}</a></span>
+        <span class="title2_2"> <a href="{{item['link']}}" {{linktarget}}>{{ item['Title'] }}</a></span>
+        {% if item['module'] !='wiki' %}
         <div class="author">Created By: <span class="author_name">{{item['user_displayname']}}</span> <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
+        {% endif %}
         <div class="mainpage_tag">{% include '@common/common-tags-list.html.twig'  with {tags: item ['tags'] }  %} </div>
         <div class="mainpage_highlight2"></div>
     </div>
-    {% if item['module'] in ['blog', 'forum'] %}
+    {% if item['module'] in ['blog', 'forum', 'wiki'] %}
     <div style="width:8%;display:inline-block;float:right;">
     {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
     {% elseif item['module'] in ['fileshare', 'bookmark'] %}
@@ -35,7 +59,7 @@
     </div>
 </div>
 {% endfor %}
-
+{% endif %}
 
 
 <input type="hidden" name="tag_page" id="tag_page" value="tag">

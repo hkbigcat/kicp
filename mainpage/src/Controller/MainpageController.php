@@ -41,12 +41,14 @@ class MainpageController extends ControllerBase {
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass');
         $myRecordOnly = \Drupal::request()->query->get('my');
+        $myfollowed = \Drupal::request()->query->get('my_follow');
         $taglist = new TagList();
         $cop_tags = $taglist->getCOPTagList();
         $other_tags = $taglist->getOtherTagList();
         $editorChoice = MainpageDatatable::getEditorChoiceRecord();                
         $latest = MainpageDatatable::getLatest($this->my_user_id);
-        $myFollower = Follow::getMyFollower($user_id);
+        $myFollower = Follow::getMyFollower($this->my_user_id);
+        $myFollowing = Follow::getMyFollowering($this->my_user_id);
 
         return [
             '#theme' => 'mainpage-home',
@@ -57,6 +59,8 @@ class MainpageController extends ControllerBase {
             '#my_user_id' => $this->my_user_id,
             '#followers'=> $myFollower,
             '#myRecordOnly' => $myRecordOnly,
+            '#myfollowed' =>  $myfollowed,
+            '#myFollowing'=>  $myFollowing,
         ];  
     }
 
@@ -85,4 +89,39 @@ class MainpageController extends ControllerBase {
         ];          
 
     }
+
+    public function getFollow() {
+
+        $request = \Drupal::request();   // Request from ajax call
+        $content = $request->getContent();
+        $params = array();
+        if (!empty($content)) {
+            $params = json_decode($content, TRUE);  // Decode json input
+        }
+        $choices = $params['choices'];
+
+        if ($choices=="following") {
+            $follower = Follow::getMyFollowerList($this->my_user_id);
+        } else {
+            $follower = Follow::getFolloweringList($this->my_user_id);
+        }
+        $renderable = [
+            '#theme' => 'mainpage-follow-table',                
+            '#items' => $follower,
+            '#my_user_id' => $this->my_user_id,
+            '#choices' => $choices,
+        ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);        
+        $response = array($content);
+        return new JsonResponse($response);   
+    }
+
+    public function getFollowNo() {
+        $myFollowing = Follow::getMyFollowering($this->my_user_id);
+        $response = array($myFollowing);
+        return new JsonResponse($response);                  
+
+    }
+
+
 }

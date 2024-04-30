@@ -1,0 +1,22 @@
+ 
+ <span id="choices" style="display:none">{{choices}}</span>
+ <div class="modal-header">
+ {% set title = choices=='following'?'My followers':'My Circle' %}
+     <div id="modal-title">{{title}}</div>
+</div>
+    {% if items is not empty %}
+    <div class="spacer"></div> 
+    <div style="overflow-x:auto;">
+    {% for item in items %}
+    <div class="columns">
+        <div class="w70">{{item['user_displayname']}}</div>
+       {% set user = choices=='following'?item['user_id']:item['contributor_id'] %}
+        <div class="w30">{% include '@common/common-follow.html.twig'  with {contributor_id: user, following: item['follow']}  %}</div>
+    </div>   
+    <div class="spacer"></div> 
+    {% endfor %}
+    {% else %}
+     <div style="text-align:center">No Followers</div>
+    {% endif %}
+</div>
+<div class="modal-footer"><button type="button" class="modal-button" data-dismiss="modal" onclick="closeFollowModal();return false;">Close</button></div>

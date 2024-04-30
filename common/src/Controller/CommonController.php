@@ -10,6 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\fileshare\Controller\FileShareController;
 use Drupal\fileshare\Common\FileShareDatatable;
 use Drupal\blog\Common\BlogDatatable;
+use Drupal\survey\Controller\SurveyController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -65,6 +66,15 @@ class CommonController extends ControllerBase {
                     $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
                     $filename = "sites/default/files/private/ppcactivities/deliverable/".$this_file_id."/".$fname;
             break;
+
+            case 'survey':
+                $hasRecordAccessRight  = false;
+                $filename = SurveyController::getFileLocation($file_id);
+                if ($filename) {
+                    $hasRecordAccessRight  = true;  
+                }
+            break;
+            
 
             default:
                 break;            

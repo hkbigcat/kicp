@@ -1,0 +1,8 @@
+{% if  items is not empty %}
+ {% for item in items %}
+<span class="tagBullet"><a style="font-size:{{item['szie']}}%; font-style: normal; text-decoration:none" href="javascript:;" onClick="addTag(this);" title="{{item['AMOUNT']}}">{{ item['tag'] }}</a></span>
+{% endfor %}
+{% endif %}                
+
+
+ 

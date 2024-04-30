@@ -1,0 +1,7 @@
+vote.vote:
+  title: Vote
+  description: KCIP Vote
+  menu_name: main
+  route_name: vote.vote_content
+  weight: 100
+

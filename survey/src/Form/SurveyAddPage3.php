@@ -158,7 +158,7 @@ class SurveyAddPage3 extends FormBase {
             $i = 1;
 
             if ($hiddenremove == 0) {
-                foreach ($question as $record) {
+                foreach ($questionInfo as $record) {
 
                     foreach ($record as $key => $value) {
                         $$key = $value;
@@ -171,7 +171,7 @@ class SurveyAddPage3 extends FormBase {
 
                     $database = \Drupal::database();
                     $query = $database->update('kicp_survey_question')->fields( $entry)
-                    ->condition('id', $record->id);
+                    ->condition('id', $record['id']);
                     $return = $query->execute();
 
                     $i++;

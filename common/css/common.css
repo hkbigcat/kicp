@@ -365,7 +365,7 @@ table.row_table {
     border: 1px solid #6e6e6e !important;
     background-color: #1383d3;
     color:#fff;
-    border-radius: 30px;
+    border-radius: 15px;
     width:80px;
 }
 
@@ -383,3 +383,6 @@ table.row_table {
     background-color:#04092238;
 }
 
+.padding_right_45 {
+    padding-right: 4.5em;
+}

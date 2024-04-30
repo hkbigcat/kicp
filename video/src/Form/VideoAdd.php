@@ -140,28 +140,31 @@ class VideoAdd extends FormBase {
         
 
         // Tag List
-        $taglist = new TagList();
+        $TagList = new TagList();
 
+        $taglist = $TagList->getListCopTagForModule();
         $form['t3'] = array(
             '#title' => t('COP Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' => t($taglist->getListCopTagForModule()),
+            '#description' =>  $taglist,
             '#attributes' => array('style'=>'border: 1px solid #7A7A7A;background: #FCFCE6;'),
         );
         
+        $taglist = $TagList->getList($this->module);
         $form['t1'] = array(
             '#title' => t('Video Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' => t($taglist->getList($this->module)),
+            '#description' =>  $taglist,
         );
 
+        $taglist = $TagList->getList('ALL');
         $form['t2'] = array(
             '#title' => t('All Tags'),
             '#type' => 'details',
             '#open' => false,
-            '#description' => t($taglist->getList('ALL')),
+            '#description' =>  $taglist,
         );
 
 

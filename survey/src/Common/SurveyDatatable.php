@@ -42,12 +42,11 @@ class SurveyDatatable {
             $query-> condition('a.survey_id', $tags1, 'IN');
         }
 
-        //$query -> leftjoin('kicp_access_control', 'c', 'a.survey_id = c.record_id AND c.is_deleted= :is_deleted AND c.module= :module', [':is_deleted' => 0, ':module' => 'survey'] );
-            $query-> leftjoin('kicp_access_control', 'ac', 'ac.record_id = a.survey_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'survey', ':is_deleted' => '0']);
+        $query-> leftjoin('kicp_access_control', 'ac', 'ac.record_id = a.survey_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'survey', ':is_deleted' => '0']);
         if (!$isSiteAdmin) {          
             $query-> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
-            $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'vote', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
           }
         
@@ -79,12 +78,14 @@ class SurveyDatatable {
     }
 
 
-    public static function getSurvey($survey_id = "", $my_user_id="") {
+    public static function getSurvey($survey_id = "", $user_id = "") {
 
         $cond = "";
-        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
-        if (!$isSiteAdmin) {
-            $cond = " AND user_id = '$my_user_id' ";
+        if (isset($user_id) && $user_id!="") {
+            $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+            if (!$isSiteAdmin) {
+                $cond = " AND user_id = '$user_id' ";
+            }
         }
 
         $sql = "SELECT file_name,survey_id, title, description, survey_name, user_id, modify_datetime, start_date, expiry_date, is_visible, allow_copy, is_showDep, is_showPost, is_showname,start_survey FROM kicp_survey WHERE is_deleted = 0 and survey_id = '$survey_id' $cond ORDER BY survey_id DESC";
@@ -302,6 +303,68 @@ class SurveyDatatable {
         return $url;
 
     }
+
+
+    public static function copyAttach($filename, $old_survey_id, $survey_id, $old_question_id="", $question_id="" ) {
+
+        $this_old_survey_id = str_pad($old_survey_id, 6, "0", STR_PAD_LEFT);
+        $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+        $this_old_question_id = $old_question_id!=""?"/".str_pad($old_question_id, 6, "0", STR_PAD_LEFT):"";
+        $this_question_id = $question_id!=""?"/".str_pad($question_id, 6, "0", STR_PAD_LEFT):"";
+
+        $file_system = \Drupal::service('file_system');   
+        $old_survey_path = 'private://survey/'.$this_old_survey_id.$this_old_question_id;
+        $survey_path = 'private://survey/'.$this_survey_id.$this_question_id;
+        if (!is_dir($file_system->realpath( $survey_path))) {
+            // Prepare the directory with proper permissions.
+            if (!$file_system->prepareDirectory($survey_path, FileSystemInterface::CREATE_DIRECTORY)) {
+              throw new \Exception('Could not create the survey directory.');
+            }
+        }
+
+        \Drupal::logger('survey')->info('Old Dir: '.$old_survey_path. " new dir: ".$survey_path . " Files name: ".$filename);
+
+        if (!$file_system->copy($old_survey_path."/".$filename, $survey_path."/".$filename)) {
+            throw new \Exception('Could not copy survey file.');
+        }
+
+        return $survey_path."/".$filename;
+
+    }
+
+    public static function copyAccessControlGroupRecord($original_survey_id = "", $new_survey_id = "", $user_id = "") {
+        $sql = " insert into kicp_access_control (module, record_id, group_type, group_id, user_id, allow_edit) 
+                SELECT 'survey', $new_survey_id , group_type,group_id, '$user_id' , allow_edit from kicp_access_control 
+                 WHERE record_id='$original_survey_id' AND is_deleted = 0 And module='survey'";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql);
+        return $result;        
+
+
+    }    
+
+    public static function copyQuestionChoice($original_question_id = '', $new_question_id = '', $user_id = '') {
+
+        $sql = " insert into kicp_survey_question_choice (question_id,choice,modified_by)   
+                 SELECT $new_question_id ,choice, '$user_id' from kicp_survey_question_choice 
+                where question_id = $original_question_id";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql);
+        return $result;   
+    }
+
+    public static function copyQuestionRate($original_question_id = '', $new_question_id = '', $user_id = '') {
+
+        $sql = " insert into kicp_survey_question_rate  (question_id,scale,position,legend,modified_by) 
+                SELECT  $new_question_id ,scale,position,legend,'$user_id' from kicp_survey_question_rate  
+                where question_id = $original_question_id";
+
+        $database = \Drupal::database();
+        $result = $database-> query($sql);
+        return $result;   
+    }    
 
 
 }

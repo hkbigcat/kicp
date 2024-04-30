@@ -2,7 +2,7 @@ jQuery(document).ready(function ($) {
     $("#submitBtn").click(function () {
         $.ajax({
             type: "POST",
-            url: '/blog_comment_add',
+            url: app_path+'blog_comment_add',
             data: $("#CommentForm").serialize(), // serializes the form's elements.
             success: function (data)
             {
@@ -16,7 +16,7 @@ jQuery(document).ready(function ($) {
         var this_entry_id = $("#entry_id").val();
         $.ajax({
             type: "POST",
-            url: '/blog_comment_list/'+this_entry_id,
+            url:  app_path+'/blog_comment_list/'+this_entry_id,
             success: function (data)
             {
                 $("#blogCommentContainer").html(data);

@@ -3,8 +3,8 @@
 
 {% include '@common/common-tags.html.twig' %}
 
-<input type="hidden" name="tag_page" id="tag_page" value="../blog_tag">
-<input type="hidden" name="notag_page" id="notag_page" value="../blog">
+<input type="hidden" name="tag_page" id="tag_page" value="{{ path('blog.blog_tag') }}">
+<input type="hidden" name="notag_page" id="notag_page" value="{{ path('blog.blog_content') }}">
 
 <div id="MainEntryContainer">
    <div style="float:right;">
@@ -44,7 +44,7 @@
   <form id="CommentForm" name="CommentForm" method="POST">
       <div id="blogNewCommentContainer">
         <div>Post your comment:</div>
-        <textarea name="my_comment" id="my_comment" rows="6" cols="26"></textarea><br>
+        <textarea name="my_comment" id="my_comment" rows="6" cols="40"></textarea><br>
         <input type="hidden" name="entry_id" id="entry_id" value="{{ items['entry_id'] }}">
         <input type="checkbox" name="is_guest" id="is_guest" value="1"> Post as  <input type="text" name="guest_name" id="guest_name" size="10" maxlength="100" class="comment_guest_name_field" value="Guest" onclick="document.getElementById('is_guest').checked=true;"><br>
         <div class="comment_remarks">Please type your preferred name in "Post as" (with checkbox on) or your name will be shown for comment submitted.</div><br>

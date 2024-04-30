@@ -100,7 +100,8 @@ class SurveyAddPage1 extends FormBase {
           '#title' => t('Description'),
           '#type' => 'text_format',
           '#format' => 'basic_html', //full_html_survey
-          '#rows' => 2,
+          '#allowed_formats' => ['basic_html'],
+          '#rows' => 5,
           '#prefix' => '<div style="margin-top:50px;">&nbsp;</div>',
           '#attributes' => array('style' => 'height:300px;'),
           '#required' => TRUE,
@@ -111,7 +112,7 @@ class SurveyAddPage1 extends FormBase {
           '#type' => 'file',
           '#size' => 150,
           '#description' => 'Only support ' . str_replace(' ', ', ', $this->allow_file_type) . ' file format',
-            //'#required' => true,
+          '#required' => false,
         );
 
 
@@ -178,34 +179,38 @@ class SurveyAddPage1 extends FormBase {
         );
         
           // Tag List
-          $taglist = new TagList();
+          $TagList = new TagList();
 
+          $taglist = $TagList->getListCopTagForModule();
           $form['t3'] = array(
             '#title' => t('COP Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' => t($taglist->getListCopTagForModule()),
+            '#description' =>  $taglist,
             '#attributes' => array('style' => 'border: 1px solid #7A7A7A;background: #FCFCE6;'),
           );
 
+          $taglist = $TagList->getList($this->module);
           $form['t1'] = array(
             '#title' => t('Survey Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' => t($taglist->getList($this->module)),
+            '#description' =>  $taglist,
           );
 
+          $taglist = $TagList->getList('ALL');
           $form['t2'] = array(
             '#title' => t('All Tags'),
             '#type' => 'details',
             '#open' => false,
-            '#description' => t($taglist->getList('ALL')),
+            '#description' =>  $taglist,
           );
 
 
           $form['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style' => 'margin-bottom:10px;'),
           );
 
           $form['actions']['cancel'] = array(
@@ -334,7 +339,7 @@ class SurveyAddPage1 extends FormBase {
               if ($tags != '') {
                 $entry1 = array(
                     'module' => $this->module,
-                    'module_entry_id' => intval($bid),
+                    'module_entry_id' => intval($survey_id),
                     'tags' => $tags,
                 );
                 $return1 = TagStorage::insert($entry1);

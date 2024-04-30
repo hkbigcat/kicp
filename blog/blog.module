@@ -24,7 +24,7 @@ function blog_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'common/content_tags';
         }        
 
-        if ( str_contains($path, '/blog_entry') || str_contains($path, '/blog_view')  ) {
+        if ( str_contains($path, '/blog_entry') || str_contains($path, '/blog_view')  || str_contains($path, '/blog_tag') ) {
             $page['#attached']['library'][] = 'blog/blog_form';
             $page['#attached']['library'][] = 'blog/blog_gallery';
         }	
@@ -69,6 +69,7 @@ function blog_theme($existing, $type, $theme, $path) {
         'blogs-all' =>[
             'variables' => [
                 'items' => NULL,
+                'my_user_id' => NULL,
                 'pager' => NULL,
                 'archive' => NULL,     
             ],

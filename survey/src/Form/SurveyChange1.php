@@ -119,6 +119,7 @@ class SurveyChange1 extends FormBase {
           '#title' => t('Description'),
           '#type' => 'text_format',
           '#format' => 'basic_html',
+          '#allowed_formats' => ['basic_html'],          
           '#rows' => 5,
           '#attributes' => array('style' => 'height:300px;'),
           '#default_value' => $survey->description,
@@ -127,12 +128,12 @@ class SurveyChange1 extends FormBase {
         );
         if ($survey->file_name != '') {
             $form['filePath'] = array(
-              '#markup' => '<a href="' . $file_path . '" target="_blank"><img src="../modules/custom/common/images/icon_attachment.png" border="0" align="absmiddle">' . $survey->file_name . '</a><br>'
+              '#markup' => '<a href="' . $file_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $survey->file_name . '</a><br>'
             );
             $form['deleteFile'] = array(
               '#title' => t('Delete original file?'),
               '#type' => 'checkbox',
-              '#attributes' => array('style' => 'display:inline-block;float:left;'),
+              '#attributes' => array('style' => 'display:inline-block;margin-right:10px;'),
               '#default_value' => 0,
             );
 
@@ -172,7 +173,7 @@ class SurveyChange1 extends FormBase {
           '#title' => t('Voter\'s name'),
           '#type' => 'checkbox',
           '#attributes' => array('style' => 'display:inline-block;float:left;margin-right:10px;'),
-          '#prefix' => '<div class="div_inline_column">',
+          '#prefix' => '<div>',
           '#default_value' => $survey->is_showname,
         );
         $form['PostUnit'] = array(
@@ -190,8 +191,9 @@ class SurveyChange1 extends FormBase {
         );
 
 
-        $taglist = new TagList();
-        $tags = $taglist->getTagListByRecordId($this->module, $survey_id);
+          // Tag List
+        $TagList = new TagList();
+        $tags = $TagList->getTagListByRecordId($this->module, $survey_id);
 
         $form['tags'] = array(
           '#title' => t('Tags'),
@@ -212,29 +214,29 @@ class SurveyChange1 extends FormBase {
           '#value' => $survey_id,
         );
 
-          // Tag List
-          $taglist = new TagList();
+        $taglist = $TagList->getListCopTagForModule();
+        $form['t3'] = array(
+           '#title' => t('COP Tags'),
+           '#type' => 'details',
+           '#open' => true,
+           '#description' =>  $taglist,
+           '#attributes' => array('style' => 'border: 1px solid #7A7A7A;background: #FCFCE6;'),
+        );
 
-          $form['t3'] = array(
-            '#title' => t('COP Tags'),
-            '#type' => 'details',
-            '#open' => true,
-            '#description' => t($taglist->getListCopTagForModule()),
-            '#attributes' => array('style' => 'border: 1px solid #7A7A7A;background: #FCFCE6;'),
-          );
-
+          $taglist = $TagList->getList($this->module);          
           $form['t1'] = array(
             '#title' => t('Survey Tags'),
             '#type' => 'details',
             '#open' => true,
-            '#description' => t($taglist->getList($this->module)),
+            '#description' =>  $taglist,
           );
 
+          $taglist = $TagList->getList('ALL');
           $form['t2'] = array(
             '#title' => t('All Tags'),
             '#type' => 'details',
             '#open' => false,
-            '#description' => t($taglist->getList('ALL')),
+            '#description' =>  $taglist,
           );
 
           $form['hiddenCount'] = array(

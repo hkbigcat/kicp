@@ -45,6 +45,7 @@ function fileshare_theme($existing, $type, $theme, $path) {
                 'pager' => NULL,
                 'tagsUrl' => NULL,
                 'myRecordOnly' => NULL,
+                'myfollowed' => NULL,                
             ],
         ],
         'fileshare-foldertable' =>[

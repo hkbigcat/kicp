@@ -58,6 +58,11 @@ class SurveyController extends ControllerBase {
 
     public function deleteSurvey($survey_id) {
 
+        $actual_files = 0;
+        $file_system = \Drupal::service('file_system');
+        $SurveyUri = 'private://survey/';
+        $survey_path = $file_system->realpath($SurveyUri);
+    
 
         $survey = SurveyDatatable::getSurvey($survey_id,  $this->my_user_id);
         if ($survey->title == null) {
@@ -77,36 +82,52 @@ class SurveyController extends ControllerBase {
                 'is_deleted'=>1 , 
                 'modify_datetime' => date('Y-m-d H:i:s'),
               ])
-
             ->condition('survey_id', $survey_id);
             $row_affected = $query->execute();        
 
             if ($row_affected) {
                 $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
-                $survey_dir = 'private://survey/'.$this_survey_id;
-                        
-                // delete file from server physically
+                $survey_dir = $survey_path.'/'.$this_survey_id;
+                // delete survey attach file from server physically
                 if (is_dir($survey_dir)) {
-                    $myFileList = scandir($survey_dir);
-                    foreach($myFileList as $filename) {
+                    $surveyList = scandir($survey_dir);
+                    foreach($surveyList as $filename) {
+
                         if($filename == "." || $filename == "..") {
                             continue;
                         }
-                        unlink($survey_dir.'/'.$filename);
-                        $actual_files++;
+                        
+                        // delete survey question attach file from server physically
+                        if (is_dir(($survey_dir.'/'.$filename))) {
+
+                            $surveyQuestionList = scandir($survey_dir.'/'.$filename);
+                            foreach($surveyQuestionList as $qustion_filename) {
+                                if($qustion_filename == "." || $qustion_filename == "..") {
+                                    continue;
+                                }
+                                unlink($survey_dir.'/'.$filename.'/'.$qustion_filename);
+                                $actual_files++;                                        
+                            }
+                        } else {
+                          unlink($survey_dir.'/'.$filename);
+                          $actual_files++;
+                        }
                     }
                 }
 
                 // delete tags  
                 $return2 = TagStorage::markDelete($this->module, $survey_id);
-            
-                \Drupal::logger('survey')->info('Deleted id: %id, title: %title.',   
+    
+                // write logs to common log table
+                \Drupal::logger('survey')->info('Deleted id: %id, title: %title, delted files: %actual_files' ,   
                 array(
                     '%id' => $survey_id,    
                     '%title' => $survey->title,
-                ));       
+                    '%actual_files' => $actual_files,
+                ));        
+
                 $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Survey has been deleted: '.$survey_id));    
+                $messenger->addMessage( t('Survey has been deleted.'));    
             } else {
 
                 \Drupal::messenger()->addError(
@@ -125,7 +146,7 @@ class SurveyController extends ControllerBase {
             
         }
 
-        $response = array('result' => 1);
+        $response = array('result' => $actual_files);
         return new JsonResponse($response);
 
 
@@ -298,5 +319,56 @@ class SurveyController extends ControllerBase {
 
     }
 
+    public static function getFileLocation($survey_id) {
+
+        if (!$survey_id || $survey_id == "")
+            return false;
+
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $author = CommonUtil::getSysValue('AuthorClass');
+        $my_user_id = $authen->getUserId();
+
+        $survey = SurveyDatatable::getSurvey($survey_id, $my_user_id);
+
+        $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+        $file_name = $survey->file_name;
+
+        if (!$file_name)
+            return false;
+
+        // file in "private" folder
+        $file_path = 'sites/default/files/private/survey/' . $this_survey_id . '/' . $file_name;
+        return $file_path;
+    }    
+
+    public static function getQuestionFileLocation($survey_id, $question_id) {
+
+
+        
+        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        $authen = new $AuthClass();
+        $author = CommonUtil::getSysValue('AuthorClass');
+
+        if ($survey_id == "") {
+            return false;
+        }
+        if ($question_id == "") {
+            return false;
+        }
+        $my_user_id = $authen->getUserId();
+
+        $survey = SurveyDatatable::getSurvey($my_user_id, $survey_id);
+        $surveyInfo = $survey->fetchObject();
+        $question = SurveyDatatable::getSurveyQuestionByID($my_user_id, $question_id);
+        $questionInfo = $question->fetchObject();
+        $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+        $this_question_id = str_pad($question_id, 6, "0", STR_PAD_LEFT);
+        $file_name = $questionInfo->file_name;
+        // file in "private" folder
+        $file_path = 'sites/default/files/private/survey/' . $this_survey_id . '/' . $this_question_id . '/' . $file_name;
+
+        return $file_path;
+    }    
     
 }

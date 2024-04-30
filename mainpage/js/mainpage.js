@@ -23,3 +23,44 @@ function reloadAggregatedTag() {
         }
     });
 }
+
+function getFollow(choices) {
+    var click_follow =  jQuery("#follow_list").css( "display" );
+    var current = jQuery("#choices").text();
+    if (click_follow == "none" || choices != current) {        
+        jQuery.ajax({
+            type: "POST",
+            url: 'get_follow',
+            data: JSON.stringify({"choices": choices}),
+            cache: false,
+            success: function (data)
+            {
+            jQuery("#follow_list").html(data);
+            
+            }, error: function (error) {
+                return "Fail to retrieve content, please try again later.";
+            }
+        }); 
+        jQuery("#follow_list").css("display","block");
+    } else {
+        closeFollowModal();
+    }
+}
+
+function closeFollowModal() {
+    var current = jQuery("#choices").text();
+    jQuery.ajax({
+        type: "POST",
+        url: 'get_follow_no',
+        cache: false,
+        success: function (data)
+        {
+        jQuery("#followed").text(data);
+        
+        }, error: function (error) {
+            return "Fail to retrieve content, please try again later.";
+        }
+    }); 
+    jQuery("#follow_list").css("display","none");
+    jQuery("#follow_list").html("");    
+}

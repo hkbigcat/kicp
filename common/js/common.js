@@ -363,9 +363,8 @@ function checkDate() {
 }
 
 
-function copyTextToClipboard() {
-  var txt = self.location.href;
-
+function copyTextToClipboard(link="") {
+  var txt = link==""?self.location.href:link;
   // creating new textarea element and giveing it id 't'
   let t = document.createElement('textarea');
   t.id = 't';

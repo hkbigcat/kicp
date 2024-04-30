@@ -14,37 +14,20 @@ class TagList extends ControllerBase {
         $this->default_delimitor = ";";
   }	
 
-  public function showlist() {
-    // Modify this part to fit your needs.
-    $list = ['item1', 'item2', 'item3'];
-    return $list;
-  }
-  
   
    public function getListCopTagForModule() {
-	
-    $output = "";
-
         $result = self::getCopTag();
-        foreach ($result as $record) {
-            
-
-            $output .= '<span class="tagBullet"><a style="font-size:107%; font-style: normal; text-decoration:none" href="javascript:void(0)"' .
-                ' onClick="addTag(this);">' . $record->cop_name . '</a></span>';
-							
-				
-        }
-
-        return $output;
-	
-		
-		
+        $renderable = [
+            '#theme' => 'common-tag-getlistcoptagmodule',                
+            '#items' => $result,
+        ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);   
+        return $content;		
     }
 	
 	
  public function getList($InModule) {
-        $output = "";
-
+        $output = array();
 
         $sql = "SELECT COUNT(1) AS AMOUNT, tag FROM kicp_tags WHERE tag NOT LIKE 'system:%' and is_deleted = 0";
         if ($InModule != 'ALL') {
@@ -53,10 +36,10 @@ class TagList extends ControllerBase {
         $sql .= " GROUP BY tag ORDER BY AMOUNT DESC, tag ";
 		
 		$database = \Drupal::database();
-		$result = $database-> query($sql); 
+		$result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 		
         foreach ($result as $record) {
-            switch ($record->AMOUNT) {
+            switch ($record['AMOUNT']) {
                 case 1:
                     $fontsize = '90';
                     break;
@@ -81,15 +64,19 @@ class TagList extends ControllerBase {
                 default:
                     $fontsize = '158';
             }
-            $output .= '<span class="tagBullet"><a style="font-size:' . $fontsize . '%; font-style: normal; text-decoration:none" href="javascript:void(0)"' .
-                ' onClick="addTag(this);" title="' .
-                $record->AMOUNT . '">' . $record->tag . '</a></span>';
+
+            $record['size'] = $fontsize;
+            $output[] = $record;
+
         }
 
-    
-		
+        $renderable = [
+            '#theme' => 'common-tag-getlist',                
+            '#items' => $result,
+        ];
+        $content = \Drupal::service('renderer')->renderPlain($renderable);   
+        return $content;		
 
-        return $output;
     }
 	
 	
@@ -98,19 +85,18 @@ class TagList extends ControllerBase {
 	
 		  try {
 			$database = \Drupal::database();
-			$selected_query = $database-> select('kicp_km_cop', 'a'); 
-			$selected_query -> join('kicp_km_cop_group', 'b', 'a.cop_group_id = b.group_id');
-			$selected_query-> fields('a', ['cop_name']);
-			$selected_query-> condition('a.is_deleted', '0', '=');
-			$selected_query-> condition('b.is_deleted', '0', '=');
-  		    $selected_query-> orderBy('a.cop_name', 'ASC');
-			$entries =  $selected_query->execute();
-			if ($entries)
-				return $entries;
+			$query = $database-> select('kicp_km_cop', 'a'); 
+			$query -> leftjoin('kicp_km_cop_group', 'b', 'a.cop_group_id = b.group_id');
+			$query-> fields('a', ['cop_name']);
+			$query-> condition('a.is_deleted', '0', '=');
+			$query-> condition('b.is_deleted', '0', '=');
+  		    $query-> orderBy('a.cop_name', 'ASC');
+            $result = $query->execute()->fetchCol();
+			return $result;
 		 }
 		 catch (\Exception $e) {
 			\Drupal::messenger()->addStatus(
-			   t('Unable to load tags at this time due to datbase error. Please try again.')
+			   t('Unable to load tags at this time due to datbase error. Please try again.').$e
 			 );
 		   return  NULL;
 		 }	
@@ -132,6 +118,8 @@ class TagList extends ControllerBase {
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
+            if (!$result)
+                return null;
             $taglist = array();
             foreach ($result as $record)  {
                 if ($Item==null) {
@@ -173,8 +161,11 @@ class TagList extends ControllerBase {
 
         $output = array();
         $copTag = self::getCopTag();
+        if (!$copTag)
+            return null;
+
         foreach($copTag as $cop) {
-            $output[] = $cop->cop_name;
+            $output[] = $cop;
         }
 
         return $output;

@@ -235,6 +235,7 @@ class BlogDatatable {
                 $record["attachments"] = self::getAttachments($record["blog_id"], $record["entry_id"]);
                 $record["countlike"] = LikeItem::countLike('blog', $record["entry_id"]);
                 $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);
+                $record["comment_total"] = self::BlogEntryCommentTotal($record["entry_id"]);
                 $output[] = $record;
             }
             return $output;
@@ -287,18 +288,32 @@ class BlogDatatable {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $output=array();
         $tagsUrl = \Drupal::request()->query->get('tags');
         if ($tagsUrl) {
           $tags = json_decode($tagsUrl);
         } 
-
         
         try {         
           $database = \Drupal::database();
           $query = $database-> select('kicp_blog_entry', 'a'); 
-          $query -> join('kicp_blog', 'b', 'a.blog_id = b.blog_id');
+          $query -> leftjoin('kicp_blog', 'b', 'a.blog_id = b.blog_id');
+          if ($tagsUrl) {
+            $query -> leftjoin('xoops_users', 'x', 'b.user_id = x.user_id');
+            $query-> fields('x', ['user_displayname']);
+          } 
+  
+          if (!$isSiteAdmin) {          
+            $query -> leftjoin('kicp_access_control', 'ac', 'ac.record_id = b.blog_id AND ac.module = :module AND ac.is_deleted = :is_deleted', [':module' => 'blog', ':is_deleted' => '0']);
+            $query -> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query -> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> having('b.user_id = :user_id OR COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+          } 
+
           if ($tags && count($tags) > 0 ) {
             $query -> join('kicp_tags', 't', 'a.entry_id = t.fid');
             $query-> condition('t.module', 'blog');
@@ -308,16 +323,14 @@ class BlogDatatable {
             }
             $query->condition($orGroup);
             $query-> condition('t.is_deleted', '0');
-            $query-> groupBy('a.entry_id', '0');
+            $query-> groupBy('a.entry_id');
             $query->addExpression('COUNT(a.entry_id)>='.count($tags) , 'occ');
             $query->havingCondition('occ', 1);
           } 
           $query-> fields('a', ['entry_id', 'entry_title','entry_content','blog_id', 'created_by', 'is_pub_comment', 'entry_create_datetime', 'entry_modify_datetime', 'has_attachment']);
           $query-> fields('b', ['blog_name', 'user_id']);
-//          $query-> condition('t.tag', '%'.$tags.'%', 'LIKE');
-//          $query-> condition('t.is_deleted', '0');
-          $query-> condition('a.is_deleted', '0', '=');
-          $query-> condition('b.is_deleted', '0', '=');
+          $query-> condition('a.is_deleted', '0');
+          $query-> condition('b.is_deleted', '0');
           $query-> orderBy('entry_modify_datetime', 'DESC');
           $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
@@ -328,9 +341,10 @@ class BlogDatatable {
           $TagList = new TagList();
           foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('blog', $record["entry_id"]);
-            $record["attachment"] = self::getAttachments($record["user_id"], $entry_id);
+            $record["attachment"] = self::getAttachments($record["blog_id"], $record["entry_id"]);
             $record["countlike"] = LikeItem::countLike('blog', $record["entry_id"]);
-            $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);               
+            $record["liked"] = LikeItem::countLike('blog', $record["entry_id"],$my_user_id);
+            $record["comment_total"] = self::BlogEntryCommentTotal($record["entry_id"]);               
             $output[] = $record;
 
           }
@@ -340,7 +354,7 @@ class BlogDatatable {
         }
         catch (\Exception $e) {
            \Drupal::messenger()->addStatus(
-              t('Unable to load blog by tags at this time due to datbase error. Please try again.')
+              t('Unable to load blog by tags at this time due to datbase error. Please try again. ').$e
             );
           return  NULL;
         }
@@ -423,9 +437,16 @@ class BlogDatatable {
     }
     
     
-    public static function getAllEntry() {
+    public static function getAllEntry($my_user_id="") {
 
         $search_str = \Drupal::request()->query->get('search_str');
+        $myfollowed = \Drupal::request()->query->get('my_follow');
+
+        if ($myfollowed) {
+            $following_all = Follow::getFolloweringList($my_user_id);
+            if ($following_all!=null)
+              $following = array_column($following_all, 'contributor_id');
+        }         
 
         $database = \Drupal::database();
         $query = $database-> select('kicp_blog', 'a'); 
@@ -448,11 +469,17 @@ class BlogDatatable {
         $query->groupBy("b.user_name");
         $query->groupBy("a.blog_type");
         $query-> orderBy('b.user_name');
-
-        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(20);
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+        $output = array();
+        if ($result != null ) {
+            foreach ($result as $record) {
+                $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id);
+                $output[] = $record;
+            }
+        }        
 
-        return $result;
+        return $output;
 
     }
 
@@ -550,4 +577,13 @@ class BlogDatatable {
         }
         return $result->uid;
     }    
+
+    public static function BlogEntryCommentTotal($entry_id) {
+        $sql = "SELECT COUNT(1) as commentTotal FROM kicp_blog_entry_comment WHERE entry_id='" . $entry_id . "' AND is_deleted=0";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();      
+        return $result->commentTotal;
+    }
+
 }
+
