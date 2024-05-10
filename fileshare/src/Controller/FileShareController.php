@@ -79,6 +79,15 @@ class FileShareController extends ControllerBase {
    */
   public function getShareFile() {
 
+    $tags = array();
+    $tmp = "";
+    $tagsUrl = \Drupal::request()->query->get('tags');
+    if ($tagsUrl) {
+      $tags = json_decode($tagsUrl);
+      if ($tags && count($tags) > 0 ) {
+        $tmp = $tags;
+      }
+    }    
     $table_rows_file = FileShareDatatable::getSharedFile();
     $myRecordOnly = \Drupal::request()->query->get('my');
     $myfollowed = \Drupal::request()->query->get('my_follow');        
@@ -86,7 +95,9 @@ class FileShareController extends ControllerBase {
         '#theme' => 'fileshare-files',
         '#items' => $table_rows_file,
         '#my_user_id' => $this->my_user_id,
+        '#tags' => $tags,
         '#empty' => t('No entries available.'),
+        '#tagsUrl' => $tmp,
         '#myRecordOnly' => $myRecordOnly,
         '#myfollowed' =>  $myfollowed,        
         '#pager' => ['#type' => 'pager',
@@ -136,13 +147,14 @@ class FileShareController extends ControllerBase {
         
   $TagList = new TagList();
   $taglist = $TagList->getTagsForModule('fileshare', $file_id);
+  $tagURL = "";
   if ($taglist)
     $tagURL = http_build_query($taglist);
   $RatingData = new RatingData();
   $rating = $RatingData->getList('fileshare', $file_id);
 
   $table_rows_file['tagURL'] = $tagURL;
-  $table_rows_file["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
+  $table_rows_file["follow"] = Follow::getFollow($table_rows_file["user_id"], $this->my_user_id); 
 
   $rsHadRate = $RatingData->checkUserHadRate($this->module, $file_id, $this->my_user_id);
   $rating['rsHadRate'] = $rsHadRate;
@@ -165,15 +177,15 @@ class FileShareController extends ControllerBase {
 
   public function deleteShareFile($file_id = NULL) {
 
-    $delFile = FileShareDatatable::getSharedFile($file_id);
-    if ( $delFile['file_id'] == null) {
-
-      $url = Url::fromRoute('fileshare.fileshare_content');
-      return new RedirectResponse($url->toString());
+    $delFile = FileShareDatatable::getSharedFile($file_id, $this->my_user_id);
+    if ( !$delFile) {
 
       \Drupal::messenger()->addError(
         t('Unable to delete this File ')
         );
+
+      $url = Url::fromRoute('fileshare.fileshare_content');
+      return new RedirectResponse($url->toString());
 
     }
     // delete record
@@ -191,7 +203,14 @@ class FileShareController extends ControllerBase {
         if ($affected_rows) {
 
           // delete files
-          $file_deleted = FileShareDatatable::deleteFiles($file_id,  $this->file_path);
+          $file_deleted = FileShareDatatable::deleteFiles($file_id);
+          if ($file_deleted==0) {
+            \Drupal::logger('fileshare')->error('no file delete. ID: '.$file_id);
+            \Drupal::messenger()->addError(
+              t('No file deleted')
+            );             
+          }
+
           // delete tags
           $return2 = TagStorage::markDelete($this->module, $file_id);
 
@@ -214,7 +233,7 @@ class FileShareController extends ControllerBase {
      }
      unset($transaction);   
 
-     $response = array('result' => $err_code);
+     $response = array('result' => 1);
      return new JsonResponse($response);
 
   }
@@ -271,21 +290,26 @@ class FileShareController extends ControllerBase {
         $allfiles = FileShareDatatable::getFilesIDInsideFolder($folder_id, $this->my_user_id);
 
         $myFile = array();
-        foreach ($allfiles as $file) {
 
-          // delete files
-          $file_deleted = FileShareDatatable::deleteFiles($file_id,  $this->file_path);
+        if ($allfiles) {
+          foreach ($allfiles as $file) {
 
-          // delete tags
-          $return2 = TagStorage::markDelete($this->module, $file['file_id']);
+            // delete files
+            $file_deleted = FileShareDatatable::deleteFiles($file_id);
 
-          // delete rating
-          $rating = RatingStorage::markDelete($this->module, $file['file_id']);
+            // delete tags
+            $return2 = TagStorage::markDelete($this->module, $file['file_id']);
 
+            // delete rating
+            $rating = RatingStorage::markDelete($this->module, $file['file_id']);
+
+          }
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('File Folder and has been deleted. '));  
+        } else {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Folder has been deleted. No file inside.'));  
         }
-
-        $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('File Folder and has been deleted. '));
 
       } 
       catch (\Exception $e ) {
@@ -357,6 +381,8 @@ class FileShareController extends ControllerBase {
      
     $results = [];
      
+    if (!$tree )
+      return null;
     foreach ($tree as $term) {
       $results[] = $term->getName();
     }

@@ -42,31 +42,6 @@ class CommonUtil {
 
     }
 
-
-
-    public static function updateDrupalFileManagedUri($uuid = "", $newPath = "", $fid = "") {
-
-        if (($uuid == "" && $fid == "") || $newPath == "") {
-            return;
-        }
-
-        $cond = "";
-
-        if ($uuid != "") {
-            $cond = ' uuid=\'' . $uuid . '\'';
-        }
-        else if ($fid != "") {
-            $cond = '  fid=\'' . $fid . '\'';
-        }
-        
-        $sql = 'UPDATE file_managed SET status=1, uri=\'' . $newPath . '\' WHERE ' . $cond;
-        $database = \Drupal::database();
-        $result = $database-> query($sql); 
-
-        return $result;
-    }
-
-
     public static function isSiteAdmin() {
 
         $AuthClass = "\Drupal\common\Authentication";
@@ -119,7 +94,7 @@ class CommonUtil {
     }    
 
 
-    public static function udpateMsgImagePath($createDir, $content,  $newImagePathWebAccess , $oldImagePath='', $PublicUri = 'public://inline-images') {
+    public static function udpateMsgImagePath($createDir, $content,  $newImagePathWebAccess , $entry_id = "" , $oldImagePath="", $PublicUri = "public://inline-images"  ) {
 
 
         $oldImagePath = ($oldImagePath=="")?base_path() . 'sites/default/files/public/inline-images': $oldImagePath;
@@ -151,31 +126,21 @@ class CommonUtil {
             $thisImgName = urldecode($thisImgName);                
             
             if (file_exists($file_system->realpath($PublicUri) . '/' . $thisImgName)) {    
-
-                $sql = "select fid from `file_managed` WHERE uri = '".$PublicUri."/".$thisImgName."'";
-                $database = \Drupal::database();
-                $file_result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-               
-                // Move all the files to the private file area
-                foreach ($file_result as  $record) {
-                    
-                    if (!file_exists($PublicUri . '/' .$thisImgName)) {
-                        break;
-                    }
-                    
-                    $source = $file_system->realpath($PublicUri . '/'. $thisImgName);
-                    $destination = $file_system->realpath( $createDir . '/'. $thisImgName);
-
-                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                        throw new \Exception('Could not copy the generic placeholder image to the destination directory.');
-                      }
-
-
-                    // update the "uri" in table "file_managed" (from "public" to "private" folder)
-                    $rs = CommonUtil::updateDrupalFileManagedUri("", $createDir . '/' . $thisImgName, $record['fid']);
+                $img_file = \Drupal::entityTypeManager() 
+                ->getStorage('file')
+                ->loadByProperties(['uri' => $PublicUri.'/'.$thisImgName]);
+                $NewFile = reset($img_file) ?: NULL;
+                $source = $file_system->realpath($PublicUri . '/'. $thisImgName);
+                $destination = $file_system->realpath( $createDir . '/'. $thisImgName);
+                $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                if (!$newFileName) {
+                    throw new \Exception('Could not move the generic placeholder file to the destination directory.');
+                } else {
+                    $NewFile->setFileUri($createDir . '/' .  $thisImgName);
+                    $NewFile->uid =$entry_id;
+                    $NewFile->setPermanent();
+                    $NewFile->save();
                 }
-            
 
             } 
 
@@ -294,6 +259,23 @@ class CommonUtil {
             return false;
         }
         return true;
+    }
+
+
+    public static function deleteFile($uri) {
+
+        //\Drupal::logger('filehshare')->info("uri : ".$uri);   
+        $sql = "SELECT fid FROM `file_managed` WHERE uri = '$uri'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        $id = "";
+        if ($result) {
+            $fid = $result->fid;
+            $file = \Drupal\file\Entity\File::load($fid);
+            $file->delete();
+            return $fid;
+        } else return null;
+        
     }
 
 }

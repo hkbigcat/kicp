@@ -1,5 +1,5 @@
 {% if tagsUrl is not null  %}  
-<div class="selecterd_tag_div" style="float:left;">Selected Tag: 
+<div class="selecterd_tag_div">Selected Tag: 
  {% for tagUrl in tagsUrl %}
     <div class="item"><a href="javascript:;" onclick="RemovetagUrl('{{ tagUrl }}')">{{ tagUrl }} <i class="fa-solid fa-xmark" style="color:red"></i> </a></div>
  {% endfor %}

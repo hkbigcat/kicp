@@ -97,22 +97,26 @@ class PPCActivityTypeAdd extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
-        
-        try {
-            
-            $categoryEntry = array(
-                'evt_type_name' => $evt_type_name,
-                'description' => $evt_description,
-                'display_order' => $display_order,
-            );
+                    
+        $categoryEntry = array(
+            'evt_type_name' => $evt_type_name,
+            'description' => $evt_description,
+            'display_order' => $display_order,
+        );
 
-
-            $query = \Drupal::database()->insert('kicp_ppc_event_type')
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();    
+        try {            
+            $query = \$database->insert('kicp_ppc_event_type')
             ->fields( $categoryEntry);
             $evt_type_id = $query->execute();
-
-
             if ($evt_type_id) {
+
+                \Drupal::logger('ppcactivities')->info('PPC Activities Type created id: %id, Type name: %evt_type_name.',   
+                array(
+                    '%id' =>  $evt_type_id,
+                    '%evt_type_name' => $evt_type_name,
+                ));                     
 
                 $url = Url::fromUri('base:/ppcactivities_admin_type');
                 $form_state->setRedirectUrl($url);
@@ -122,17 +126,22 @@ class PPCActivityTypeAdd extends FormBase {
                 
             }
             else {
+                \Drupal::logger('ppcactivities')->error('PPC Type is not created');    
                 \Drupal::messenger()->addError(
-                    t('PPC Activity Type is not created. ' )
+                    t('PPC Activities Type is not created - data not save' )
                     );
-
+                $transaction->rollBack();    
             }
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('PPC Activity Type is not created. ' )
+                t('PPC Activities Type is not created' )
                 );
-    }
+            \Drupal::logger('ppcactivities')->error('PPC Activities Type  is not created: '.$variables);                    
+            $transaction->rollBack();
+        }
+        unset($transaction);   
     }
 
 }

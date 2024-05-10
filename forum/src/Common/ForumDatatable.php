@@ -129,6 +129,8 @@ class ForumDatatable {
         $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
         
+        if (!$result)
+          return null;
         foreach ($result as $record) {
             $record["countlike"] = LikeItem::countLike('forum', $record["topic_id"]);
             $record["liked"] = LikeItem::countLike('forum', $record["topic_id"],$my_user_id);
@@ -141,6 +143,27 @@ class ForumDatatable {
 
     }
 
+
+    public static function getForumAttachment($topic_id="", $post_id="") {
+
+        $this_topic_id = str_pad($topic_id, 6, "0", STR_PAD_LEFT);
+        $this_post_id = str_pad($post_id, 6, "0", STR_PAD_LEFT);
+
+        $attachment = array();
+        $ForumeUri =  "private://forum";
+        $filepath = \Drupal::service('file_system')->realpath($ForumeUri.'/file/'.$this_topic_id.'/'.$this_post_id);
+        if (is_dir($filepath)) {            
+            $dirFile = scandir($filepath);
+            foreach ($dirFile as $attach) {
+                if ($attach == "." || $attach == ".." || is_dir($filepath . '/' . $attach)) {
+                    continue;
+                }
+                $attachment[] = $attach;
+            }
+        }
+        return $attachment;
+
+    }
 
     public static function getForumListByTag($tags) {
 
@@ -187,6 +210,8 @@ class ForumDatatable {
         $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
 
+        if (!$result)
+          return null;
         foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('forum', $record["topic_id"]);   
             $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id); 
@@ -200,6 +225,7 @@ class ForumDatatable {
 
     public static function getForumThreads($topic_id="") {
 
+        $output = array();
         $cond = $topic_id!=""?" AND topic_id = ".$topic_id:"";
         $sql = "SELECT a.post_id, a.subject, a.content, a.parent_id, a.create_datetime, if(a.is_guest=1,a.poster_name, x.user_name) as poster_name, a.topic_id, a.is_guest, a.user_id
             FROM kicp_forum_post a
@@ -210,15 +236,22 @@ class ForumDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
 
-        return $result;    
+        if (!$result) return null;
+
+        foreach ($result as $record) {
+            $record['attachment'] =  self::getForumAttachment($record['topic_id'], $record['post_id']); 
+            $output[] = $record;
+        }
+        return $output;    
     }
 
     public static function getForumName($forum_id) {
         $sql = " SELECT forum_name FROM kicp_forum_forum WHERE forum_id=".$forum_id;
         $database = \Drupal::database();
         $record = $database-> query($sql)->fetchObject();
-        
-        return $record->forum_name;
+        if ($record)
+          return $record->forum_name;
+        else return null;
     }
 
     public static function getForumByTopic($topic_id) {

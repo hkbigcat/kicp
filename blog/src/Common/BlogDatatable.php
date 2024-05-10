@@ -196,6 +196,29 @@ class BlogDatatable {
 
     }    
 
+
+    public static function getBlogUID($entry_id = "") {
+
+       $sql = "select a.uid from xoops_users a left join kicp_blog b on a.user_id = b.user_id left join kicp_blog_entry c on b.blog_id = c.blog_id where b.is_deleted = 0 and c.entry_id = '$entry_id'";
+
+        try {
+            $database = \Drupal::database();
+            $result = $database-> query($sql)->fetchObject();
+        }
+        catch (\Exception $e) {
+          \Drupal::messenger()->addStatus(
+             t('Unable to load blog id at this time due to datbase error. Please try again.')
+           );
+           return  NULL;
+        }
+
+        if ($result)
+          return $result->uid;
+        else 
+            return null;
+
+    }        
+
     public static function getBlogListContent($blog_id) {
 
         $output=array();
@@ -361,12 +384,9 @@ class BlogDatatable {
         
       }
 
-    public static function getBlogArchiveTree($blog_id = "") {
+    public static function getBlogArchiveTree() {
 
-        if ($blog_id == "") {
-            $blog_id = self::getBlogIDByUserID();
-        }
-
+        $blog_id = self::getBlogIDByUserID();    
         $output = array();
 
         if ($blog_id == "") {
@@ -401,6 +421,7 @@ class BlogDatatable {
         $output=0;
         $file_system = \Drupal::service('file_system');
         $filePath = $file_system->realpath($BlogFileUri . '/' .   $this_blog_id . '/' .  $this_entry_id);
+        $fileUri = $BlogFileUri . '/' .   $this_blog_id . '/' .  $this_entry_id;
         $deleteFileAry = explode(',', $delete_attachment_list);
         if (is_dir($filePath)) {
             $dirFile = scandir($filePath);
@@ -411,7 +432,8 @@ class BlogDatatable {
                         continue;
                     }
                     if (in_array($i, $deleteFileAry) && file_exists($filePath . '/' . $attach)) {
-                        unlink($filePath . '/' . $attach);
+                        $uri = $fileUri."/". $attach;
+                        $fid = CommonUtil::deleteFile($uri);                        
                         $output++;
                     }
                     $i++;
@@ -575,7 +597,10 @@ class BlogDatatable {
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchObject();      
         }
-        return $result->uid;
+        if ($result) 
+          return $result->uid;
+        else 
+           return null;
     }    
 
     public static function BlogEntryCommentTotal($entry_id) {

@@ -61,8 +61,6 @@ class FileShareAdd extends FormBase  {
 
         $config = \Drupal::config('fileshare.settings'); 
 
-
-		
         $form['title'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Title'),
@@ -103,7 +101,7 @@ class FileShareAdd extends FormBase  {
 		$TagList = new TagList();
 		
 		
-		  $form['tags'] = array(
+		$form['tags'] = array(
               '#title' => t('Tags'),
               '#type' => 'textarea',
               '#rows' => 2,
@@ -111,12 +109,12 @@ class FileShareAdd extends FormBase  {
               '#description' => 'Use semi-colon (;) as separator',
             );		
 
-        $form['submit'] = array(
+        $form['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
         );
         
-        $form['cancel'] = array(
+        $form['actions']['cancel'] = array(
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#attributes' => array('onClick' => 'history.go(-1); return false;'),
@@ -185,6 +183,8 @@ class FileShareAdd extends FormBase  {
                 $hasError = true;
             }
         }
+
+
     }
 	
     
@@ -195,20 +195,9 @@ class FileShareAdd extends FormBase  {
    public function submitForm(array &$form, FormStateInterface $form_state) {
 
 		//*************** File [Start]
-		$tmp_name = $_FILES["files"]["tmp_name"]['filename'];
-		$this_filename = str_replace(' ', '_', $_FILES["files"]["name"]['filename']);
-		$this_filename = str_replace("'", "", $this_filename);      // remove single quote
-		$this_filename = str_replace('"', '', $this_filename);      // remove double quote
-		$this_filename = str_replace('&', '_', $this_filename);      // remove & sign
-		$this_filename = str_replace('!', '', $this_filename);      // remove ! sign
-		$this_filename = str_replace('@', '', $this_filename);      // remove @ sign
-		$this_filename = str_replace('#', '', $this_filename);      // remove # sign
-		$this_filename = str_replace('$', '', $this_filename);      // remove $ sign
-		$this_filename = str_replace('%', '', $this_filename);      // remove % sign
-		$this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
-		$this_filename = str_replace('+', '', $this_filename);      // remove + sign
-		$this_filename = str_replace('=', '', $this_filename);      // remove = sign
-		$file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));	
+        $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
+        $this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
+        $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
 		//*************** File [End]
 		
 		//*************** Thumbnail [Start]
@@ -218,10 +207,9 @@ class FileShareAdd extends FormBase  {
 
 
        //Obtain the value as entered into the Form
-       $title =  $form_state->getValue('title');
-       $description =  $form_state->getValue('description');
-       $folder_id =  $form_state->getValue('folder_id');
-	   $tags =  $form_state->getValue('tags');
+       foreach ($form_state->getValues() as $key => $value) {
+        $$key = $value;
+       }
        
        $entry = array(
         'title' => $title,
@@ -231,8 +219,6 @@ class FileShareAdd extends FormBase  {
         'image_name' => $this_imagename,
         'folder_id' => $folder_id,
         'user_id' => $this->my_user_id,
-        'create_datetime' => date('Y-m-d H:i:s'),
-        'modify_datetime' => date('Y-m-d H:i:s'),
         );
 
         $database = \Drupal::database();
@@ -258,9 +244,9 @@ class FileShareAdd extends FormBase  {
 /////////////// FILE //////////////
   
       $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
-      
+     
       $file_system = \Drupal::service('file_system');  
-      $FileshareUri = 'private://fileshare/';
+      $FileshareUri = 'private://fileshare';
 
       FileShareDatatable::createFileshareDir($FileshareUri, $this_file_id);
       
@@ -273,19 +259,22 @@ class FileShareAdd extends FormBase  {
       $file = file_save_upload('filename', $validators, 'private://fileshare/file/'.$this_file_id,$delta);
 
       $file_path = $file_system->realpath($FileshareUri  . '/file/' . $this_file_id);
-      $image_path = $file_system->realpath($FileshareUri  . '/image/' . $this_file_id);
-      
-      // rename file, remove white space in filename
-                  
-      if(file_exists($file_path."/".$_FILES['files']['name']['filename']) && $_FILES['files']['name']['filename'] != $this_filename) {
-        exec("mv \"".$file_path."/".$_FILES['files']['name']['filename']."\" \"".$file_path."/".$this_filename."\"");    
-      }
-      
+      $image_path = $file_system->realpath($FileshareUri  . '/image/' . $this_file_id);      
 
-      $file[0]->setPermanent();
-      $file[0]->uid = $file_id;
-      $file[0]->save();
-      $url = $file[0]->createFileUrl(FALSE);
+      if($_FILES['files']['name']['filename'] != $this_filename) {
+        $file_real_path = \Drupal::service('file_system')->realpath($FileshareUri.'/file/'.$this_file_id.'/'.$_FILES['files']['name']['filename']);
+        $file_contents = file_get_contents($file_real_path);
+        $newFile = \Drupal::service('file.repository')->writeData($file_contents, $FileshareUri.'/file/'.$this_file_id.'/'.$this_filename, FileSystemInterface::EXISTS_REPLACE);
+        $file1 = $file[0];
+        $file1->delete();
+      } else {
+            $newFile = $file[0];
+      }
+
+      $newFile->setPermanent();
+      $newFile->uid = $file_id;
+      $newFile->save();
+      $url = $newFile->createFileUrl(FALSE);
       
         // create thumbnail(s) of all PDF pages
 
@@ -296,16 +285,18 @@ class FileShareAdd extends FormBase  {
         $file_temp = str_replace(["(",")"],["\(","\)"],$this_pdfname);
         $img_temp = str_replace(["(",")"],["\(","\)"],$this_imagename);
         if($file_ext != "pdf") {
-        
             exec("export HOME=".$file_path." && /usr/bin/libreoffice --headless --convert-to pdf --outdir ".$file_path." \"".$file_path."/".$this_filename."\"");
-           
+            $file = File::create([
+                'uid' => $file_id,
+                'filename' => $this_pdfname,
+                'uri' => $FileshareUri."/file/".$this_file_id."/".$this_pdfname,
+              ]);        
+            $file->setPermanent();
+            $file->save();                  
             exec("pdftoppm -png ".$file_path."/".$file_temp." ".$image_path."/".$img_temp);            
 
-        } else {
-            
+        } else {            
             exec("pdftoppm -png ".$file_path."/".$file_temp." ".$image_path."/".$img_temp);
-
-            
         }
         
         
@@ -357,7 +348,13 @@ class FileShareAdd extends FormBase  {
             }
         }
 
-                    //******** store image record(s) in table "file_managed" [End]
+
+        \Drupal::logger('fileshare')->info('Created id: %id, title: %title, filename: %filename.',   
+        array(
+            '%id' => $file_id,
+            '%title' => $title,
+            '%filename' => $this_filename,
+        ));     
 
         $url = Url::fromRoute('fileshare.fileshare_content');
         $form_state->setRedirectUrl($url);
@@ -368,9 +365,11 @@ class FileShareAdd extends FormBase  {
     }
 
     catch (\Exception $e ) {
+        
         \Drupal::messenger()->addError(
           t('Unable to save filess at this time due to datbase error. Please try again.')
         ); 
+        \Drupal::logger('fileshare')->error('Fileshare is not created ' .$file_id);   
         $transaction->rollBack();
 
     }

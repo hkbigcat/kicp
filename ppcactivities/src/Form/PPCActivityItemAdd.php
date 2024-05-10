@@ -361,10 +361,10 @@ class PPCActivityItemAdd extends FormBase  {
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),            
           );
 
-
-          
+          $database = \Drupal::database();
+          $transaction = $database->startTransaction();             
           try {
-            $query = \Drupal::database()->insert('kicp_ppc_event')
+            $query = $database->insert('kicp_ppc_event')
             ->fields( $eventEntry);
             $evt_id = $query->execute();
             $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
@@ -389,22 +389,25 @@ class PPCActivityItemAdd extends FormBase  {
                     }
                 }
                   
-                
                 $validators = array(
                     'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
                     'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
                   );
                 
-                
                 $delta = NULL; // type of $file will be array
                 $file = file_save_upload('evt_logo', $validators, $image_path, $delta);
           
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid =  $evt_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
 
             }            
+            \Drupal::logger('ppcactivities')->info('PPC Event is created id: %id, Event name: %evt_name.',   
+            array(
+                '%id' =>  $evt_id,
+                '%evt_name' =>  $evt_name,
+            ));                  
 
             $url = Url::fromUri('base:/ppcactivities_admin/');
             $form_state->setRedirectUrl($url);
@@ -414,13 +417,14 @@ class PPCActivityItemAdd extends FormBase  {
 
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to save PPC event at this time due to datbase error. Please try again. '.serialize($eventEntry) )
+                t('PPC Activity Item is not created.' )
                 );
-
-           
+            \Drupal::logger('activities')->error('PPC Activity Item is not created.: '.$variables);                    
+            $transaction->rollBack();              
         }	
-
+        unset($transaction); 
 
     }
 

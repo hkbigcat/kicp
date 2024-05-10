@@ -49,6 +49,12 @@ font-weight: bold;
 
 }
 
+span.sectionView{    
+    font-size:18pt;
+    font-weight: 500;
+}
+    
+
 
 .messages--status {
   display: none;

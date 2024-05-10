@@ -18,3 +18,84 @@ vote.vote_view:
     _permission: 'access content'
   options:
     no_cache: TRUE    
+
+vote.vote_delete:
+  path: '/vote_delete/{vote_id}'
+  defaults:
+    _controller: '\Drupal\vote\Controller\VoteController::deleteVote'
+    _title: 'Vote delete'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE   
+
+vote.vote_change_1:
+  path: '/vote_change_1/{vote_id}'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteChange1'
+    _title: 'Edit Vote'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+vote.vote_add_page1:
+  path: '/vote_add_page1'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteAddPage1'
+    _title: 'Add Sruvey'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+vote.vote_add_page2:
+  path: '/vote_add_page2'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteAddPage2'
+    _title: 'Question Details '
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+vote.vote_add_page3:
+  path: '/vote_add_page3'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteAddPage3'
+    _title: 'Question Sequence'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+vote.vote_add_page4:
+  path: '/vote_add_page4'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteAddPage4'
+    _title: 'Invite Participants'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
+vote.vote_copy:
+  path: '/vote_copy/{vote_id}'
+  defaults:
+    _form: '\Drupal\vote\Form\VoteCopy'
+    _title: 'Copy Vote'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+vote.export_vote:
+  path: '/export_vote/{vote_id}'
+  defaults:
+    _controller:  '\Drupal\vote\Controller\VoteController::exportVote'
+    _title: 'Vote Report'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

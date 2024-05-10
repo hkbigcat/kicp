@@ -114,26 +114,33 @@ class ActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();          
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_event_type')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('evt_type_id', $evt_type_id)
           ->execute();
 
+          \Drupal::logger('activities')->info('Type deleted id: %id',   
+          array(
+              '%id' => $evt_type_id,
+          ));              
           $err_code = '1';
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('KM Event Type has been deleted'));
       
-  
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete KM Event Type at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('activities')->error('Activity Type is not deleted: ' . $variables);       
+            $transaction->rollBack();    
+            }
+        unset($transaction);    	        
         $response = array('result' => $err_code);
         return new JsonResponse($response);
     
@@ -159,26 +166,33 @@ class ActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();            
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_cop_group')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('group_id', $group_id)
           ->execute();
 
+          \Drupal::logger('activities')->info('COP Category deleted id: %id',   
+          array(
+              '%id' =>  $group_id,
+          ));               
           $err_code = '1';
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('KM COP Category has been deleted'));
-      
-  
+        
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete KM COP Category at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('activities')->error('Activity COP Group is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	        
+        unset($transaction);            
         $response = array('result' => $err_code);
         return new JsonResponse($response);
 
@@ -207,26 +221,32 @@ class ActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_cop')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('cop_id', $cop_id)
           ->execute();
 
+          \Drupal::logger('activities')->info('KM COP Event Category deleted id: %id',   
+          array(
+              '%id' =>  $cop_id,
+          ));  
           $err_code = '1';
           $messenger = \Drupal::messenger(); 
-          $messenger->addMessage( t('KM COP Event Category has been deleted'));
-      
-  
+          $messenger->addMessage( t('KM COP Event Categ ory has been deleted'));  
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete KM COP  Event Category at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('activities')->error('KM COP  Event Category is not deleted: '. $variables);
+            $transaction->rollBack();
+        }
+        unset($transaction);	        
         $response = array('result' => $err_code);
         return new JsonResponse($response);
 
@@ -294,15 +314,14 @@ class ActivitiesController extends ControllerBase {
 
     public function deleteEventItem($evt_id="") {
 
-
         $eventInfo = ActivitiesDatatable::getEventDetail($evt_id);
         $type_id = $eventInfo['evt_type_id'];
         $current_time =  \Drupal::time()->getRequestTime();
 
         // delete record
-    
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_event')->fields([
             'is_deleted'=>1 , 
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),
@@ -313,16 +332,24 @@ class ActivitiesController extends ControllerBase {
           // delete tags
           $return2 = TagStorage::markDelete($this->module, $evt_id);
 
+          \Drupal::logger('activities')->info('KM Event deleted id: %id',   
+          array(
+              '%id' =>  $evt_id,
+          ));
+
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Event has been deleted'));
   
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete event at this time due to datbase error. Please try again. ' )
                 );
-
-            }	
+            \Drupal::logger('activities')->error('KM Event is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	
+        unset($transaction);            
         $response = array('result' => 1);
         return new JsonResponse($response);            
     
@@ -366,8 +393,9 @@ class ActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_event_member_list')->fields([
             'is_deleted'=>1 , 
           ])
@@ -375,8 +403,12 @@ class ActivitiesController extends ControllerBase {
           ->condition('user_id', $user_id)
           ->execute();
 
+          \Drupal::logger('activities')->info('KM Enrollment deleted id: %id. user: %user_id.',   
+          array(
+              '%id' =>  $evt_id,
+              '%user_id' =>  $user_id,
+          ));               
           $err_code = '1';
-          
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Enrollment has been deleted'));
 
@@ -385,11 +417,14 @@ class ActivitiesController extends ControllerBase {
   
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete enrollment at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('activities')->error('KM enrollment is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	        
+        unset($transaction);                  
         $response = array('result' => $err_code);
         return new JsonResponse($response);
     
@@ -402,7 +437,8 @@ class ActivitiesController extends ControllerBase {
         $err_code = '0';
         $is_enrol_successful = $_REQUEST['is_enrol_successful'];
         $is_showup = $_REQUEST['is_showup'];
-
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
             $database = \Drupal::database();
             $query = $database->update('kicp_km_event_member_list')->fields([
@@ -421,15 +457,23 @@ class ActivitiesController extends ControllerBase {
                 $err_code = '1';
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Enrollment has been updated: ').$user_id);
+                \Drupal::logger('activities')->info('KM Enrollment updated id: %id. user: %user_id.',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $user_id,
+                ));                  
             }
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to update enrollment at this time due to datbase error. Please try again. '.$e )
+                t('Unable to update enrollment at this time due to datbase error. Please try again. ' )
                 );
+            \Drupal::logger('activities')->error('KM enrollment is not updated: '. $variables);
+            $transaction->rollBack();
         }
-        
+        unset($transaction);            
         $err_code = '1';
         $response = array('result' => $err_code);
         return new JsonResponse($response);
@@ -460,7 +504,6 @@ class ActivitiesController extends ControllerBase {
 
     public function ActivityPhotoDelete($evt_photo_id) {
 
-
         $photoInfo = ActivitiesDatatable::getEventPhotoInfo($evt_photo_id);
         $evt_id = $photoInfo->evt_id;
 
@@ -470,29 +513,36 @@ class ActivitiesController extends ControllerBase {
         $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
         $ActivitiesPhotoUri = 'private://activities/photo/'.$this_evt_id.'/'.$photo_name;
         $file_location = $file_system->realpath($ActivitiesPhotoUri);
-        if(file_exists($file_location)) {
-            unlink($file_location);
-        }   
 
         // delete record
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-          $database = \Drupal::database();
+          $fid = CommonUtil::deleteFile( $ActivitiesPhotoUri);
           $query = $database->update('kicp_km_event_photo')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('evt_photo_id', $evt_photo_id)
           ->execute();
 
+          \Drupal::logger('activities')->info('KM Event photo deleted id: %id',   
+          array(
+              '%id' =>  $evt_photo_id,
+          ));
+
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Photo has been deleted'));
       
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete photo at this time due to datbase error. Please try again. ' )
                 );
-
-            }	
+            \Drupal::logger('activities')->error('KM Event Photo is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	
+        unset($transaction);                  
         $response = array('result' => 1);
         return new JsonResponse($response);            
     
@@ -528,14 +578,12 @@ class ActivitiesController extends ControllerBase {
         $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
         $ActivitiesDeliverableUri = 'private://activities/deliverable/'.$this_evt_id.'/'.$deliverable_name;
         $file_location = $file_system->realpath($ActivitiesDeliverableUri);
-        if(file_exists($file_location)) {
-            unlink($file_location);
-        }        
+        $fid = CommonUtil::deleteFile( $ActivitiesDeliverableUri);
 
         // delete record
-    
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();     
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_km_event_deliverable')->fields([
             'is_deleted'=>1 , 
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),
@@ -545,17 +593,24 @@ class ActivitiesController extends ControllerBase {
 
           // delete tags
           $return2 = TagStorage::markDelete('activities_deliverable',$evt_deliverable_id);
-      
+
+          \Drupal::logger('activities')->info('KM Event deliverable deleted id: %id',   
+          array(
+              '%id' =>  $evt_deliverable_id,
+          ));
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Deliverable has been deleted'));
   
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to delete deliverable at this time due to datbase error. Please try again. ' )
+                t('nable to delete deliverable at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('activities')->error('KM Event deliverable is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	        
+        unset($transaction);
         $response = array('result' => 1);
         return new JsonResponse($response);            
         

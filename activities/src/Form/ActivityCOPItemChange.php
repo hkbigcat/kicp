@@ -124,28 +124,30 @@ class ActivityCOPItemChange extends FormBase {
             $$key = $value;
         }
         
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();  
+   
+            
+        //$img_name = '';
+        $hasImage = false;
+        
+        if ($_FILES['files']['name']['cop_image'] != "") {
+            $hasImage = true;
+            $img_name = $_FILES['files']['name']['cop_image'];                
+        }
+        
+        $copEntry = array(
+            'cop_id' => $cop_id,
+            'cop_name' => $cop_name,
+            'cop_info' => $description,
+            'cop_group_id' => $cop_group_id,
+            'display_order' => $display_order,
+        );
+        if($hasImage) {
+            $copEntry['img_name'] = $img_name;
+        }
 
         try {
-            
-            //$img_name = '';
-            $hasImage = false;
-            
-            if ($_FILES['files']['name']['cop_image'] != "") {
-                $hasImage = true;
-                $img_name = $_FILES['files']['name']['cop_image'];                
-            }
-            
-            $copEntry = array(
-                'cop_id' => $cop_id,
-                'cop_name' => $cop_name,
-                'cop_info' => $description,
-                'cop_group_id' => $cop_group_id,
-                'display_order' => $display_order,
-            );
-            if($hasImage) {
-                $copEntry['img_name'] = $img_name;
-            }
-
             $query = \Drupal::database()->update('kicp_km_cop')
             ->fields( $copEntry)
             ->condition('cop_id', $cop_id)
@@ -173,13 +175,18 @@ class ActivityCOPItemChange extends FormBase {
                 $file = file_save_upload('cop_image', $validators, $image_path, $delta);
           
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid = $cop_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
                 
             }
             
             //-----------------------------------------------------------------------------------
+            \Drupal::logger('activities')->info('COP Item is updated id: %id, COP name: %cop_name.',   
+            array(
+                '%id' =>  $cop_id,
+                '%cop_name' => $cop_name,
+            ));   
 
             $url = Url::fromUri('base:/activities_cop/'.$cop_group_id);
             $form_state->setRedirectUrl($url);
@@ -189,12 +196,15 @@ class ActivityCOPItemChange extends FormBase {
  
         }
         catch (Exception $e) {
-
-            \Drupal::messenger()->addError(
-                t('COP Item is not updated.' )
-                );            
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+              t('COP Item is not updated.' )
+              );
+          \Drupal::logger('activities')->error('COP Item is not updated.: '.$variables);                    
+          $transaction->rollBack();   
 
         }
+        unset($transaction); 
     }
 
 }

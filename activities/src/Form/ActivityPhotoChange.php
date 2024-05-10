@@ -103,6 +103,8 @@ class ActivityPhotoChange extends FormBase {
             $$key = $value;
         }
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();    
         try {
             $database = \Drupal::database();
             $query = $database->update('kicp_km_event_photo')->fields([
@@ -110,19 +112,25 @@ class ActivityPhotoChange extends FormBase {
             ])
             ->condition('evt_photo_id', $evt_photo_id)
             ->execute();
+
+            \Drupal::logger('activities')->info('Event ID: '.$evt_id.' Event photo ID: '.$evt_photo_id.' information updated');
           
             $url = Url::fromUri('base:/activities_photo/'.$evt_id);
             $form_state->setRedirectUrl($url);
-    
+
             $messenger = \Drupal::messenger(); 
-            $messenger->addMessage( t('Photo has been updated.'));
+            $messenger->addMessage( t('Event photo information has been updated.'));
 
         }
         catch (Exception $e) {
-            \Drupal::messenger()->addStatus(
-                t('Unable to update photo at this time due to datbase error. Please try again. '.$e )
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Unable to update photo information at this time due to datbase error. Please try again. ' )
                 );
+            \Drupal::logger('activities')->error('Activity event photo inforamtion is not uploaded.: '.$variables);                    
+            $transaction->rollBack();                   
         }
+        unset($transaction); 
 
     }
 

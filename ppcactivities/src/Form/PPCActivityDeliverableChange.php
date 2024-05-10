@@ -154,9 +154,9 @@ class PPCActivityDeliverableChange extends FormBase {
 
 
         $deliverableInfo = PPCActivitiesDatatable::getEventDeliverableInfo($evt_deliverable_id);
-        
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-            $database = \Drupal::database();
             // if changes in content, update timestamp
             if($evt_deliverable_name != $evt_deliverable_name_prev) {
                 $query = $database->update('kicp_ppc_event_deliverable')->fields([
@@ -165,7 +165,6 @@ class PPCActivityDeliverableChange extends FormBase {
                 ])
                 ->condition('evt_deliverable_id', $evt_deliverable_id)
                 ->execute();
-
             }
 
             if ($tags != $tags_prev) {
@@ -188,7 +187,7 @@ class PPCActivityDeliverableChange extends FormBase {
                 }
                 }
 
-
+            \Drupal::logger('ppcactivities')->info('Event ID: '.$evt_id.' Event deliverable updated id: '.$evt_deliverable_id);
             $url = Url::fromUri('base://ppcactivities_deliverable/'.$evt_id);
             $form_state->setRedirectUrl($url);
     
@@ -197,12 +196,14 @@ class PPCActivityDeliverableChange extends FormBase {
             
 
         } catch (Exception $ex) {
-
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to update deliverable at this time due to datbase error. Please try again. '.$e )
+                t('PPC Activity Event deliverables information is not updated.' )
                 );
+            \Drupal::logger('ppcactivities')->error('Activity Event deliverables information is not updated.: '.$variables);                    
+            $transaction->rollBack();   
         }
-        
+        unset($transaction); 
     }
 
 }

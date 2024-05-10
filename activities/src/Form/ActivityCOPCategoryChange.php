@@ -117,24 +117,26 @@ class ActivityCOPCategoryChange extends FormBase {
             $$key = $value;
         }
         
-        try {
-            
-            //$img_name = '';
-            $hasImage = false;
-            
-            if ($_FILES['files']['name']['group_image'] != "") {
-                $hasImage = true;
-                $img_name = $_FILES['files']['name']['group_image'];
-            }
-            
-            $categoryEntry = array(
-                'group_name' => $group_name,
-                'group_description' => $description,
-            );
-            if($hasImage) {
-                $categoryEntry['img_name'] = $img_name;
-            }
-            $query = \Drupal::database()->update('kicp_km_cop_group')
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
+    
+        $hasImage = false;
+        
+        if ($_FILES['files']['name']['group_image'] != "") {
+            $hasImage = true;
+            $img_name = $_FILES['files']['name']['group_image'];
+        }
+        
+        $categoryEntry = array(
+            'group_name' => $group_name,
+            'group_description' => $description,
+        );
+        if($hasImage) {
+            $categoryEntry['img_name'] = $img_name;
+        }
+
+        try {            
+            $query = $database->update('kicp_km_cop_group')
             ->fields( $categoryEntry)
             ->condition('group_id', $group_id)
             ->execute();   
@@ -162,10 +164,16 @@ class ActivityCOPCategoryChange extends FormBase {
                 $file = file_save_upload('group_image', $validators, $image_path, $delta);
           
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid = $group_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
             }
+
+            \Drupal::logger('activities')->info('COP Category updated id: %id, Group name: %group_name.',   
+            array(
+                '%id' =>  $group_id,
+                '%group_name' => $group_name,
+            ));  
 
             $url = Url::fromUri('base:/activities_admin_category/');
             $form_state->setRedirectUrl($url);
@@ -175,10 +183,14 @@ class ActivityCOPCategoryChange extends FormBase {
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('COP Category is not updated.' )
                 );
+            \Drupal::logger('activities')->error('Activity COP Group is not updated: '.$variables);    
+            $transaction->rollBack();                
         }
+        unset($transaction);          
     }
 
 }

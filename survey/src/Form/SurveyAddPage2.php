@@ -518,6 +518,15 @@ class SurveyAddPage2 extends FormBase {
         $get_survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
         $questionInfo = SurveyDatatable::getSurveyQuestion($get_survey_id, $questionNo);
 
+        if ($deleteFile == 1) {
+          $attach_deleted = SurveyDatatable::DeleteSurveyEntryAttachment($get_survey_id,$questionInfo->id );
+          $query = \Drupal::database()->update('kicp_survey_question')->fields([
+            'file_name' => '',
+          ]) 
+          ->condition('survey_id',  $get_survey_id);
+          $row_affected = $query->execute();                  
+        }
+
         // File path
         $this_survey_id = $get_survey_id!=""?str_pad($get_survey_id, 6, "0", STR_PAD_LEFT):"";
 

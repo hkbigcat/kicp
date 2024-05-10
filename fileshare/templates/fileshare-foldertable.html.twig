@@ -6,18 +6,18 @@
   <div style="width:100%;text-align:right;float:right;margin:5px;">
   <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Folder Name"></div>
 </form>
- <div class="common_table_header">
-	<div style="width:39%;margin-left:125px;text-align:left;">Folder Name</div>
-	<div style="width:20%;">Access Control</div>
-	<div style="width:20%;">&nbsp;</div>
+ <div class="common_table_header columns">
+	<div class="w30">Folder Name</div>
+	<div class="w40">Access Control</div>
+  <div class="w30"></div>
 </div>
   {% for item in items %}
    {% if  item['folder_name'] %}
-     <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item  {{ loop.index0 is odd ? 'odd' : 'even' }}">
-               <div style="width:9%;float:left;display:block;text-align:center;">{{ loop.index0 + 1 }}</div>
-               <div style="width:48%;float:left;display:block;">{{ item['folder_name'] }}  {% if user.hasPermission('access administration pages') %}"{{ item['user_name'] }}"{% endif %}</div>
-               <div style="width:10%;float:left;display:block;text-align:center;"><a href="#add-record" onclick="getAddGroupMemberUI('fileshare',{{ item['folder_id'] }});"> {{ item['folder_access']?'Restricted':'Public' }}</a></div>
-               <div style="width:20%;float:right;display:block;">
+     <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item  {{ loop.index0 is odd ? 'odd' : 'even' }}  columns">
+               <div class="w10">{{ loop.index0 + 1 }}</div>
+               <div class="w40">{{ item['folder_name'] }}  {% if user.hasPermission('access administration pages') %}"{{ item['user_name'] }}"{% endif %}</div>
+               <div class="w20"><a href="#add-record" onclick="getAddGroupMemberUI('fileshare',{{ item['folder_id'] }});"> {{ item['folder_access']?'Restricted':'Public' }}</a></div>
+               <div class="w30">
                     <span><button class="kicp_button size-2" onclick="self.location.href='{{ path('fileshare.fileshare_folder_change', {'folder_id': item['folder_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                     <span><button class="kicp_button size-2" onClick="module_item_delete('fileshare_folder',{{ item['folder_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
                </div>

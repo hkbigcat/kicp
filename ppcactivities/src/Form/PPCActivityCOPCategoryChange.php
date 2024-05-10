@@ -108,19 +108,27 @@ class PPCActivityCOPCategoryChange extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
-        
-        try {
                         
-            $categoryEntry = array(
-              'cop_name' => $cop_name,
-              'cop_info' => $description,
-              'display_order' => $display_order,
-            );
+        $categoryEntry = array(
+          'cop_name' => $cop_name,
+          'cop_info' => $description,
+          'display_order' => $display_order,
+        );
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();    
+    
+        try {
             $query = \Drupal::database()->update('kicp_ppc_cop')
             ->fields( $categoryEntry)
             ->condition('cop_id', $cop_id)
             ->execute();   
+
+            \Drupal::logger('ppcactivities')->info('PPC Activities Category updated id: %id, Category name: %cop_name.',   
+            array(
+                '%id' =>  $cop_id,
+                '%cop_name' => $cop_name,
+            ));        
 
             $url = Url::fromUri('base:/ppcactivities_admin_category');
             $form_state->setRedirectUrl($url);
@@ -130,10 +138,14 @@ class PPCActivityCOPCategoryChange extends FormBase {
 
         }
         catch (Exception $e) {
-            \Drupal::messenger()->addError(
-                t('COP Category is not updated.' )
-                );
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+              t('PPC Activities Category is not updated' )
+              );
+          \Drupal::logger('ppcactivities')->error('PPC Activities Category is not updated: '.$variables);                    
+          $transaction->rollBack();
         }
+        unset($transaction);   
     }
 
 }

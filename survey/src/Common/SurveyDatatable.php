@@ -46,19 +46,18 @@ class SurveyDatatable {
         if (!$isSiteAdmin) {          
             $query-> leftjoin('kicp_public_user_list', 'e', 'ac.group_id = e.pub_group_id AND ac.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':is_deleted' => '0',':typeP' => 'P', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_buddy_user_list', 'f', 'ac.group_id = f.buddy_group_id AND ac.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
-            $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'vote', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
+            $query-> leftjoin('kicp_public_group', 'g', 'ac.group_id = g.pub_group_id AND ac.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'survey', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
             $query-> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
           }
         
-        $query-> fields('a', ['survey_id', 'title', 'description', 'user_id', 'start_date', 'expiry_date']);
+        $query-> fields('a', ['survey_id', 'title', 'description', 'user_id', 'start_date', 'expiry_date', 'allow_copy', 'is_completed']);
         $query-> fields('x', ['user_displayname']);
         $query-> addExpression('count(b.survey_id)', 'response');
         $query-> addExpression('count(ac.id)', 'survey_access');
         
         $query-> condition('a.is_deleted', '0');
-
         if (!$isSiteAdmin) {          
-            $query-> having('a.user_id = :user_id OR COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
+            $query-> having('a.user_id = :user_id OR a.is_completed = 1 AND (COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0)', [':user_id' => $my_user_id]);
           }
 
         $query-> groupBy('a.survey_id');
@@ -66,6 +65,8 @@ class SurveyDatatable {
         $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);           
 
+        if (!$result)
+          return null;
         foreach ($result as $record) {
             $record["tags"] = $TagList->getTagsForModule('survey', $record["survey_id"]);   
             $record["countlike"] = LikeItem::countLike('survey', $record["survey_id"]);
@@ -80,15 +81,23 @@ class SurveyDatatable {
 
     public static function getSurvey($survey_id = "", $user_id = "") {
 
-        $cond = "";
+        $sql_access ="";
+        $sql_access2 = "";
+        $sql_access3 = "";        
         if (isset($user_id) && $user_id!="") {
             $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
             if (!$isSiteAdmin) {
-                $cond = " AND user_id = '$user_id' ";
+                $sql_access =  "LEFT JOIN kicp_access_control aa ON (aa.record_id = a.survey_id AND aa.is_deleted = 0 AND aa.module = 'survey') 
+                LEFT JOIN kicp_public_user_list e ON (aa.group_type='P' AND e.pub_group_id=aa.group_id AND e.is_deleted=0 AND e.pub_user_id = '".$user_id."'  )
+                LEFT JOIN kicp_buddy_user_list f ON (aa.group_type='B' AND aa.group_id = f.buddy_group_id AND f.is_deleted=0 AND f.buddy_user_id = '".$user_id."'  )
+                LEFT JOIN kicp_public_group g ON (aa.group_type='P' AND g.pub_group_id=aa.group_id AND g.is_deleted=0 AND g.pub_group_owner  = '".$user_id."'  )
+                LEFT JOIN kicp_buddy_group h ON (aa.group_type='B' AND h.buddy_group_id=aa.group_id AND h.is_deleted=0 AND h.user_id  = '".$user_id."'  ) ";    
+                $sql_access2 = " group by a.survey_id 
+                                 having a.user_id = '".$user_id."' OR COUNT(aa.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0 ";
             }
         }
 
-        $sql = "SELECT file_name,survey_id, title, description, survey_name, user_id, modify_datetime, start_date, expiry_date, is_visible, allow_copy, is_showDep, is_showPost, is_showname,start_survey FROM kicp_survey WHERE is_deleted = 0 and survey_id = '$survey_id' $cond ORDER BY survey_id DESC";
+        $sql = "SELECT a.file_name,survey_id, a.title, a.description, a.survey_name, a.user_id, a.modify_datetime, a.start_date, a.expiry_date, a.is_visible, a.allow_copy, a.is_showDep, a.is_showPost, a.is_showname,start_survey, a.is_completed FROM kicp_survey a $sql_access WHERE a.is_deleted = 0 and a.survey_id = '$survey_id' $sql_access2 ORDER BY a.survey_id DESC LIMIT 1";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
         return $result;
@@ -119,6 +128,13 @@ class SurveyDatatable {
         return $result;
     }
 
+    public static function getSurveyQuestionByID($question_id = "") {
+
+        $sql = "SELECT id, survey_id, `name`, type_id, result_id, position, content, `required`, deleted, public, has_na, show_scale, show_legend, list_style_id,has_others, remark,file_name FROM kicp_survey_question WHERE deleted = 'N' and id = $question_id ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result;
+    }    
 
     public static function getSurveyQuestion($survey_id = "", $position = "") {
 
@@ -193,6 +209,15 @@ class SurveyDatatable {
         return $result;
     }
 
+    
+    public static function checkSurveyRespondentSumbited($user_id = "", $survey_id = "") {
+        $sql = "SELECT survey_id FROM kicp_survey_respondent WHERE username='$user_id' and survey_id = '$survey_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if (!$result) 
+            return null;
+        return $result->survey_id;
+    }
 
     public static function getSurveyRespondentCount($survey_id = "") {
 
@@ -288,24 +313,22 @@ class SurveyDatatable {
           );
 
         $delta = NULL; // type of $file will be array
-        $file = file_save_upload('filename', $validators, $survey_path,$delta);
+        $file = file_save_upload('filename', $validators, $survey_path ,$delta);
 
-        \Drupal::logger('survey')->info('save original file: '.$survey_path."/".$filename. " new file: ".$survey_path."/".$this_filename. " exist:".file_exists($survey_path."/".$filename));
-
-        // rename file, remove white space in filename
-        $source = $file_system->realpath($survey_path . '/'. $filename);
-        $destination = $file_system->realpath($survey_path . '/'. $this_filename);      
-        if(file_exists( $source) && $filename != $this_filename) {
-            if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                throw new \Exception('Could not move the generic placeholder image to the destination directory.');
-            }
+        if($filename != $this_filename) {
+        $file_real_path = \Drupal::service('file_system')->realpath($survey_path.'/'.$filename);
+        $file_contents = file_get_contents($file_real_path);
+        $newFile = \Drupal::service('file.repository')->writeData($file_contents, $survey_path.'/'.$this_filename, FileSystemInterface::EXISTS_REPLACE);
+        $file1 = $file[0];
+        $file1->delete();        
+        } else {
+            $newFile = $file[0];
         }
-
-        $file[0]->setPermanent();
-        $file[0]->uid = $survey_id;
-        $file[0]->save();
-        $url = $file[0]->createFileUrl(FALSE);
-
+        $newFile->setPermanent();
+        $newFile->uid = $survey_id;
+        $newFile->save();
+        $url = $newFile->createFileUrl(FALSE);
+        
         return $url;
 
     }
@@ -327,8 +350,6 @@ class SurveyDatatable {
               throw new \Exception('Could not create the survey directory.');
             }
         }
-
-        \Drupal::logger('survey')->info('Old Dir: '.$old_survey_path. " new dir: ".$survey_path . " Files name: ".$filename);
 
         if (!$file_system->copy($old_survey_path."/".$filename, $survey_path."/".$filename)) {
             throw new \Exception('Could not copy survey file.');
@@ -371,6 +392,24 @@ class SurveyDatatable {
         $result = $database-> query($sql);
         return $result;   
     }    
+
+    public static function DeleteSurveyEntryAttachment($survey_id = "", $question_id ="") {
+        $file_system = \Drupal::service('file_system');
+        $survey_path = 'private://survey';
+        $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
+        $this_question_id = $question_id!=""?"/".str_pad($question_id, 6, "0", STR_PAD_LEFT):"";
+        $survey_dir = $file_system->realpath( $survey_path.'/'.$this_survey_id.$this_question_id);
+        if (is_dir($survey_dir)) {
+            $surveyList = scandir($survey_dir);
+            foreach($surveyList as $filename) {
+                if(is_dir($filename) ||  $filename == "." || $filename == ".." ) {
+                    continue;
+                }    
+                $uri =  $survey_path.'/'.$this_survey_id."/".$filename;
+                $fid = CommonUtil::deleteFile($uri);
+            }
+        }
+    }
 
 
 }

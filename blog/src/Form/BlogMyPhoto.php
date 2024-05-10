@@ -118,7 +118,9 @@ class BlogMyPhoto extends FormBase  {
         $BlogPhoto = 'private://blog/icon';
         $file_system = \Drupal::service('file_system');    
 
-            
+        $transaction = $database->startTransaction();             
+
+
         $BlogPhotoPath = $BlogPhoto.'/'. $user_owner_id;
         if (!is_dir($file_system->realpath($BlogPhotoPath))) {
             // Prepare the directory with proper permissions.
@@ -146,24 +148,33 @@ class BlogMyPhoto extends FormBase  {
             'image_name' =>  $filename,
           );
 
-        $query = \Drupal::database()->update('kicp_blog')->fields($entry)
-                ->condition('blog_id', $blog_id)
-                ->execute();          
+        try {  
+            $query = \Drupal::database()->update('kicp_blog')->fields($entry)
+                    ->condition('blog_id', $blog_id)
+                    ->execute();          
 
-        // write logs to common log table
-        \Drupal::logger('blog')->info('Photo added to blog blog id: %id, photo: %image',   
-        array(
-            '%id' => $blog_id,
-            '%image' => $filename,
-        ));      
+            // write logs to common log table
+            \Drupal::logger('blog')->info('Photo added to blog blog id: %id, photo: %image',   
+            array(
+                '%id' => $blog_id,
+                '%image' => $filename,
+            ));      
 
-        $url = Url::fromUserInput('/blog_view/'.$blog_id);
-        $form_state->setRedirectUrl($url);
+            $url = Url::fromUserInput('/blog_view/'.$blog_id);
+            $form_state->setRedirectUrl($url);
 
-
-        $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('Blog Photo has been updaed.'));
-
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Blog Photo has been updaed.'));
+        } 
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addStatus(
+                t('Unable to save photo at this time due to datbase error. Please try again. ' )
+                );
+            \Drupal::logger('blog')->error('Photo is not updated '  . $variables);                    
+            $transaction->rollBack();        
+        }
+        unset($transaction);	
 
     }
 

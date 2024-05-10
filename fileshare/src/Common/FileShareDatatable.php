@@ -16,6 +16,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\Controller\TagList;
 use Drupal\common\Follow;
 use Drupal\common\RatingData;
+use Drupal\common\CommonUtil;
 
 
 class FileShareDatatable extends ControllerBase {
@@ -49,10 +50,7 @@ class FileShareDatatable extends ControllerBase {
         $query->orderBy('r.folder_name');
         if ($folder_id != NULL) {
           $query->condition('r.folder_id', $folder_id);
-          $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
-          foreach ($result as $row) {
-            $entries = $row;
-          }
+          $entries =  $query->execute()->fetchAssoc();
         }  else {
           if ($search_str && $search_str !="") {
             $query->condition('r.folder_name', '%' . $search_str . '%', 'LIKE');
@@ -96,7 +94,8 @@ class FileShareDatatable extends ControllerBase {
 
       $database = \Drupal::database();
       $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
+      if (!$result)
+        return null;
       $folderAry = array();
       foreach($result as $record) {
           $folderAry[$record['folder_id']] = $record['folder_name'];
@@ -107,6 +106,12 @@ class FileShareDatatable extends ControllerBase {
 
 
      public static function getSharedFile($file_id = NULL, $my_user_id="") {
+
+      $tags="";
+      $tagsUrl = \Drupal::request()->query->get('tags');
+      if ($tagsUrl) {
+        $tags = json_decode($tagsUrl);
+      }    
 
       $folder_id = \Drupal::request()->query->get('folder_id');
       $myRecordOnly = \Drupal::request()->query->get('my');
@@ -146,6 +151,16 @@ class FileShareDatatable extends ControllerBase {
             $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
           }
         }
+        if ($tags && count($tags) > 0 ) {
+          $tags1 = $database-> select('kicp_tags', 't');
+          $tags1-> condition('tag', $tags, 'IN');
+          $tags1-> condition('t.module', 'fileshare');
+          $tags1-> condition('t.is_deleted', '0');
+          $tags1-> addField('t', 'fid');
+          $tags1-> groupBy('t.fid');
+          $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
+          $query-> condition('file_id', $tags1, 'IN');
+        }
         $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
         $query-> fields('j', ['folder_name']);
         $query-> fields('u', ['user_displayname']);
@@ -162,6 +177,9 @@ class FileShareDatatable extends ControllerBase {
           $query-> orderBy('modify_datetime', 'DESC');
           $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
+
+          if (!$result)
+            return null;
           $entries=array();
           $TagList = new TagList();
           $RatingData = new RatingData();
@@ -202,83 +220,6 @@ class FileShareDatatable extends ControllerBase {
 
   }
 
-
-  public static function getSharedFileByTags($tags) {
-
-    
-    //$addtag = \Drupal::request()->query->get('addtag');
-
-    $output=array();
-    $TagList = new TagList();
-    $RatingData = new RatingData();
-    $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
-    
-    $tagsUrl = \Drupal::request()->query->get('tags');
-    if ($tagsUrl) {
-      $tags = json_decode($tagsUrl);
-    }    
-
-
-    try {
-      $database = \Drupal::database();
-      $query = $database-> select('kicp_file_share', 'a'); 
-      $query -> join('kicp_file_share_folder', 'j', 'a.folder_id = j.folder_id');
-      $query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
-      if (!$isSiteAdmin) {          
-        $query -> leftjoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
-        $query -> leftjoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-        $query -> leftjoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeB' => 'B', ':user_id' => $my_user_id]);
-        $query -> leftjoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-        $query -> leftjoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.module = :module AND b.is_deleted = :is_deleted AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':module' => 'fileshare', ':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
-      }
-      if ($tags && count($tags) > 0 ) {
-        $tags1 = $database-> select('kicp_tags', 't');
-        $tags1-> condition('tag', $tags, 'IN');
-        $tags1-> condition('t.module', 'fileshare');
-        $tags1-> condition('t.is_deleted', '0');
-        $tags1-> addField('t', 'fid');
-        $tags1-> groupBy('t.fid');
-        $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
-        $query-> condition('file_id', $tags1, 'IN');
-      }
-      $query-> fields('a', ['file_id', 'title','description','file_name', 'folder_id', 'image_name', 'folder_id', 'modify_datetime', 'user_id']);
-      $query-> fields('j', ['folder_name']);
-      $query-> fields('u', ['user_displayname']);
-
-      $query-> condition('a.is_deleted', '0');
-      
-      if (!$isSiteAdmin) {          
-        $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
-      }
-
-      $query-> groupBy('a.file_id');
-      $query-> orderBy('modify_datetime', 'DESC');
-      $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
-      $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
-
-      foreach ($result as $record) {
-        $record["tags"] = $TagList->getTagsForModule('fileshare', $record["file_id"]);   
-        $record["rating"] = $RatingData->getList('fileshare', $record["file_id"]);
-        $rsHadRate = $RatingData->checkUserHadRate('fileshare', $record["file_id"], $my_user_id);
-        $record["rating"]['rsHadRate'] = $rsHadRate;
-        $record["rating"]['module'] = 'fileshare';          
-
-        $output[] = $record;
-      }
-
-      return $output;
-
-    }
-    catch (\Exception $e) {
-       \Drupal::messenger()->addStatus(
-          t('Unable to load fileshare by tags at this time due to datbase error. Please try again. '.$e)
-        );
-      return  NULL;
-    }
-    
-  }
-
-
   public static function getFilesIDInsideFolder($folder_id, $my_user_id) {
 
     $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
@@ -296,12 +237,22 @@ class FileShareDatatable extends ControllerBase {
   }
 
 
-  public static function deleteFiles($file_id, $file_path) {
+  public static function deleteFiles($file_id) {
+
     $actual_files = 0;
     $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
+
+    $file_uri = "private://fileshare/file/".$this_file_id;
+    $image_uri = "private://fileshare/image/".$this_file_id;
+    $file_system = \Drupal::service('file_system');
+    $file_dir = $file_system->realpath($file_uri);
+    $image_dir = $file_system->realpath($image_uri);
+
+    /*
     $file_dir = $file_path.'/file/'.$this_file_id;
     $image_dir =  $file_path.'/image/'.$this_file_id;
-    
+    */
+
     // delete file from server physically
     if (is_dir($file_dir)) {
         $myFileList = scandir($file_dir);
@@ -309,8 +260,9 @@ class FileShareDatatable extends ControllerBase {
             if($filename == "." || $filename == "..") {
                 continue;
             }
-            unlink($file_dir.'/'.$filename);
-            $actual_files++;
+            $uri = $file_uri."/".$filename;
+            $fid = CommonUtil::deleteFile($uri);
+            if ($fid) $actual_files++;
         }
     }
     
@@ -321,19 +273,12 @@ class FileShareDatatable extends ControllerBase {
             if($imagename == "." || $imagename == "..") {
                 continue;
             }
-            unlink($image_dir.'/'.$imagename);
-            $actual_files++;
+            $uri = $image_uri."/".$imagename;
+            \Drupal::logger('fileshare')->info('delete ur: '.$uri);
+            $fid = CommonUtil::deleteFile($uri);            
+            if ($fid) $actual_files++;
         }
     }
-
-    $file_uri = "private://fileshare/file/".$this_file_id."/";
-    $image_uri = "private://fileshare/image/".$this_file_id."/";
-    $database = \Drupal::database();
-    $query = $database->delete('file_managed');
-    $orGroup = $query->orConditionGroup()
-    ->condition('uri', $file_uri . '%', 'LIKE')
-    ->condition('uri', $image_uri . '%', 'LIKE');
-    $query->condition($orGroup)->execute();
 
     return $actual_files;  
 

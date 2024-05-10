@@ -306,12 +306,12 @@ class PPCActivityItemChange extends FormBase  {
             '#type' => 'textarea',
             '#rows' => 4,
             '#cols' => 30,
-            '#default_value' => $eventInfo->ETS_url,
+            '#default_value' => $eventInfo['ETS_url'],
         );
         
         $form['evt_ets_url_prev'] = array(
           '#type' => 'hidden',
-          '#default_value' => $eventInfo->ETS_url,
+          '#default_value' => $eventInfo['ETS_url'],
         );
 
   
@@ -350,13 +350,7 @@ class PPCActivityItemChange extends FormBase  {
             '#type' => 'submit',
             '#value' => t('Save'),
         );
-        
-        
-        $form['evt_type_id'] = array(
-            '#type' => 'hidden',
-            '#value' => $_REQUEST['evt_type_id'],
-        );
-        
+                
         $form['evt_id'] = array(
             '#type' => 'hidden',
             '#value' => $evt_id,
@@ -491,6 +485,8 @@ class PPCActivityItemChange extends FormBase  {
         }
 
           $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
+          $database = \Drupal::database();
+          $transaction = $database->startTransaction();                
           try {
             $query = \Drupal::database()->update('kicp_ppc_event')
             ->fields( $eventEntry)
@@ -516,7 +512,6 @@ class PPCActivityItemChange extends FormBase  {
                       $return1 = TagStorage::insert($entry1);                
                 }
               }
-            
             if ($hasImage) {
                 $file_system = \Drupal::service('file_system');   
                 $image_path = 'private://ppcactivities/item/'.$this_evt_id;
@@ -526,23 +521,22 @@ class PPCActivityItemChange extends FormBase  {
                       throw new \Exception('Could not create the event image directory.');
                     }
                 }
-                  
-                
                 $validators = array(
                     'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
                     'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
                   );
-                
-                
                 $delta = NULL; // type of $file will be array
                 $file = file_save_upload('evt_logo', $validators, $image_path, $delta);
-          
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid = $evt_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
-
-            }            
+            }             
+            \Drupal::logger('ppcactivities')->info('PPC Event is updated id: %id, Event name: %evt_name.',   
+            array(
+                '%id' =>  $evt_id,
+                '%evt_name' =>  $evt_name,
+            ));                  
 
             $url = Url::fromUri('base:/ppcactivities_admin/');
             $form_state->setRedirectUrl($url);
@@ -552,14 +546,14 @@ class PPCActivityItemChange extends FormBase  {
 
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to save ppc event at this time due to datbase error. Please try again. '.serialize($eventEntry) )
+                t('PPC Activity Item is not updated.' )
                 );
-
-           
+            \Drupal::logger('activities')->error('PPC Activity Item is not updated.: '.$variables);                    
+            $transaction->rollBack();              
         }	
-
-
+        unset($transaction); 
     }
 
 }

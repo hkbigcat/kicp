@@ -35,7 +35,6 @@ class BlogController extends ControllerBase {
 
         $myBlogInfo = BlogDatatable::getBlogInfo($this->my_blog_id);
         
-
     }
     
     public function content() {
@@ -73,9 +72,7 @@ class BlogController extends ControllerBase {
             $entry['my_blog_id'] = $this->my_blog_id;
             $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
             $entry['comments'] = $entryCommentAry;
-            $blog_id = BlogDatatable::getBlogIDByEntryID($entry_id);
-
-            $archive = BlogDatatable::getBlogArchiveTree($blog_id);
+            $archive = BlogDatatable::getBlogArchiveTree();
             $TagList = new TagList();
             $taglist = $TagList->getTagsForModule('blog', $entry_id);        
         
@@ -151,6 +148,10 @@ class BlogController extends ControllerBase {
     public function BlogDelete($entry_id) {
 
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
+        $file_system = \Drupal::service('file_system');
+        $BlogUri = 'private://blog';
+        $blog_path = $file_system->realpath($BlogUri);
+        
         if ($entry==null) {
             \Drupal::messenger()->addError(
                 t('you cannot delete this blog ' )
@@ -166,9 +167,11 @@ class BlogController extends ControllerBase {
                 return new JsonResponse($response);    	        
         }
         else {
+            $database = \Drupal::database();
+            $transaction = $database->startTransaction(); 
             // delete record
             try {
-                $database = \Drupal::database();
+
                 $query = $database->update('kicp_blog_entry')->fields([
                 'is_deleted'=>1 , 
                 'entry_modify_datetime' => date('Y-m-d H:i:s'),
@@ -176,19 +179,51 @@ class BlogController extends ControllerBase {
                 ->condition('entry_id', $entry_id);
                 $row_affected = $query->execute();        
 
-                // delete tags  
-                $return2 = TagStorage::markDelete($this->module, $entry_id);
-            
-                // write logs to common log table
-                \Drupal::logger('blog')->info('Row : %row, Deleted id: %id, title: %title',   
-                array(
-                    '%row' => $row_affected,
-                    '%id' => $entry_id,
-                    '%title' =>  $entry['entry_title'],
-                ));    
-   
-                $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Blog has been deleted') );
+                if ($row_affected) {                
+
+                    $blog_uid = BlogDatatable::getBlogUID($entry_id);                          
+                    $this_entry_id = str_pad($entry_id, 6, "0", STR_PAD_LEFT);
+                    $this_blog_uid = str_pad($blog_uid, 6, "0", STR_PAD_LEFT);
+                    $blog_file_uri = $BlogUri."/file/".$this_blog_uid."/". $this_entry_id;
+                    $blog_image_uri = $BlogUri."/image/".$this_blog_uid."/". $this_entry_id;
+                    $blog_file_path = $blog_path."/file/".$this_blog_uid."/". $this_entry_id;
+                    $blog_image_path = $blog_path."/image/".$this_blog_uid."/". $this_entry_id;
+
+                    if (is_dir($blog_file_path)) {
+                        $blogFileList = scandir($blog_file_path);
+                        foreach($blogFileList as $filename) {
+                            if($filename == "." || $filename == "..") {
+                                continue;
+                            }
+                            $uri =  $blog_file_uri."/".$filename;
+                            $fid = CommonUtil::deleteFile($uri);                                  
+                        }
+                    }
+                    if (is_dir($blog_image_path)) {
+                        $blogImageList = scandir($blog_image_path);
+                        foreach($blogImageList as $filename) {
+                            if($filename == "." || $filename == "..") {
+                                continue;
+                            }
+                            $uri =  $blog_image_uri."/".$filename;
+                            $fid = CommonUtil::deleteFile($uri);                                  
+                        }
+                    }
+
+
+                    // delete tags  
+                    $return2 = TagStorage::markDelete($this->module, $entry_id);
+                
+                    // write logs to common log table
+                    \Drupal::logger('blog')->info('Deleted id: %id, title: %title',   
+                    array(
+                        '%id' => $entry_id,
+                        '%title' =>  $entry['entry_title'],
+                    ));    
+    
+                    $messenger = \Drupal::messenger(); 
+                    $messenger->addMessage( t('Blog has been deleted') );
+                }
 
             }
             catch (\Exception $e) {
@@ -196,7 +231,10 @@ class BlogController extends ControllerBase {
                     t('Unable to delete blog at this time due to datbase error. Please try again. ' )
                     );
                     \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
+                    $transaction->rollBack();     
                 }
+                unset($transaction);
+                
             $response = array('result' => 1);
             return new JsonResponse($response);    	
 

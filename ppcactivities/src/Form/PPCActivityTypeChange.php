@@ -105,32 +105,42 @@ class PPCActivityTypeChange extends FormBase {
             $$key = $value;
         }
         
-        try {
             
-            $typeEntry = array(
-                'evt_type_name' => $evt_type_name,
-                'description' => $evt_description,
-                'display_order' => $display_order,
-            );
+        $typeEntry = array(
+            'evt_type_name' => $evt_type_name,
+            'description' => $evt_description,
+            'display_order' => $display_order,
+        );
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();            
+        try {            
             $query = \Drupal::database()->update('kicp_ppc_event_type')
             ->fields(  $typeEntry )
             ->condition('evt_type_id', $evt_type_id)
             ->execute();
+
+            \Drupal::logger('ppcactivities')->info('PPC Activities Type updated id: %id, Type name: %evt_type_name.',   
+            array(
+                '%id' =>  $evt_type_id,
+                '%evt_type_name' => $evt_type_name,
+            ));               
 
             $url = Url::fromUri('base://ppcactivities_admin_type');
             $form_state->setRedirectUrl($url);
     
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Event Type has been updated.'));            
-
         }
         catch (Exception $e) {
-
-            \Drupal::messenger()->addError(
-                t('Activity Type is not updated. '.$e )
-                );
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+              t('PPC Activities Type is not  updated' )
+              );
+          \Drupal::logger('ppcactivities')->error('PPC Activities Type  is not  updated: '.$variables);                    
+          $transaction->rollBack();
         }
+        unset($transaction);   
     }
 
 }

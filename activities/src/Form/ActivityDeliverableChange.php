@@ -156,8 +156,9 @@ class ActivityDeliverableChange extends FormBase {
 
         $deliverableInfo = ActivitiesDatatable::getEventDeliverableInfo($evt_deliverable_id);
         
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
-            $database = \Drupal::database();
             // if changes in content, update timestamp
             if($evt_deliverable_name != $evt_deliverable_name_prev) {
                 $query = $database->update('kicp_km_event_deliverable')->fields([
@@ -171,14 +172,11 @@ class ActivityDeliverableChange extends FormBase {
             
             if ($tags != $tags_prev) {
                 // rewrite tags
+
                 if ($tags_prev != '') {
-                    $query = $database->update('kicp_tags')->fields([
-                        'is_deleted'=>1 , 
-                        ])
-                        ->condition('fid', $evt_deliverable_id)
-                        ->condition('module', 'activities_deliverable')
-                        ->execute();                
+                    $return2 = TagStorage::markDelete('activities_deliverable', $evt_deliverable_id);  
                 }
+
                 if ($tags != '') {
                     $entry1 = array(
                         'module' => 'activities_deliverable',
@@ -187,9 +185,9 @@ class ActivityDeliverableChange extends FormBase {
                         );
                         $return1 = TagStorage::insert($entry1);                
                 }
-                }
+            }
 
-
+            \Drupal::logger('activities')->info('Event ID: '.$evt_id.' Event deliverable updated id: '.$evt_deliverable_id);
             $url = Url::fromUri('base://activities_deliverable/'.$evt_id);
             $form_state->setRedirectUrl($url);
     
@@ -197,12 +195,15 @@ class ActivityDeliverableChange extends FormBase {
             $messenger->addMessage( t('Deliverable has been updated.'));
             
 
-        } catch (Exception $ex) {
-
-            \Drupal::messenger()->addStatus(
-                t('Unable to update deliverable at this time due to datbase error. Please try again. '.$e )
+        } catch (Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Activity Event deliverables information is not updated.' )
                 );
+            \Drupal::logger('activities')->error('Activity Event deliverables information is not updated.: '.$variables);                    
+            $transaction->rollBack();   
         }
+        unset($transaction); 
         
     }
 

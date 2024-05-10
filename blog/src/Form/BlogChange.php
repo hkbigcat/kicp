@@ -233,7 +233,7 @@ class BlogChange extends FormBase  {
         }
 
         $blog_owner_id = BlogDatatable::getUIdByBlogId($blog_id);
-        $blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);        
+        $this_blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);      
 
 ////////////  Handle image inside CKEditor [Start] ////////////
         
@@ -249,14 +249,15 @@ class BlogChange extends FormBase  {
 
         //New
         
-        $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image/' . $blog_owner_id . '/' . $this_entry_id_path;
+        $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image/' . $this_blog_owner_id . '/' . $this_entry_id_path;
         
         $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
 
         if ($bContent['value'] != $bContent_prev)  {      
 
-            $createDir = $BlogImageUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
-            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess  );
+            $createDir = $BlogImageUri . '/' . $this_blog_owner_id . '/' . $this_entry_id_path;
+            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess, $entry_id );
 
         }  // end content changed
        
@@ -288,17 +289,21 @@ class BlogChange extends FormBase  {
             }
 
             foreach ($files as $file1) {
-
                 if ($file1) {
                     $NewFile = File::load($file1);
-                    $uuid = $NewFile->uuid();
-                    $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
-                    $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
-                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                        throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+                    $attachment_name = $NewFile->getFilename();
+                    $source = $file_system->realpath($BlogFileUri . '/'.  $attachment_name);
+                    $destination = $file_system->realpath($createDir . '/' .  $attachment_name);
+                    $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                    if (!$newFileName) {
+                        throw new \Exception('Could not move the generic placeholder file to the destination directory.');
                     } else {
-                        $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                        $NewFile->setFileUri($createDir . '/' .  $attachment_name);
+                        $NewFile->uid =$entry_id;
+                        $NewFile->setPermanent();
+                        $NewFile->save();
                     }
+
                 }
             }
 
@@ -331,12 +336,7 @@ class BlogChange extends FormBase  {
             if ($tags != $tags_prev) {
                 // rewrite tags
                 if ($tags_prev != '') {
-                    $query = $database->update('kicp_tags')->fields([
-                        'is_deleted'=>1 , 
-                    ])
-                    ->condition('fid', $entry_id)
-                    ->condition('module', 'blog')
-                    ->execute();                
+                    $return2 = TagStorage::markDelete($this->module, $entry_id);  
                 }
                 if ($tags != '') {
                     $entry1 = array(
@@ -348,20 +348,29 @@ class BlogChange extends FormBase  {
                 }
             }            
 
+            \Drupal::logger('blog')->info('Updated id: %id, title: %title, attachment: %attach.',   
+            array(
+                '%id' => $entry_id,
+                '%title' => $bTitle,
+                '%attach' => ($hasAttach)?'Y':'N',
+            ));     
+
             $url = Url::fromUserInput('/blog_entry/'.$entry_id);
             $form_state->setRedirectUrl($url);
-
 
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Blog has been updated. '));
 
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addStatus(
-                t('Unable to save blog at this time due to datbase error. Please try again. '. $uuid  )
+                t('Unable to save blog at this time due to datbase error. Please try again. ' )
                 );
-            
-        }	
+            \Drupal::logger('blog')->error('Blog is not created '  . $variables);                    
+            $transaction->rollBack();        
+        }
+        unset($transaction);	
         
     }
 

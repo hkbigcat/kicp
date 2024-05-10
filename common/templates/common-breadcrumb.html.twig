@@ -1,0 +1,14 @@
+<nav class="breadcrumb" role="navigation" aria-labelledby="system-breadcrumb">
+    <ol class="breadcrumb-items">
+          <li class="breadcrumb-item">
+                  <a href="/kmapp2/kicp/">Home</a>
+              </li>
+          {% for bread in breads %}
+          <li class="breadcrumb-item">
+                   <span><i class="icon-angle-right"></i></span> {{ bread['name'] | capitalize }}
+              </li>
+           {% endfor %}    
+        </ol>
+  </nav>
+
+  

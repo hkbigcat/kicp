@@ -207,8 +207,6 @@ class BookmarkAdd extends FormBase  {
             'user_id' => $authen->getUserId(),
             'bIp' => Drupal::request()->getClientIp(),
             'bStatus' => $bStatus,
-            'bDatetime' => date('Y-m-d H:i:s'),
-            'bModified' => date('Y-m-d H:i:s'),
             'bTitle' => $bTitle,
             'bAddress' => $bAddress,
             'bDescription' => $bDescription,
@@ -217,9 +215,11 @@ class BookmarkAdd extends FormBase  {
           );
 
 
+          $database = \Drupal::database();
+          $transaction = $database->startTransaction();   
 
           try {
-            $query = \Drupal::database()->insert('kicp_bookmark')
+            $query = $database->insert('kicp_bookmark')
             ->fields($entry);
             $bid = $query->execute();
 
@@ -251,8 +251,10 @@ class BookmarkAdd extends FormBase  {
             \Drupal::messenger()->addError(
                 t('Unable to save bookmark at this time due to datbase error. Please try again. ' )
                 );
-            \Drupal::logger('bookmark')->error('Bookmark is not deleted: ' . $variables);   
+            \Drupal::logger('bookmark')->error('Bookmark is not created: ' . $variables);   
+            $transaction->rollBack();
         }	
+        unset($transaction);
     }
 
 }

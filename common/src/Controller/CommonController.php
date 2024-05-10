@@ -11,6 +11,7 @@ use Drupal\fileshare\Controller\FileShareController;
 use Drupal\fileshare\Common\FileShareDatatable;
 use Drupal\blog\Common\BlogDatatable;
 use Drupal\survey\Controller\SurveyController;
+use Drupal\vote\Controller\VoteController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,18 +31,18 @@ class CommonController extends ControllerBase {
 
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId(); 
 
         switch($module_name) {
 
-            
             case 'blog':
                 $hasRecordAccessRight  = true; 
                 $fname = \Drupal::request()->query->get('fname');
-                $entry_uid = BlogDatatable::getBlogIDByEntryID($file_id);
+                $blog_uid = BlogDatatable::getBlogUID($file_id);
                                 
                 $this_entry_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
-                $this_entry_uid = str_pad($entry_uid, 6, "0", STR_PAD_LEFT);
-                $filename = "sites/default/files/private/blog/file/".$this_entry_uid."/".$this_entry_id."/".$fname;
+                $this_blog_uid = str_pad($blog_uid, 6, "0", STR_PAD_LEFT);
+                $filename = "sites/default/files/private/blog/file/".$this_blog_uid."/".$this_entry_id."/".$fname;
             break;
 
             case 'fileshare':
@@ -69,13 +70,39 @@ class CommonController extends ControllerBase {
 
             case 'survey':
                 $hasRecordAccessRight  = false;
-                $filename = SurveyController::getFileLocation($file_id);
+                $filename = SurveyController::getFileLocation($file_id, $my_user_id);
                 if ($filename) {
                     $hasRecordAccessRight  = true;  
                 }
             break;
-            
 
+            case 'survey_question':
+                $hasRecordAccessRight  = false;
+                $question_id = \Drupal::request()->query->get('question');
+                $filename = SurveyController::getQuestionFileLocation($file_id, $question_id, $my_user_id);
+                if ($filename) {
+                    $hasRecordAccessRight  = true;  
+                }
+            break;
+
+            case 'vote':
+                $hasRecordAccessRight  = false;
+                $filename = VoteController::getFileLocation($file_id, $my_user_id);
+                if ($filename) {
+                    $hasRecordAccessRight  = true;  
+                }
+            break;
+
+            case 'vote_question':
+                $hasRecordAccessRight  = false;
+                $question_id = \Drupal::request()->query->get('question');
+                $filename = VoteController::getQuestionFileLocation($file_id, $question_id, $my_user_id);
+                if ($filename) {
+                    $hasRecordAccessRight  = true;  
+                }
+            break;
+
+            
             default:
                 break;            
         }
@@ -90,7 +117,7 @@ class CommonController extends ControllerBase {
             exit;
         } else {
 
-            $filesize = filesize(urldecode($filename));
+            $filesize = filesize(urldecode( DRUPAL_ROOT ."/".$filename));
 
             header('Content-type: application/pdf');
             header("application/force-download");

@@ -94,35 +94,30 @@ class ActivityCOPCategoryAdd extends FormBase {
             $$key = $value;
         }
         
-        try {
-            
-            $img_name = '';
-            $hasImage = false;
-            
-            if ($_FILES['files']['name']['group_image'] != "") {
-                $hasImage = true;
-                $img_name = $_FILES['files']['name']['group_image'];                
-            }
-            
-            $categoryEntry = array(
-                'group_name' => $group_name,
-                'group_description' => $description,
-                'img_name' => $img_name,
-            );
+        $img_name = '';
+        $hasImage = false;
+        
+        if ($_FILES['files']['name']['group_image'] != "") {
+            $hasImage = true;
+            $img_name = $_FILES['files']['name']['group_image'];                
+        }
+        $categoryEntry = array(
+            'group_name' => $group_name,
+            'group_description' => $description,
+            'img_name' => $img_name,
+        );
 
-            $query = \Drupal::database()->insert('kicp_km_cop_group')
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();                     
+        try {
+            $query =  $database->insert('kicp_km_cop_group')
             ->fields( $categoryEntry);
             $group_id = $query->execute();
 
-            if ($group_id != null) {
-                            
+            if ($group_id != null) {                            
                 if($hasImage) {
-                    // upload image to private folder
-                    //$this_group_id = str_pad($group_id, 6, "0", STR_PAD_LEFT);
-
                 // upload image to private folder
-                    $this_group_id = str_pad($group_id, 6, "0", STR_PAD_LEFT);
-                    
+                    $this_group_id = str_pad($group_id, 6, "0", STR_PAD_LEFT);                    
                     $file_system = \Drupal::service('file_system');   
                     $image_path = 'private://activities/category';
                     if (!is_dir($file_system->realpath($image_path))) {
@@ -137,19 +132,22 @@ class ActivityCOPCategoryAdd extends FormBase {
                         'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
                     );
                     
-                    
                     $delta = NULL; // type of $file will be array
                     $file = file_save_upload('group_image', $validators, $image_path, $delta);
             
                     $file[0]->setPermanent();
-                    $file[0]->uid = $file_id;
+                    $file[0]->uid = $group_id;
                     $file[0]->save();
                     $url = $file[0]->createFileUrl(FALSE);                    
-
-                    $ServerAbsolutePath = CommonUtil::getSysValue('server_absolute_path'); // get server absolute path
                 }
                 
                 //-----------------------------------------------------------------------------------
+
+                \Drupal::logger('activities')->info('COP Category Created id: %id, Group name: %group_name.',   
+                array(
+                    '%id' =>  $group_id,
+                    '%group_name' => $group_name,
+                ));     
 
                 $url = Url::fromUri('base:/activities_admin_category/');
                 $form_state->setRedirectUrl($url);
@@ -161,14 +159,21 @@ class ActivityCOPCategoryAdd extends FormBase {
                 \Drupal::messenger()->addError(
                     t('COP Category is not created - data not save' )
                     );
+                \Drupal::logger('activities')->error('Activity COP Group is not created');    
+                $transaction->rollBack();
+                
             }
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('COP Category is not created' )
                 );
+            \Drupal::logger('activities')->error('Activity COP Group is not created: '.$variables);                    
+            $transaction->rollBack();
         }
+        unset($transaction);    
     }
 
 }

@@ -102,6 +102,8 @@ class PPCActivityPhotoChange extends FormBase {
             $$key = $value;
         }
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();    
         try {
             $database = \Drupal::database();
             $query = $database->update('kicp_ppc_event_photo')->fields([
@@ -109,7 +111,8 @@ class PPCActivityPhotoChange extends FormBase {
             ])
             ->condition('evt_photo_id', $evt_photo_id)
             ->execute();
-          
+
+            \Drupal::logger('ppcactivities')->info('Event ID: '.$evt_id.' Event photo ID: '.$evt_photo_id.' information updated');
             $url = Url::fromUri('base:/ppcactivities_photo/'.$evt_id);
             $form_state->setRedirectUrl($url);
     
@@ -118,9 +121,12 @@ class PPCActivityPhotoChange extends FormBase {
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to update photo at this time due to datbase error. Please try again. '.$e )
+                t('Unable to update photo information at this time due to datbase error. Please try again. ' )
                 );
+            \Drupal::logger('ppcactivities')->error('PPC Activity event photo inforamtion is not uploaded.: '.$variables);                    
+            $transaction->rollBack();  
         }
 
     }

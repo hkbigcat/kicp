@@ -17,6 +17,7 @@ use Drupal\common\CommonUtil;
 use Drupal\forum\Common\ForumDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
+use Drupal\Core\File\FileSystemInterface;
 
 
 class ForumAdd extends FormBase {
@@ -35,11 +36,16 @@ class ForumAdd extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
+    public function buildForm(array $form, FormStateInterface $form_state, $forum_id="") {
 
-        $output = '';
 
-        $forum_id = (isset($_REQUEST['forum_id']) && $_REQUEST['forum_id'] != "") ? $_REQUEST['forum_id'] : "";
+        if ($forum_id == "") {
+            $form['intro'] = array(
+              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> No Forum is selected,'),
+            );
+            return $form; 
+        }
+
         $post_id = (isset($_REQUEST['post_id']) && $_REQUEST['post_id'] != "") ? $_REQUEST['post_id'] : "";
         $topic_id = (isset($_REQUEST['topic_id']) && $_REQUEST['topic_id'] != "") ? $_REQUEST['topic_id'] : "";
         $quotePost = (isset($_REQUEST['quotePost']) && $_REQUEST['quotePost'] != "") ? $_REQUEST['quotePost'] : "";
@@ -242,19 +248,19 @@ class ForumAdd extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
+        $hasAttach = (empty($filename))?0:1; 
         
         //$url = new Url('forum.forum_view_topic');
-        $url = new Url('forum.forum_view_forum', array('forum_id' => $forum_id));
-        
+        $url = new Url('forum.forum_view_forum', array('forum_id' => $forum_id));        
         $form_state->setRedirectUrl($url);
-        
 
-        $current_time =  date('Y-m-d H:i:s');
-                
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
+
         try {
 
             
-            if ($topic_id == null || $topic_id == "") {
+            if (!isset($topic_id) || $topic_id == "") {
 
                 $entry = array(
                 'title' => $topic_subject,
@@ -265,11 +271,10 @@ class ForumAdd extends FormBase {
                 'is_deleted' => 0,
                 'is_guest' => $is_guest,
                 'poster_name' => $poster_name,
-                'create_datetime' => $current_time,
                 );
             
                 
-                $query = \Drupal::database()->insert('kicp_forum_topic')
+                $query = $database->insert('kicp_forum_topic')
                 ->fields($entry);
                 $topic_id = $query->execute();
 
@@ -296,12 +301,11 @@ class ForumAdd extends FormBase {
               'user_id' => $authen->getUserId(),
               'parent_id' => $parent_id,
               'topic_id' => $topic_id,
-              'create_datetime' => $current_time,
               'is_deleted' => 0,
             );
             
 
-            $query = \Drupal::database()->insert('kicp_forum_post')
+            $query = $database->insert('kicp_forum_post')
             ->fields($entry2);
             $new_post_id = $query->execute();
 
@@ -316,29 +320,20 @@ class ForumAdd extends FormBase {
                 }
   
                 
+             $this_topic_id = str_pad($topic_id, 6, "0", STR_PAD_LEFT);
+             $this_new_post_id = str_pad($new_post_id, 6, "0", STR_PAD_LEFT);
 
             /////////// Image inside topic [Start] ///////////
-
-            $imgTags = array();
-            $origImageSrc = array();
-            
-            $this_topic_id = str_pad($topic_id, 6, "0", STR_PAD_LEFT);
-            $this_new_post_id = str_pad($new_post_id, 6, "0", STR_PAD_LEFT);
-
-
-            $oldImagePath = base_path() . 'sites/default/files/public/inline-images';   // image pool once upload the image
-            $newImagePath = base_path() . 'sites/default/forum/private/' . $this->module . '/image';    // store in "Private" folder
-
-            $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image';                       
-            $newImagePathWebAccess .= '/' . $this_topic_id. '/' .$this_new_post_id;
-
-
-            $ForumImageUri = 'private://forum/image';
-
-            $createDir = $ForumImageUri . '/' . $this_topic_id. '/' .$this_new_post_id;
-            $content = CommonUtil::udpateMsgImagePath($createDir, $topic_content['value'],  $newImagePathWebAccess  );
-    
             if ( strpos( $topic_content['value'], "<img ") > 0)  {
+                $imgTags = array();
+                $origImageSrc = array();            
+                $oldImagePath = base_path() . 'sites/default/files/public/inline-images';   // image pool once upload the image
+                $newImagePath = base_path() . 'sites/default/files/private/' . $this->module . '/image';    // store in "Private" folder
+                $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image';                       
+                $newImagePathWebAccess .= '/' . $this_topic_id. '/' .$this_new_post_id;
+                $ForumImageUri = 'private://forum/image';
+                $createDir = $ForumImageUri . '/' . $this_topic_id. '/' .$this_new_post_id;
+                $content = CommonUtil::udpateMsgImagePath($createDir, $topic_content['value'],  $newImagePathWebAccess, $new_post_id  );
                 $query = \Drupal::database()->update('kicp_forum_post')->fields([
                     'content'=>$content, 
                 ])
@@ -348,55 +343,64 @@ class ForumAdd extends FormBase {
 
             /////////// Image inside topic [End] ///////////
             
-            
-
 
             /////////// Handle attachment [Start] /////////////
 
     
             $ForumFileUri = 'private://forum/file';
+            $file_system = \Drupal::service('file_system');  
 
-            if ($_FILES['files']['name']['filename'] != "") {
+            if ($hasAttach) {
                 /////////// Handle attachment [Start] /////////////
 
                 $createDir = $ForumFileUri . '/' . $this_topic_id . '/' . $this_new_post_id;  
                 if (!is_dir($file_system->realpath($createDir ))) {
                     // Prepare the directory with proper permissions.
                     if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
-                    throw new \Exception('Could not create the  directory.');
+                    throw new \Exception('Could not create the directory.');
                     }
                 }
 
-                foreach ($files as $file1) {
-
-                    if ($file1) {
-                        $NewFile = File::load($file1);
-                        $uuid = $NewFile->uuid();
-                        $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
-                        $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
-                        if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                            throw new \Exception('Could not move the generic placeholder image to the destination directory.');
-                        } else {
-                            $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
-                        }
+                foreach ($filename as $file1) {
+                    $NewFile = File::load($file1);
+                    $attachment_name = $NewFile->getFilename();
+                    $source = $file_system->realpath($ForumFileUri . '/'. $attachment_name);
+                    $destination = $file_system->realpath($createDir . '/' .  $attachment_name);
+                    $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                    if (!$newFileName) {
+                        throw new \Exception('Could not move the generic placeholder file to the destination directory.');
+                    } else {
+                        $NewFile->setFileUri($createDir . '/' .  $attachment_name);
+                        $NewFile->uid = $new_post_id;
+                        $NewFile->setPermanent();
+                        $NewFile->save();
                     }
+
                 }
 
             }
-
-
             /////////// Handle attachment [End] /////////////
-            
+
+            \Drupal::logger('forum')->info('Created topc id: %topic_id, post id: %post_id, subject: %subject',   
+            array(
+                '%topic_id' => $topic_id,
+                '%post_id' => $new_post_id,
+                '%subject' => $topic_subject,
+            ));   
+
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Forum topic is created.'));  
             
         }
         catch (Exception $e) {
             $variables = Error::decodeException($e);
+            \Drupal::logger('forum')->error('Forum is not created ' . $variables);   
+            $transaction->rollBack();            
             \Drupal::messenger()->addStatus(
-                t('Unable to createforum. ' )
+                t('Unable to create forum. ' )
                 );
         }
+        unset($transaction);
 
 
     }

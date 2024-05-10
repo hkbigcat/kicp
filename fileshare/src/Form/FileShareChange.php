@@ -18,6 +18,7 @@ use Drupal\Core\Database\Database;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
+use Drupal\Core\File\FileSystemInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 
@@ -55,17 +56,16 @@ class FileShareChange extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $file_id = NULL) {
 
+         $config = \Drupal::config('fileshare.settings'); 
 
          $file = FileShareDatatable::getSharedFile($file_id);
 
-         if ($file['title'] == null) {
-          $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found'),
+         if (!$file) {
+             $form['intro'] = array(
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found or you cannot access the file'),
           );
           return $form; 
          }
-
-
 
          $Taglist = new TagList();
          $tags = $Taglist->getTagListByRecordId('fileshare', $file_id);
@@ -106,7 +106,7 @@ class FileShareChange extends FormBase {
           '#type' => 'file',
           '#title' => $this->t('File'),
           '#size' => 150,
-          '#description' => 'Only support '.str_replace(' ', ', ', $this->allow_file_type).' file format',
+          '#description' => 'Note: Existing file will be deleted. Only support '.str_replace(' ', ', ', $this->allow_file_type).' file format',
         ];        
 
         $folderAry = FileShareDatatable::getMyEditableFolderList($this->my_user_id);
@@ -145,6 +145,7 @@ class FileShareChange extends FormBase {
         $form['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style'=>'margin-bottom:20px;'),
           );
         
           $form['cancel'] = array(
@@ -227,6 +228,10 @@ class FileShareChange extends FormBase {
         
         //*************** Thumbnail [Start]
 
+        $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
+        $this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
+        $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
+
         $this_imagename = str_replace('.'.$file_ext, '', $this_filename);
         $this_pdfname = str_replace('.'.$file_ext, '.pdf', $this_filename);		
 
@@ -260,12 +265,7 @@ class FileShareChange extends FormBase {
           if ($tags != $tags_prev) {
             // rewrite tags
             if ($tags_prev != '') {
-                $query = $database->update('kicp_tags')->fields([
-                    'is_deleted'=>1 , 
-                  ])
-                  ->condition('fid', $file_id)
-                  ->condition('module', 'fileshare')
-                  ->execute();                
+                $return2 = TagStorage::markDelete($this->module, $file_id);
             }
             if ($tags != '') {
                 $entry1 = array(
@@ -282,53 +282,39 @@ class FileShareChange extends FormBase {
 
         //*************** File [Start]
         $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
-        $this_filename = str_replace(' ', '_', $_FILES["files"]["name"]['filename']);
-        $this_filename = str_replace("'", "", $this_filename);      // remove single quote
-        $this_filename = str_replace('"', '', $this_filename);      // remove double quote
-        $this_filename = str_replace('&', '_', $this_filename);      // remove & sign
-        $this_filename = str_replace('!', '', $this_filename);      // remove ! sign
-        $this_filename = str_replace('@', '', $this_filename);      // remove @ sign
-        $this_filename = str_replace('#', '', $this_filename);      // remove # sign
-        $this_filename = str_replace('$', '', $this_filename);      // remove $ sign
-        $this_filename = str_replace('%', '', $this_filename);      // remove % sign
-        $this_filename = str_replace('^', '', $this_filename);      // remove ^ sign
-        $this_filename = str_replace('+', '', $this_filename);      // remove + sign
-        $this_filename = str_replace('=', '', $this_filename);      // remove = sign
-        $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));		
+        $this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
+        $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
         //*************** File [End]
 
         $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
 
         $file_system = \Drupal::service('file_system');  
-        $FileshareUri = 'private://fileshare/';
+        $FileshareUri = 'private://fileshare';
         $file_path = $file_system->realpath($FileshareUri  . '/file/' . $this_file_id);
         $image_path = $file_system->realpath($FileshareUri  . '/image/' . $this_file_id);        
         FileShareDatatable::createFileshareDir($FileshareUri, $this_file_id);
-
 
           // delete previous file from server physically
           if (is_dir($file_path)) {
             $myFileList = scandir($file_path);
             foreach($myFileList as $filename) {
-                if($filename == "." || $filename == "..") {
+                if(substr($filename,0,1) == "." ) {
                     continue;
                 }
-                unlink($file_path.'/'.$filename);
+                $uri = $FileshareUri."/file/". $this_file_id."/".$filename;
+                $fid = CommonUtil::deleteFile($uri);                
             }
           }
-
-          $query = $database->delete('file_managed')
-          ->condition('uid', $file_id)
-          ->execute();
 
         // delete previous image from server physically
         if (is_dir($image_path)) {
             $myFileList = scandir($image_path);
             foreach($myFileList as $filename) {
-                if($filename == "." || $filename == "..") {
+                if(substr($filename,0,1) == "." ) {
                     continue;
                 }
-                unlink($image_path.'/'.$filename);
+                $uri = $FileshareUri."/image/". $this_file_id."/".$filename;
+                $fid = CommonUtil::deleteFile($uri);                 
             }
           }
 
@@ -341,14 +327,20 @@ class FileShareChange extends FormBase {
         $file = file_save_upload('filename', $validators, 'private://fileshare/file/'.$this_file_id,$delta);
 
         // rename file, remove white space in filename
-        if(file_exists($file_path."/".$_FILES['files']['name']['filename']) && $_FILES['files']['name']['filename'] != $this_filename) {
-            exec("mv \"".$file_path."/".$_FILES['files']['name']['filename']."\" \"".$file_path."/".$this_filename."\"");     
+        if($_FILES['files']['name']['filename'] != $this_filename) {
+          $file_real_path = \Drupal::service('file_system')->realpath($FileshareUri.'/file/'.$this_file_id.'/'.$_FILES['files']['name']['filename']);
+          $file_contents = file_get_contents($file_real_path);
+          $newFile = \Drupal::service('file.repository')->writeData($file_contents, $FileshareUri.'/file/'.$this_file_id.'/'.$this_filename, FileSystemInterface::EXISTS_REPLACE);
+          $file1 = $file[0];
+          $file1->delete();
+        } else {
+              $newFile = $file[0];
         }
 
-        $file[0]->setPermanent();
-        $file[0]->uid = $file_id;
-        $file[0]->save();
-        $url = $file[0]->createFileUrl(FALSE);
+        $newFile->setPermanent();
+        $newFile->uid = $file_id;
+        $newFile->save();
+        $url = $newFile->createFileUrl(FALSE);
 
         // create thumbnail(s) of all PDF pages
 
@@ -361,7 +353,13 @@ class FileShareChange extends FormBase {
         if($file_ext != "pdf") {
         
             exec("export HOME=".$file_path." && /usr/bin/libreoffice --headless --convert-to pdf --outdir ".$file_path." \"".$file_path."/".$this_filename."\"");
-          
+            $file = File::create([
+              'uid' => $file_id,
+              'filename' => $this_pdfname,
+              'uri' => $FileshareUri."/file/".$this_file_id."/".$this_pdfname,
+            ]);
+            $file->setPermanent();
+            $file->save();
             exec("pdftoppm -png ".$file_path."/".$file_temp." ".$image_path."/".$img_temp);            
 
         } else {
@@ -423,19 +421,27 @@ class FileShareChange extends FormBase {
               //******** store image record(s) in table "file_managed" [End]
       } // Files
   
+      \Drupal::logger('fileshare')->info('Updated id: %id, title: %title, filename: %filename.',   
+      array(
+          '%id' => $file_id,
+          '%title' => $title,
+          '%filename' => $this_filename,
+      ));  
+
 
       $url = Url::fromUserInput('/fileshare_view/'.$file_id);
       $form_state->setRedirectUrl($url);
 
       $messenger = \Drupal::messenger(); 
-      $messenger->addMessage( t('Files has been updated '));      
+      $messenger->addMessage( t('Files has been updated.'));      
 
 
     }
 
     catch (\Exception $e ) {
+       \Drupal::logger('fileshare')->error('Fileshare is not updated ' .$file_id);   
         \Drupal::messenger()->addError(
-          t('Unable to update filess at this time due to datbase error. Please try again.')
+          t('Unable to update files at this time due to datbase error. Please try again.')
         ); 
         $transaction->rollBack();
     }

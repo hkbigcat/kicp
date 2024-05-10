@@ -129,7 +129,7 @@ class ActivityDeliverableAdd extends FormBase {
         
         if (empty($files)) {
             $form_state->setErrorByName(
-                'file', $this->t("Photo is empty")
+                'file', $this->t("Deliverable is empty")
             );
         }
     }
@@ -165,59 +165,67 @@ class ActivityDeliverableAdd extends FormBase {
                 }
             }
 
-            foreach ($files as $file1) {
+            $database = \Drupal::database();
+            $transaction = $database->startTransaction();    
+            try {
+                foreach ($files as $file1) {
 
-                if ($file1) {
-                    $NewFile = File::load($file1);
-                    $uuid = $NewFile->uuid();
-                    $deliverable_name = $NewFile->getFilename();
-
-                    $source = $file_system->realpath($ActivitiesDeliverableUri . '/'. $deliverable_name);
-                    $destination = $file_system->realpath($createDir . '/' . $deliverable_name);
-                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                        throw new \Exception('Could not move the generic placeholder file to the destination directory.');
-                    } else {
-                        $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $deliverable_name, '');
+                    if ($file1) {
+                        $NewFile = File::load($file1);
+                        $deliverable_name = $NewFile->getFilename();
+                        $source = $file_system->realpath($ActivitiesDeliverableUri . '/'. $deliverable_name);
+                        $destination = $file_system->realpath($createDir . '/' . $deliverable_name);
+                        $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                        if (!$newFileName) {
+                            throw new \Exception('Could not move the generic placeholder file to the destination directory.');
+                        } else {
+                            $NewFile->setFileUri($createDir . '/' .   $deliverable_name);
+                            $NewFile->uid = $evt_id;
+                            $NewFile->setPermanent();
+                            $NewFile->save();
+                        }
                     }
-                }
                 
-                try {
                     $deliverableEntry = array('evt_id' => $evt_id, 'evt_deliverable_url' => $deliverable_name, 'evt_deliverable_name' => $deliverable_name);
                     $query = \Drupal::database()->insert('kicp_km_event_deliverable')
                     ->fields($deliverableEntry);
-                    $entry_id = $query->execute();
+                    $evt_deliverable_id = $query->execute();
 
-
-                    if ($entry_id != null) {
+                    if ($evt_deliverable_id != null) {
                         if ($tags != '') {
                             $entry1 = array(
                                 'module' => 'activities_deliverable',
-                                'module_entry_id' => intval($evt_id),
+                                'module_entry_id' => intval($evt_deliverable_id),
                                 'tags' => $tags,
                             );
                             $return1 = TagStorage::insert($entry1);                        
                         } 
                         $deliverable_uploaded .= "$deliverable_name, ";
-                    } else {
-                        $deliverable_not_uploaded .= "$deliverable_name, ";        
-                    }
-
-                    
-                } catch (Exception $ex) {
-                    $deliverable_not_uploaded .= "$delimitor $deliverable_name";   
+                    } 
                 }
-                
+                \Drupal::logger('activities')->info('Event ID: '.$evt_id.' Event deliverables uploaded: '.substr($deliverable_uploaded,0,-2));
+
+            } catch (Exception $e) {
+                $variables = Error::decodeException($e);
+                \Drupal::messenger()->addError(
+                    t('Activity Event deliverables  is not uploaded.' )
+                    );
+                \Drupal::logger('activities')->error('Activity Event deliverables is not uploaded.: '.$variables);                    
+                $transaction->rollBack();                   
             }
+            unset($transaction); 
+
+            ///////////////
             $url = Url::fromUserInput('/activities_deliverable/'.$evt_id);
             $form_state->setRedirectUrl($url);            
                
             $messenger = \Drupal::messenger(); 
             if($deliverable_uploaded != "") {
-                $messenger->addMessage( t('Deliverable '. substr($deliverable_uploaded,0,-1) . ' uploaded'));                
+                $messenger->addMessage( t('Deliverable '. substr($deliverable_uploaded,0,-2) . ' uploaded'));                
             }
             
-            if($photo_not_uploaded != "") {
-                $messenger->addError( t('Deliverable '. substr($deliverable_not_uploaded,0,-1) . ' not uploaded'));                
+            if($deliverable_not_uploaded != "") {
+                $messenger->addError( t('Deliverable '. substr($deliverable_not_uploaded,0,-2) . ' not uploaded'));                
             }
 
 

@@ -11,6 +11,7 @@ use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\Controller\TagList;
 use Drupal\common\Controller\TagStorage;
+use Drupal\common\Follow;
 use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Pager\PagerManagerInterface;
@@ -24,11 +25,11 @@ use Symfony\Component\HttpFoundation\Response;
 class PPCActivitiesController extends ControllerBase {
     
     public function __construct() {
-        //$Paging = new Paging();
-        //$DefaultPageLength = $Paging->getDefaultPageLength();
-
         $this->module = 'ppcactivities';
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();    
     }
     
     public function content( $cop_id="1", $type_id="") {
@@ -38,6 +39,7 @@ class PPCActivitiesController extends ControllerBase {
         $activityInfo['type_id'] = $type_id;
         $category = PpcActivitiesDatatable::getAllActivityCategory();
         $events = PPCActivitiesDatatable::getEventItemByTypeId($type_id, $cop_id);
+        $following = Follow::getFollow('PPCIS.OGCIO', $this->my_user_id);    
 
         return [
             '#theme' => 'ppcactivities-main',
@@ -46,6 +48,8 @@ class PPCActivitiesController extends ControllerBase {
             '#categories' => $category,
             '#events' => $events,
             '#types' => $activitiesType,
+            '#my_user_id' => $this->my_user_id,
+            '#following' => $following,                        
             '#empty' => t('No entries available.'),
         ];                
 
@@ -91,14 +95,18 @@ class PPCActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-            $database = \Drupal::database();
             $query = $database->update('kicp_ppc_cop')->fields([
             'is_deleted'=>1 , 
             ])
             ->condition('cop_id', $cop_id)
             ->execute();
-
+            \Drupal::logger('ppcactivities')->info('Type deleted id: %id',   
+            array(
+                '%id' => $evt_type_id,
+            )); 
             $err_code = '1';
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('PPC Category has been deleted'));
@@ -106,11 +114,14 @@ class PPCActivitiesController extends ControllerBase {
     
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete PPC Category at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('ppcactivities')->error('PPC Category is not deleted: ' . $variables);       
+            $transaction->rollBack(); 
+        }	        
+        unset($transaction);      
         $response = array('result' => $err_code);
         return new JsonResponse($response);
 
@@ -136,26 +147,32 @@ class PPCActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();          
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_ppc_event_type')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('evt_type_id', $evt_type_id)
           ->execute();
+          \Drupal::logger('ppcactivities')->info('Type deleted id: %id',   
+          array(
+              '%id' => $evt_type_id,
+          ));              
 
           $err_code = '1';
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('PPC Event Type has been deleted'));
-      
-  
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to delete PPC Event Type at this time due to datbase error. Please try again. ' )
+                t('Unable to delete PPC  Event Type at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('ppcactivities')->error('PPC Activity Type is not deleted: ' . $variables);       
+            $transaction->rollBack();    
+        }	
+        unset($transaction);            
         $response = array('result' => $err_code);
         return new JsonResponse($response);
     
@@ -222,12 +239,11 @@ class PPCActivitiesController extends ControllerBase {
     }
 
     public function deleteEventItem($evt_id="") {
-
-
+        
         $current_time =  \Drupal::time()->getRequestTime();
-
         // delete record
-    
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
           $database = \Drupal::database();
           $query = $database->update('kicp_ppc_event')->fields([
@@ -239,17 +255,24 @@ class PPCActivitiesController extends ControllerBase {
 
           // delete tags
           $return2 = TagStorage::markDelete($this->module, $evt_id);
+          \Drupal::logger('ppcactivities')->info('PPC Event deleted id: %id',   
+          array(
+              '%id' =>  $evt_id,
+          ));
 
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Event has been deleted'));
  
         }
         catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
                 t('Unable to delete event at this time due to datbase error. Please try again. ' )
                 );
-
-            }	
+            \Drupal::logger('ppcactivities')->error('KM Event is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	
+        unset($transaction);  
         $response = array('result' => 1);
         return new JsonResponse($response);
   
@@ -292,6 +315,8 @@ class PPCActivitiesController extends ControllerBase {
 
         // delete record   
         $err_code = '0'; 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();          
         try {
           $database = \Drupal::database();
           $query = $database->update('kicp_ppc_event_member_list')->fields([
@@ -301,6 +326,11 @@ class PPCActivitiesController extends ControllerBase {
           ->condition('user_id', $user_id)
           ->execute();
 
+          \Drupal::logger('ppcactivities')->info('PPC Enrollment deleted id: %id. user: %user_id.',   
+          array(
+              '%id' =>  $evt_id,
+              '%user_id' =>  $user_id,
+          ));          
           $err_code = '1';
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Enrollment has been deleted'));
@@ -308,11 +338,14 @@ class PPCActivitiesController extends ControllerBase {
   
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to delete enrollment at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('ppcactivities')->error('PPC enrollment is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	    
+        unset($transaction);     
         $response = array('result' => $err_code);
         return new JsonResponse($response);
     
@@ -325,9 +358,9 @@ class PPCActivitiesController extends ControllerBase {
         $err_code = '0';
         $is_enrol_successful = $_REQUEST['is_enrol_successful'];
         $is_showup = $_REQUEST['is_showup'];
-
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
         try {
-            $database = \Drupal::database();
             $query = $database->update('kicp_ppc_event_member_list')->fields([
               'is_enrol_successful' => $is_enrol_successful, 
               'is_showup'=>$is_showup,
@@ -344,14 +377,23 @@ class PPCActivitiesController extends ControllerBase {
                 $err_code = '1';
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Enrollment has been updated: ').$user_id);
+                \Drupal::logger('ppcactivities')->info('PPC Enrollment updated id: %id. user: %user_id.',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $user_id,
+                ));                 
             }
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to update enrollment at this time due to datbase error. Please try again. '.$e )
+                t('Unable to update enrollment at this time due to datbase error. Please try again. ' )
                 );
+            \Drupal::logger('ppcactivities')->error('PPC enrollment is not updated: '. $variables);
+            $transaction->rollBack();
         }
+        unset($transaction); 
         
         $err_code = '1';
         $response = array('result' => $err_code);
@@ -393,30 +435,35 @@ class PPCActivitiesController extends ControllerBase {
         $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
         $ActivitiesPhotoUri = 'private://ppcactivities/photo/'.$this_evt_id.'/'.$photo_name;
         $file_location = $file_system->realpath($ActivitiesPhotoUri);
-        if(file_exists($file_location)) {
-            unlink($file_location);
-        }   
+        $fid = CommonUtil::deleteFile( $ActivitiesPhotoUri);        
 
         // delete record
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();          
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_ppc_event_photo')->fields([
             'is_deleted'=>1 , 
           ])
           ->condition('evt_photo_id', $evt_photo_id)
           ->execute();
-      
+          \Drupal::logger('ppcactivities')->info('PPC Event photo deleted id: %id',   
+          array(
+              '%id' =>  $evt_photo_id,
+          ));
+          
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Photo has been deleted'));
   
         }
         catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
                 t('Unable to delete photo at this time due to datbase error. Please try again. ' )
                 );
-
-            }	
-
+            \Drupal::logger('ppcactivities')->error('KM Event Photo is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	
+        unset($transaction);         
         $response = array('result' => 1);
         return new JsonResponse($response);     
 
@@ -452,14 +499,12 @@ class PPCActivitiesController extends ControllerBase {
         $this_evt_id = str_pad($evt_id, 6, "0", STR_PAD_LEFT);
         $ActivitiesDeliverableUri = 'private://ppcactivities/deliverable/'.$this_evt_id.'/'.$deliverable_name;
         $file_location = $file_system->realpath($ActivitiesDeliverableUri);
-        if(file_exists($file_location)) {
-            unlink($file_location);
-        }        
+        $fid = CommonUtil::deleteFile( $ActivitiesDeliverableUri);
 
         // delete record
-    
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();  
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_ppc_event_deliverable')->fields([
             'is_deleted'=>1 , 
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),
@@ -469,17 +514,23 @@ class PPCActivitiesController extends ControllerBase {
 
           // delete tags
           $return2 = TagStorage::markDelete('ppcactivities_deliverable',$evt_deliverable_id);
-      
+
+          \Drupal::logger('ppcactivities')->info('PPC Event deliverable deleted id: %id',   
+          array(
+              '%id' =>  $evt_deliverable_id,
+          ));          
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Deliverable has been deleted'));
-  
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to delete deliverable at this time due to datbase error. Please try again. ' )
+                t('nable to delete deliverable at this time due to datbase error. Please try again. ' )
                 );
-
-            }	        
+            \Drupal::logger('ppcactivities')->error('PPC Event deliverable is not deleted: '. $variables);
+            $transaction->rollBack();
+        }	
+        unset($transaction);                
         $response = array('result' => 1);
         return new JsonResponse($response);  
         

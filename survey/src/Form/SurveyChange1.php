@@ -152,9 +152,14 @@ class SurveyChange1 extends FormBase {
               '#description' => 'Only support ' . str_replace(' ', ', ', $this->allow_file_type) . ' file format',
                 //'#required' => true,
             );
+            $form['deleteFile'] = array(
+              '#type' => 'hidden',
+              '#value' => 0,
+            );            
         }
         $form['ReadyVote'] = array(
           '#title' => t('Ready for voting'),
+          '#description' => t('If disabled, the survey can be accessed but cannot be submitted.'),
           '#type' => 'checkbox',
           '#default_value' => $survey->is_visible,
         );
@@ -268,7 +273,10 @@ class SurveyChange1 extends FormBase {
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
 
-       
+        foreach ($form_state->getValues() as $key => $value) {
+            $$key = $value;
+        }
+      
         $survey = SurveyDatatable::getSurvey($survey_id);
 
         // File path
@@ -281,9 +289,6 @@ class SurveyChange1 extends FormBase {
         $dateType_oldexpiry = new \DateTime($survey->expiry_date);
         $currentdate = new \DateTime(date('Y-m-d 00:00:00'));
 
-        foreach ($form_state->getValues() as $key => $value) {
-            $$key = $value;
-        }
 
         $hasError = false;
 
@@ -342,11 +347,19 @@ class SurveyChange1 extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-		    $deleteFile = '';
-	
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
+
+        if ($deleteFile == 1) {
+          $attach_deleted = SurveyDatatable::DeleteSurveyEntryAttachment($survey_id);
+          $query = \Drupal::database()->update('kicp_survey')->fields([
+            'file_name' => '',
+          ]) 
+          ->condition('survey_id', $survey_id);
+          $row_affected = $query->execute();                  
+        }
+
 
         $entry = array(
           'title' => $title,

@@ -1,6 +1,6 @@
 {% include '@common/common-tags.html.twig' %}
 
-<input type="hidden" name="tag_page" id="tag_page" value="../survey">
+<input type="hidden" name="tag_page" id="tag_page" value="{{ path('survey.survey_content') }}">
 <div class="text-right">
     <button class="kicp_button" onClick="self.location.href='{{ path('survey.survey_add_page1') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
 </div>
@@ -9,8 +9,8 @@
     <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns space-between">
         <div class="w60 padding_right_45">
             <div class="entry_title"><a href="{{ path('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}">{{ item['title'] }}</a></div>
-            {% set text = item['description'] |render %}
-            <div class="entry_content">{{ text |length > 300 ?  text | slice(0, 300) | raw ~ '...' : text | raw }}</div>
+            {% set text = item['description']  | striptags   %} 
+            <div class="entry_content">{{ text |length > 300 ?  text | slice(0, 300)  ~ '...' : text  }}</div>
             <div>{% include '@common/common-tags-list.html.twig' with {tags: item ['tags']  }  %} </div>
             <div style="margin-top:10px;"><span class="entry_subtitle">Uploaded by: </span>{{ item['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
             <div style="margin-top:5px;"><span class="entry_subtitle">Start Date: </span>{{ item['start_date'] | date('d.m.Y')  }}</div>
@@ -22,7 +22,9 @@
         </div>  
         <div class="w20">
           <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
+          {% if item['allow_copy'] %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_copy', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-copy"></i>Copy</button></span>
+          {% endif %}
           {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id)  %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_change_1', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
           <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.export_survey' , {'survey_id': item['survey_id'] }  ) }}'"><i class="fa-solid fa-file-excel"></i>Export</button></span>

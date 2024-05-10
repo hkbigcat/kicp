@@ -244,7 +244,7 @@ class ActivityItemAdd extends FormBase  {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'../activities_admin_event/'.$type_id.'\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
         
@@ -365,14 +365,13 @@ class ActivityItemAdd extends FormBase  {
             'forum_topic_id' => ($evt_forum_id=="" ? NULL : $evt_forum_id),
             'submit_reply' => $evt_msg,
             'user_id' => $this->default_creator,
-            'create_datetime' => date('Y-m-d H:i:s', $current_time),
-            'modify_datetime' => date('Y-m-d H:i:s', $current_time),            
           );
 
 
-          
+          $database = \Drupal::database();
+          $transaction = $database->startTransaction();           
           try {
-            $query = \Drupal::database()->insert('kicp_km_event')
+            $query = $database->insert('kicp_km_event')
             ->fields( $eventEntry);
             $evt_id = $query->execute();
 
@@ -396,22 +395,26 @@ class ActivityItemAdd extends FormBase  {
                     }
                 }
                   
-                
                 $validators = array(
                     'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
                     'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
                   );
                 
-                
                 $delta = NULL; // type of $file will be array
                 $file = file_save_upload('evt_logo', $validators, $image_path, $delta);
           
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid = $evt_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
 
             }            
+
+            \Drupal::logger('activities')->info('Event is created id: %id, Event name: %evt_name.',   
+            array(
+                '%id' =>  $evt_id,
+                '%evt_name' =>  $evt_name,
+            ));          
 
             $url = Url::fromUri('base:/activities_admin_event/'.$form_evt_type_id);
             $form_state->setRedirectUrl($url);
@@ -421,14 +424,15 @@ class ActivityItemAdd extends FormBase  {
 
         }
         catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
-                t('Unable to save event at this time due to datbase error. Please try again. '.serialize($eventEntry) )
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Activity Item is not created.' )
                 );
-
+            \Drupal::logger('activities')->error('Activity Item is not created.: '.$variables);                    
+            $transaction->rollBack();   
            
         }	
-
-
+        unset($transaction); 
     }
 
 }

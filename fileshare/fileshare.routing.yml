@@ -19,17 +19,6 @@ fileshare.fileshare_folder:
   option:
      no_cache: TRUE
 
-fileshare.fileshare_tag:
-  path: '/fileshare_tag'
-  defaults:
-    _controller: '\Drupal\fileshare\Controller\FileShareController::getShareFileTag'
-    _title: 'File Share Tag'
-  requirements:
-    _access: 'TRUE'
-    _permission: 'access content'
-  options:
-    no_cache: TRUE
-
 fileshare.fileshare_folder_add:
   path: '/fileshare_folder_add'
   defaults:

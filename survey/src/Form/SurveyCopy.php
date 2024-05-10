@@ -448,7 +448,6 @@ class SurveyCopy extends FormBase {
 
                       //copy file
                       if ($originalfilename != "") {           
-                        \Drupal::logger('survey')->info('originalfilename: '.$originalfilename);
                         SurveyDatatable::copyAttach( $originalfilename, $original_survey_id, $survey_id, $result['id'], $new_question_id );                               
                       }
 

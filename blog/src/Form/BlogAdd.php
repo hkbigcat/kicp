@@ -184,26 +184,29 @@ class BlogAdd extends FormBase  {
 
 
         $blog_owner_id = BlogDatatable::getUIdByBlogId($blog_id);
-        $blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);
+        $this_blog_owner_id = str_pad($blog_owner_id, 6, "0", STR_PAD_LEFT);
 
         $hasAttach = (empty($files))?0:1; 
 
-        try {
-            $entry = array(
-                'blog_id' => $blog_id,
-                'entry_title' => $bTitle,
-                'entry_content' => $bContent['value'],
-                'created_by' => $this->my_user_id,
-                'has_attachment' => $hasAttach,
-            );
+        $entry = array(
+            'blog_id' => $blog_id,
+            'entry_title' => $bTitle,
+            'entry_content' => $bContent['value'],
+            'created_by' => $this->my_user_id,
+            'has_attachment' => $hasAttach,
+        );
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();     
+
+        try {
  
-            $query = \Drupal::database()->insert('kicp_blog_entry')
+            $query = $database->insert('kicp_blog_entry')
             ->fields($entry);
             $entry_id = $query->execute();
 
-////////////  Handle image inside CKEditor [Start] ////////////
-         
+            ////////////  Handle image inside CKEditor [Start] ////////////
+        
             $this_entry_id_path = str_pad($entry_id, 6, "0", STR_PAD_LEFT);
             $imgTags = array();
             $origImageSrc = array();
@@ -215,10 +218,10 @@ class BlogAdd extends FormBase  {
 
             //New
             $newImagePathWebAccess = base_path()  . 'system/files/' . $this->module . '/image';                       
-            $newImagePathWebAccess .= '/' . $blog_owner_id . '/' . $this_entry_id_path;
+            $newImagePathWebAccess .= '/' . $this_blog_owner_id . '/' . $this_entry_id_path;
 
-            $createDir = $BlogImageUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
-            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess  );
+            $createDir = $BlogImageUri . '/' . $this_blog_owner_id . '/' . $this_entry_id_path;
+            $content = CommonUtil::udpateMsgImagePath($createDir, $bContent['value'], $newImagePathWebAccess ,  $entry_id  );
 
             if ( strpos($bContent['value'], "<img ") > 0)  {
                 $query = \Drupal::database()->update('kicp_blog_entry')->fields([
@@ -229,11 +232,11 @@ class BlogAdd extends FormBase  {
                 ->execute();
             }
 
-/////////// Handle image inside CKEditor [End] /////////////                            
+            /////////// Handle image inside CKEditor [End] /////////////                            
 
-/////////// Handle attachment [Start] /////////////
+            /////////// Handle attachment [Start] /////////////
             if ($hasAttach) {
-                $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
+                $createDir = $BlogFileUri . '/' . $this_blog_owner_id . '/' . $this_entry_id_path;
                 if (!is_dir($file_system->realpath($createDir ))) {
                     // Prepare the directory with proper permissions.
                     if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
@@ -241,55 +244,60 @@ class BlogAdd extends FormBase  {
                     }
                 }
                 foreach ($files as $file1) {
-
                     if ($file1) {
                         $NewFile = File::load($file1);
-                        $uuid = $NewFile->uuid();
-                        $source = $file_system->realpath($BlogFileUri . '/'. $NewFile->getFilename());
-                        $destination = $file_system->realpath($createDir . '/' . $NewFile->getFilename());
-                        if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                            throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+                        $attachment_name = $NewFile->getFilename();
+                        $source = $file_system->realpath($BlogFileUri . '/'.  $attachment_name);
+                        $destination = $file_system->realpath($createDir . '/' .  $attachment_name);
+                        $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                        if (!$newFileName) {
+                            throw new \Exception('Could not move the generic placeholder file to the destination directory.');
                         } else {
-                            $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $NewFile->getFilename(), '');
+                            $NewFile->setFileUri($createDir . '/' .  $attachment_name);
+                            $NewFile->uid =$entry_id;
+                            $NewFile->setPermanent();
+                            $NewFile->save();
                         }
                     }
                 }
             }
-/////////// Handle attachment [End] /////////////
+            /////////// Handle attachment [End] /////////////
 
-//////////////  Handle Tags ///////////////////////////
-        if ($tags != '') {
-            $entry1 = array(
-                'module' => $this->module,
-                'module_entry_id' => intval($entry_id),
-                'tags' => $tags,
+            //////////////  Handle Tags ///////////////////////////
+            if ($tags != '') {
+                $entry1 = array(
+                    'module' => $this->module,
+                    'module_entry_id' => intval($entry_id),
+                    'tags' => $tags,
+                );
+                $return1 = TagStorage::insert($entry1);
+                
+            }                
+
+            \Drupal::logger('blog')->info('Created id: %id, title: %title, attachment: %attach.',   
+            array(
+                '%id' => $entry_id,
+                '%title' => $bTitle,
+                '%attach' => ($hasAttach)?'Y':'N',
+            ));     
+
+            $url = Url::fromUserInput('/blog_entry/'.$entry_id);
+            $form_state->setRedirectUrl($url);
+
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Blog has been added. '));
+
+        }
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+            t('Blog is not created. ' )
             );
-            $return1 = TagStorage::insert($entry1);
-            
-        }                
-
-        \Drupal::logger('blog')->info('Created id: %id, title: %title, attachment: %attach.',   
-        array(
-            '%id' => $entry_id,
-            '%title' => $bTitle,
-            '%attach' => ($hasAttach)?'Y':'N',
-        ));     
-
-        $url = Url::fromUserInput('/blog_entry/'.$entry_id);
-        $form_state->setRedirectUrl($url);
-
-
-        $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('Blog has been added. '));
-
-    }
-    catch (\Exception $e) {
-        $variables = Error::decodeException($e);
-        \Drupal::messenger()->addError(
-          t('Blog is not created. ' )
-          );
-        \Drupal::logger('blog')->error('Blog is not created '  . $variables);                   
+            \Drupal::logger('blog')->error('Blog is not created '  . $variables);    
+            $transaction->rollBack();               
         }	
+        unset($transaction);
+
     }
 
 }

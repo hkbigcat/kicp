@@ -79,9 +79,10 @@ class BookmarkController extends ControllerBase {
       }
 
       // delete record
-  
+      $database = \Drupal::database();
+      $transaction = $database->startTransaction(); 
+
       try {
-        $database = \Drupal::database();
         $query = $database->update('kicp_bookmark')->fields([
           'is_deleted'=>1 , 
           'bModified' => date('Y-m-d H:i:s'),
@@ -111,10 +112,11 @@ class BookmarkController extends ControllerBase {
               t('Unable to delete bookmark at this time due to datbase error. Please try again. ' )
               );
           \Drupal::logger('bookmark')->error('Bookmark is not deleted: ' . $variables);   
-          
-          }
-        $response = array('result' => 1);
-        return new JsonResponse($response);
+          $transaction->rollBack();
+       }
+       unset($transaction);
+       $response = array('result' => 1);
+       return new JsonResponse($response);
   
   }    
 

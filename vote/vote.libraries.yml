@@ -13,3 +13,9 @@ vote_key:
     - core/drupalSettings
     - core/drupal
     - core/drupal.dialog
+
+vote_form:
+  version: 1.x
+  css:
+    theme:
+      css/form.css: {}

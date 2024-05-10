@@ -113,31 +113,30 @@ class ActivityCOPItemAdd extends FormBase {
             $$key = $value;
         }
         
-        try {
-            
-            $img_name = '';
-            $hasImage = false;
-            
-            if ($_FILES['files']['name']['cop_image'] != "") {
-                $hasImage = true;
-                $img_name = $_FILES['files']['name']['cop_image'];                
-            }
-            
-            $copEntry = array(
-                'cop_name' => $cop_name,
-                'cop_info' => $description,
-                'img_name' => $img_name,
-                'cop_group_id' => $cop_group_id,
-                'display_order' => $display_order,
-            );
+        $img_name = '';
+        $hasImage = false;
+        
+        if ($_FILES['files']['name']['cop_image'] != "") {
+            $hasImage = true;
+            $img_name = $_FILES['files']['name']['cop_image'];                
+        }
+        
+        $copEntry = array(
+            'cop_name' => $cop_name,
+            'cop_info' => $description,
+            'img_name' => $img_name,
+            'cop_group_id' => $cop_group_id,
+            'display_order' => $display_order,
+        );
 
-            $query = \Drupal::database()->insert('kicp_km_cop')
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
+        try {
+            $query = $database->insert('kicp_km_cop')
             ->fields( $copEntry);
             $cop_id = $query->execute();
 
-            if ($cop_id) {
-                
-               
+            if ($cop_id) {       
                 if($hasImage) {
                     
                     // upload image to private folder                  
@@ -160,10 +159,15 @@ class ActivityCOPItemAdd extends FormBase {
                     $file = file_save_upload('cop_image', $validators, $image_path, $delta);
             
                     $file[0]->setPermanent();
-                    $file[0]->uid = $file_id;
+                    $file[0]->uid = $cop_id;
                     $file[0]->save();
                     $url = $file[0]->createFileUrl(FALSE);                    
                 }
+                \Drupal::logger('activities')->info('COP Item is created id: %id, COP name: %cop_name.',   
+                array(
+                    '%id' =>  $cop_id,
+                    '%cop_name' => $cop_name,
+                ));                    
 
                 $url = Url::fromUri('base:/activities_cop/'.$cop_group_id);
                 $form_state->setRedirectUrl($url);
@@ -176,13 +180,18 @@ class ActivityCOPItemAdd extends FormBase {
                 \Drupal::messenger()->addError(
                     t('COP Item is not created.' )
                     );      
+                \Drupal::logger('activities')->error('COP Item is not created.');                          
             }
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('COP Item is not created.' )
-                );            
+                );
+            \Drupal::logger('activities')->error('COP Item is not created.: '.$variables);                    
+            $transaction->rollBack();                            
         }
+        unset($transaction); 
     }
 
 }

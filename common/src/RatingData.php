@@ -63,7 +63,7 @@ class RatingData {
             "module = '" . $module . "' and rate_id = " . $rateId . " and user_id = '" . $user_id . "' and is_deleted = 0";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
-    
+        if (!$result) return 0;
         $rsHadRate = intval($result->userHadRate);
     
         return $rsHadRate;

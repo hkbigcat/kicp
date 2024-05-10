@@ -1,11 +1,8 @@
 <div class="forum_navigation">{{ forum_info.forum_name }}</div>
 <div style="float:right;">
-<form method="POST" name="forum_form" action="../forum_topic_add">
-<button class="kicp_button" onClick="jQuery('#forum_form').submit();"><i class="fa-solid fa-circle-plus"></i> Add </button>
-<input type="hidden" name="forum_id" id="forum_id" value="{{ forum_info.forum_id }}">
-</form>
+<button class="kicp_button" onClick="self.location.href='{{ path('forum.forum_topic_add', {'forum_id': forum_info.forum_id }) }}';"><i class="fa-solid fa-circle-plus"></i> Add </button>
 </div>
-<div id="DivContentTable" style="display:table;">
+<div id="DivContentTable">
     <div class="common_table_header">
         <div style="width:29%;text-align:left;margin-left:15px">Topics</div>
         <div style="width:17%;text-align:left;">KICP Forum</div>

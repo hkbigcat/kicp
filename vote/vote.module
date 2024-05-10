@@ -20,6 +20,12 @@ function vote_page_attachments_alter(&$page) {
         $page['#attached']['library'][] = 'common/common_modal';    // for "Access Control", put this line after "common/content_table"
     }
     
+    if ($routeName== 'vote.vote_view') {
+        $page['#attached']['library'][] = 'vote/vote_form';
+    }
+    if ($routeName== 'vote.vote_content' || $routeName== 'vote.vote_add_page1' || $routeName== 'vote.vote_add_page2' || $routeName== 'vote.vote_change_1' || $routeName== 'vote.vote_copy'  ) {
+        $page['#attached']['library'][] = 'common/content_tags';
+    }    
 }
 
 

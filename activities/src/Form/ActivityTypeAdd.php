@@ -94,46 +94,57 @@ class ActivityTypeAdd extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
         
+        $categoryEntry = array(
+            'evt_type_name' => $evt_type_name,
+            'description' => $evt_description,
+            'display_order' => $display_order,
+        );
+
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
-            
-            $categoryEntry = array(
-                'evt_type_name' => $evt_type_name,
-                'description' => $evt_description,
-                'display_order' => $display_order,
-            );
 
-
-            $query = \Drupal::database()->insert('kicp_km_event_type')
+            $query = $database ->insert('kicp_km_event_type')
             ->fields( $categoryEntry);
             $evt_type_id = $query->execute();
 
 
             if ($evt_type_id) {
 
+                \Drupal::logger('activities')->info('Type Created id: %id, Type name: %type_name.',   
+                array(
+                    '%id' => $evt_type_id,
+                    '%type_name' => $evt_type_name,
+                ));            
+    
                 $url = Url::fromUri('base:/activities_admin/');
                 $form_state->setRedirectUrl($url);
         
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Activity Type has been added.'));
                 
-            }
-            else {
-                \Drupal::messenger()->addStatus(
+            } else {
+                \Drupal::messenger()->addError(
                     t('Activity Type is not created. ' )
                     );
+                \Drupal::logger('activities')->error('Activity Type is not created');
+                $transaction->rollBack();     
 
             }
         }
         catch (Exception $e) {
-            \Drupal::messenger()->addStatus(
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
                 t('Activity Type is not created. ' )
                 );
-    }
+            \Drupal::logger('activities')->error('Activity Type is not created: ' . $variables);       
+            $transaction->rollBack();    
+        }
+        unset($transaction);
     }
 
 }

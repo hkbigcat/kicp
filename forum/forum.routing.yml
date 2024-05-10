@@ -32,7 +32,7 @@ forum.forum_view_topic:
     no_cache: TRUE
 
 forum.forum_topic_add:
-  path: '/forum_topic_add'
+  path: '/forum_topic_add/{forum_id}'
   defaults:
     _form: '\Drupal\forum\Form\ForumAdd'
     _title: 'Add Forum Topic'

@@ -96,23 +96,27 @@ class PPCActivityCOPCategoryAdd extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
-        
+        $categoryEntry = array(
+            'cop_name' => $cop_name,
+            'cop_info' => $description,
+            'display_order' => $display_order,
+        );
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();         
         try {
-                        
-            $categoryEntry = array(
-                'cop_name' => $cop_name,
-                'cop_info' => $description,
-                'display_order' => $display_order,
-            );
-
             $query = \Drupal::database()->insert('kicp_ppc_cop')
             ->fields( $categoryEntry);
             $cop_id = $query->execute();
 
             if ($cop_id != null) {
-                                            
-                //-----------------------------------------------------------------------------------
 
+                \Drupal::logger('ppcactivities')->info('PPC Activities Category created id: %id, Category name: %cop_name.',   
+                array(
+                    '%id' =>  $cop_id,
+                    '%cop_name' => $cop_name,
+                ));                   
+
+                //----------------------------------------------------------------------------------
                 $url = Url::fromUri('base:/ppcactivities_admin_category');
                 $form_state->setRedirectUrl($url);
         
@@ -120,17 +124,23 @@ class PPCActivityCOPCategoryAdd extends FormBase {
                 $messenger->addMessage( t('PPC Activities Category is created. ID: '.$group_id));
 
             } else {
+                \Drupal::logger('ppcactivities')->error('PPC Activity Category is not created');    
                 \Drupal::messenger()->addError(
                     t('PPC Activities Category is not created - data not save' )
                     );
+                $transaction->rollBack();    
             }
 
         }
         catch (Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('PPC Activities Category is not created' )
                 );
+            \Drupal::logger('ppcactivities')->error('PPC Activities Category is not created: '.$variables);                    
+            $transaction->rollBack();
         }
+        unset($transaction);   
     }
 
 }

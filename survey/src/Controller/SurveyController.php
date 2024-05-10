@@ -88,6 +88,7 @@ class SurveyController extends ControllerBase {
             if ($row_affected) {
                 $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
                 $survey_dir = $survey_path.'/'.$this_survey_id;
+                $survey_uri = $SurveyUri.'/'.$this_survey_id;
                 // delete survey attach file from server physically
                 if (is_dir($survey_dir)) {
                     $surveyList = scandir($survey_dir);
@@ -96,8 +97,6 @@ class SurveyController extends ControllerBase {
                         if($filename == "." || $filename == "..") {
                             continue;
                         }
-                        
-                        // delete survey question attach file from server physically
                         if (is_dir(($survey_dir.'/'.$filename))) {
 
                             $surveyQuestionList = scandir($survey_dir.'/'.$filename);
@@ -105,11 +104,13 @@ class SurveyController extends ControllerBase {
                                 if($qustion_filename == "." || $qustion_filename == "..") {
                                     continue;
                                 }
-                                unlink($survey_dir.'/'.$filename.'/'.$qustion_filename);
+                                $uri = $survey_uri."/".$filename.'/'.$qustion_filename;
+                                $fid = CommonUtil::deleteFile($uri);   
                                 $actual_files++;                                        
                             }
                         } else {
-                          unlink($survey_dir.'/'.$filename);
+                          $uri = $survey_uri."/".$filename;
+                          $fid = CommonUtil::deleteFile($uri);                                
                           $actual_files++;
                         }
                     }
@@ -319,17 +320,14 @@ class SurveyController extends ControllerBase {
 
     }
 
-    public static function getFileLocation($survey_id) {
+    public static function getFileLocation($survey_id = "") {
 
-        if (!$survey_id || $survey_id == "")
+        if ( $survey_id == "")
             return false;
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
-        $my_user_id = $authen->getUserId();
-
         $survey = SurveyDatatable::getSurvey($survey_id, $my_user_id);
+        if (!$survey)
+            return false;
 
         $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
         $file_name = $survey->file_name;
@@ -342,32 +340,21 @@ class SurveyController extends ControllerBase {
         return $file_path;
     }    
 
-    public static function getQuestionFileLocation($survey_id, $question_id) {
+    public static function getQuestionFileLocation($survey_id ="", $question_id="",  $my_user_id="") {
 
-
-        
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
-
-        if ($survey_id == "") {
+        if ($survey_id == "" || $question_id == "") {
             return false;
         }
-        if ($question_id == "") {
-            return false;
-        }
-        $my_user_id = $authen->getUserId();
 
         $survey = SurveyDatatable::getSurvey($my_user_id, $survey_id);
-        $surveyInfo = $survey->fetchObject();
-        $question = SurveyDatatable::getSurveyQuestionByID($my_user_id, $question_id);
-        $questionInfo = $question->fetchObject();
+        if (!$survey)
+            return false;
         $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
         $this_question_id = str_pad($question_id, 6, "0", STR_PAD_LEFT);
+        $question = SurveyDatatable::getSurveyQuestionByID($question_id);
         $file_name = $questionInfo->file_name;
         // file in "private" folder
         $file_path = 'sites/default/files/private/survey/' . $this_survey_id . '/' . $this_question_id . '/' . $file_name;
-
         return $file_path;
     }    
     

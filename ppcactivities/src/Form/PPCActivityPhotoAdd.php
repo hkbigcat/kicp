@@ -131,59 +131,54 @@ class PPCActivityPhotoAdd extends FormBase {
                 throw new \Exception('Could not create the activities photo - entry id directory.');
                 }
             }
+            $database = \Drupal::database();
+            $transaction = $database->startTransaction();                
+            try {
+                foreach ($files as $file1) {
 
-            foreach ($files as $file1) {
-
-                if ($file1) {
-                    $NewFile = File::load($file1);
-                    $uuid = $NewFile->uuid();
-                    $photo_name = $NewFile->getFilename();
-
-                    $source = $file_system->realpath($ActivitiesPhotoUri . '/'. $photo_name);
-                    $destination = $file_system->realpath($createDir . '/' . $photo_name);
-                    if (!$file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE)) {
-                        throw new \Exception('Could not move the generic placeholder image to the destination directory.');
-                    } else {
-                        $rs = CommonUtil::updateDrupalFileManagedUri($uuid, $createDir . '/' . $photo_name, '');
+                    if ($file1) {
+                        $NewFile = File::load($file1);
+                        $photo_name = $NewFile->getFilename();
+                        $source = $file_system->realpath($ActivitiesPhotoUri . '/'. $photo_name);
+                        $destination = $file_system->realpath($createDir . '/' . $photo_name);
+                        $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+                        if (!$newFileName) {
+                            throw new \Exception('Could not move the generic placeholder image to the destination directory.');
+                        } else {
+                            $NewFile->setFileUri($createDir . '/' . $photo_name);
+                                $NewFile->uid =$evt_id;
+                                $NewFile->setPermanent();
+                                $NewFile->save();
+                        }
                     }
 
-
-                }
-                
-
-                try {
                     $photoEntry = array('evt_id' => $evt_id, 'evt_photo_url' => $photo_name, 'evt_photo_description' => $photo_name);
                     $query = \Drupal::database()->insert('kicp_ppc_event_photo')
                     ->fields($photoEntry);
                     $entry_id = $query->execute();
-
-                    $photo_uploaded .= " , $photo_name ";
-                    
-                } catch (Exception $ex) {
-
-                    //drupal_set_message('Photo '.$photo_name.' is not uploaded.', 'error');
-                    $photo_not_uploaded .= " , $photo_name ";
-
+                    $photo_uploaded .= " , $photo_name ";               
                 }
+               \Drupal::logger('ppcactivities')->info('Event ID: '.$evt_id.' PPC Event photos uploaded: '.ubstr($photo_uploaded,0,-2));
+            }  catch (Exception $ex) {
+                $variables = Error::decodeException($e);
+                \Drupal::messenger()->addError(
+                    t('PPC Activity Event Photo  is not uploaded.' )
+                    );
+                \Drupal::logger('ppcactivities')->error('PPC Activity Event Photo is not uploaded.: '.$variables);                    
+                $transaction->rollBack();   
             }
-
+            unset($transaction); 
             $url = Url::fromUserInput('/ppcactivities_photo/'.$evt_id);
             $form_state->setRedirectUrl($url);            
                
             $messenger = \Drupal::messenger(); 
             if($photo_uploaded != "") {
-                $messenger->addMessage( t('Photo '. $photo_uploaded . ' uploaded'));                
+                $messenger->addMessage( t('Photo '. ubstr($photo_uploaded,0,-2) . ' uploaded'));                
             }
             
-            if($photo_not_uploaded != "") {
-                $messenger->addMessage( t('Photo '. $photo_not_uploaded . ' not uploaded'));                
-            }
-
             /////////// Handle attachment [End] /////////////
-            
-           
         } else {
-            $messenger->addMessage( t('No photo uploaded'));                
+            $messenger->addMessage( t('No photo to upload'));                  
         }
             //***********************************************************
         

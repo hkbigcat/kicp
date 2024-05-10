@@ -38,8 +38,18 @@ class SurveyView extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $survey_id = \Drupal::request()->query->get('survey_id');
-        $survey = SurveyDatatable::getSurvey($survey_id);
+        $survey = SurveyDatatable::getSurvey($survey_id, $this->my_user_id);
+
+        $isShowSubmit = true;
+        if (!$survey) {
+            $isShowSubmit = false;
+            $messenger = \Drupal::messenger(); 
+            $messenger->addStatus( t('This survey does not exist or you do not have authroity'));                        
+            return $form; 
+        }
+
         $questionInfo = SurveyDatatable::getSurveyQuestionAll($survey_id);
+        $respondent = SurveyDatatable::checkSurveyRespondentSumbited($this->my_user_id, $survey_id);
 
         $dateType_start = new \DateTime($survey->start_date);
         $dateType_expiry = new \DateTime($survey->expiry_date);
@@ -47,25 +57,55 @@ class SurveyView extends FormBase {
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
-        $isShowSubmit = true;
         if ($dateType_start > $currentdate) {
             $isShowSubmit = false;
-            if (!$isShowSubmit) {
             $form['intro'] = array(
-                '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey does not start yet.'),
+                '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey does not start yet.</p>'),
               );
-              return $form; 
+            if (!$isSiteAdmin and ( $this->my_user_id != $survey->user_id)) {      
+                $form['Close2'] = array(
+                    '#type' => 'button',
+                    '#value' => t('Close'),
+                    '#prefix' => '&nbsp;',
+                    '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                    '#limit_validation_errors' => array(),
+                  );    
+                return $form; 
             }
         }
         if ($dateType_expiry < $currentdate) {
             $isShowSubmit = false;
-            if (!$isShowSubmit) {
-                $form['intro'] = array(
-                    '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey is ended.'),
-                  );
-                  return $form; 
-                }
+            $form['intro'] = array(
+                  '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This survey is ended.</p>'),
+            );    
+            if (!$isSiteAdmin and ( $this->my_user_id != $survey->user_id))  {
+                $form['Close2'] = array(
+                    '#type' => 'button',
+                    '#value' => t('Close'),
+                    '#prefix' => '&nbsp;',
+                    '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                    '#limit_validation_errors' => array(),
+                  );    
+                 return $form; 
+            }
         }
+
+        if ($respondent) {
+            $isShowSubmit = false;
+            $form['intro'] = array(
+                '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You have already answered this Survey</p>'),
+              );
+            if (!$isSiteAdmin and (  $this->my_user_id != $survey->user_id)) {    
+                $form['Close2'] = array(
+                    '#type' => 'button',
+                    '#value' => t('Close'),
+                    '#prefix' => '&nbsp;',
+                    '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                    '#limit_validation_errors' => array(),
+                  );    
+                return $form; 
+            }
+        }        
 
 //page 1     
         $form['SurveyTitle'] = array(
@@ -90,254 +130,267 @@ class SurveyView extends FormBase {
         $redstar = '<span class="redstar1">&nbsp;*</span>';
         $questionCounter = 0;
         $i=1;
-        foreach ($questionInfo as $record) {
 
-            $questionCounter++;
-            $choicearry = [];
-            $rateScalearry = [];
-            $rateLegendarry = [];
-            $ratePositionarry = [];
-            $questionTitle = "";
-            foreach ($record as $key => $value) {
-                $$key = $value;
-            }
+        if ($questionInfo) {
+            foreach ($questionInfo as $record) {
 
-            $surveyInfoChoice = SurveyDatatable::getSurveyChoice($id);
-            $surveyInfoRate = SurveyDatatable::getSurveyRateView($id);
-            $k = 1;
-
-            $counter = 0;
-            foreach ($surveyInfoRate as $rateresult) {
-
-                $rateScalearry[$counter] = $rateresult['scale'];
-                if ($show_scale == 1) {
-                    $rateLegendarry[$rateresult['id']] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
+                $questionCounter++;
+                $choicearry = [];
+                $rateScalearry = [];
+                $rateLegendarry = [];
+                $ratePositionarry = [];
+                $questionTitle = "";
+                foreach ($record as $key => $value) {
+                    $$key = $value;
                 }
-                else {
-                    $rateLegendarry[$rateresult['id']] = $rateresult['legend'];
-                }
-                $ratePositionarry[$counter] = $rateresult['position'];
-                $counter++;
-            }
-            if ($has_others == 'Y') {
-                if ($show_scale == 1) {
-                    $rateLegendarry['other'] = 'N/A (0)';
-                }
-                else {
-                    $rateLegendarry['other'] = 'N/A';
-                }
-            }
 
-            if ($record['required'] == 'Y') {
-                $questionTitle = $redstar; 
-            }
-            $questionTitle .= $content;
+                $surveyInfoChoice = SurveyDatatable::getSurveyChoice($id);
+                $surveyInfoRate = SurveyDatatable::getSurveyRateView($id);
+                $k = 1;
 
-            $form['QuestionName' . $i] = array(
-                '#markup' => t($record['name']),
-              );
-  
-            if ($record['file_name'] != '') {
-                $file_question_path = 'download/survey_question/' . $survey_id . '/' . $record['id'] .'?question='.$record['id'];
-                 
-                $form['fileQuestionPath' . $i] = array(
-                  '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i>&nbsp;' . $record['file_name'] . '</a></p>',
+                $counter = 0;
+                foreach ($surveyInfoRate as $rateresult) {
+
+                    $rateScalearry[$counter] = $rateresult['scale'];
+                    if ($show_scale == 1) {
+                        $rateLegendarry[$rateresult['id']] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
+                    }
+                    else {
+                        $rateLegendarry[$rateresult['id']] = $rateresult['legend'];
+                    }
+                    $ratePositionarry[$counter] = $rateresult['position'];
+                    $counter++;
+                }
+                if ($has_others == 'Y') {
+                    if ($show_scale == 1) {
+                        $rateLegendarry['other'] = 'N/A (0)';
+                    }
+                    else {
+                        $rateLegendarry['other'] = 'N/A';
+                    }
+                }
+
+                if ($record['required'] == 'Y') {
+                    $questionTitle = $redstar; 
+                }
+                $questionTitle .= $content;
+
+                $form['QuestionName' . $i] = array(
+                    '#markup' => t('<span class="sectionView">'.$record['name'].'</span>'),
                 );
-            }
-
+    
+                if ($record['file_name'] != '') {
+                    $file_question_path = 'download/survey_question/' . $survey_id . '/' . $record['id'] .'?question='.$record['id'];
                     
-            switch ($type_id) {
-                case 1: {
-                        $yesno = array();
-                        $yesno["Yes"] = "Yes";
-                        $yesno["No"] = "No";
-                        $form['yesNoTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-                        $form['answer' . $i] = array(
-                          '#type' => 'select',
-                          '#options' => $yesno,
-                        );
-                        break;
-                    }
-                case 2: {
-                        $form['textBoxTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-                        $form['answer' . $i] = array(
-                          '#type' => 'textfield',
-                          '#size' => 90,
-                          '#maxlength' => 255,
-                        );
-                        break;
-                    }
-                case 3: {
-                        $form['essayTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-                        $form['answer' . $i] = array(
-                          '#type' => 'text_format',
-                          '#format' => 'full_html',                
-                          '#rows' => 3,
-                          '#cols' => 30,
-                          '#attributes' => array('style' => 'height:100px;'),
-                          
-                        );
+                    $form['fileQuestionPath' . $i] = array(
+                    '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $record['file_name'] . '</a></p><div class="spacer"></div>',
+                    );
+                }
 
-                        break;
-                    }
-                case 4: {
-                        foreach ($surveyInfoChoice as $result) {
-                            $choicearry[$result['id']] = $result['choice'];
-                        }
-                        $form['radioTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-                        $form['answer' . $i] = array(
-                          '#type' => 'radios',
-                          '#options' => $choicearry,
-                          '#attributes' => array('onClick' => 'clearRadioOther(\'other' . $i . '\')'),
-                        );
-                        if ($has_others == 'Y') {
-                            $form['radioOtherTitle' . $i] = array(
-                              '#markup' => 'Others: please specify',
-                                
-                            );
-                            $form['other' . $i] = array(
-                              '#type' => 'textfield',
-                              '#size' => 50,
-                              '#maxlength' => 255,
-                              '#attributes' => array('onClick' => 'clearRadio(\'answer' . $i . '\')', 'id' => 'other' . $i),
-                            );
-                        }
                         
-                        break;
-                    }
-                case 5: {
-                        $k = 1;
-                        $form['CheckBoxTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-
-                        foreach ($surveyInfoChoice as $recordcoice) {
-                            $form['answer' . $i . '_' . $k] = array(
-                              '#title' => $recordcoice->choice,
-                              '#type' => 'checkbox',
-                              '#default_value' => '0',
-                              '#attributes' => array('id' => ('answer' . $i . $k)),
+                switch ($type_id) {
+                    case 1: {
+                            $yesno = array();
+                            $yesno["Yes"] = "Yes";
+                            $yesno["No"] = "No";
+                            $form['yesNoTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
                             );
-                            $k = $k + 1;
+                            $form['answer' . $i] = array(
+                            '#type' => 'select',
+                            '#options' => $yesno,
+                            );
+                            break;
                         }
-                        if ($has_others == 'Y') {
-                            $form['checkboxOtherTitle' . $i] = array(
-                              '#markup' => 'Others:',
+                    case 2: {
+                            $form['textBoxTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
                             );
-                            $form['other' . $i] = array(
-                              '#type' => 'textfield',
-                              '#size' => 50,
-                              '#maxlength' => 255,
+                            $form['answer' . $i] = array(
+                            '#type' => 'textfield',
+                            '#size' => 90,
+                            '#maxlength' => 255,
                             );
+                            break;
                         }
-                        break;
-                    }
-                case 6: {
-                        $k = 1;
+                    case 3: {
+                            $form['essayTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
+                            );
+                            $form['answer' . $i] = array(
+                            '#type' => 'text_format',
+                            '#format' => 'full_html',                
+                            '#rows' => 3,
+                            '#cols' => 30,
+                            '#attributes' => array('style' => 'height:100px;'),
+                            
+                            );
 
-
-                        $form['rateTitle' . $i] = array(
-                          '#markup' => $questionTitle, 
-                        );
-                        
-                        $rateTable = '<table class="tb_rate">';
-                        $rateTableHeader = "<tr>";
-                        $rateColHeader = "<th></th>";
-
-                        for ($x = 0; $x < $counter; $x++) {
-                            $rateColHeader .= "<th>";
-                            if ($show_legend == 1) {
-                                $rateColHeader .= $rateLegendarry[$x];
+                            break;
+                        }
+                    case 4: {
+                            foreach ($surveyInfoChoice as $result) {
+                                $choicearry[$result['id']] = $result['choice'];
                             }
-                            if ($show_scale == 1) {
-                                $rateColHeader .= " ( " . $rateScalearry[$x] . " ) ";
+                            $form['radioTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
+                            );
+                            $form['answer' . $i] = array(
+                            '#type' => 'radios',
+                            '#options' => $choicearry,
+                            '#attributes' => array('onClick' => 'clearRadioOther(\'other' . $i . '\')'),
+                            );
+                            if ($has_others == 'Y') {
+                                $form['radioOtherTitle' . $i] = array(
+                                '#markup' => 'Others: please specify',
+                                    
+                                );
+                                $form['other' . $i] = array(
+                                '#type' => 'textfield',
+                                '#size' => 50,
+                                '#maxlength' => 255,
+                                '#attributes' => array('onClick' => 'clearRadio(\'answer' . $i . '\')', 'id' => 'other' . $i),
+                                );
                             }
-                            $rateColHeader .= "</th>";
+                            
+                            break;
                         }
-                        $rateTableHeader .= $rateColHeader;
-                        $rateTableHeader .= "</tr>";
-
-                        
-
-                        $form['ratetableopen' . $i] = array(
-                          '#markup' => $rateTable,
-                        );
-
-                        
-                        foreach ($surveyInfoChoice as $recordchoice) {
-                            $form['hiddenchoice' . $i . '_' . $k] = array(
-                              '#type' => 'hidden',
-                              '#value' => $recordchoice->id,
-                              '#attributes' => array('id' => 'hiddenchoice'),
+                    case 5: {
+                            $k = 1;
+                            $form['CheckBoxTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
                             );
 
-
-                            $rateTableRows = "<tr>";
-                            $rateTableRows .= "<td>" . $recordchoice['choice'] . "</td>";
-                            $form['ratetablecolopen' . $i . '_' . $k] = array(
-                              '#markup' => $rateTableRows,
-                            );
-                            $rateColSpan = $counter + 1;
-                            $form['answer' . $i . '_' . $k] = array(
-                              '#type' => 'radios',
-                              '#options' => $rateLegendarry,
-                              '#prefix' => '<td colspan="' . $rateColSpan . '" style="text-wrap=nowrap;">',
-                              '#suffix' => '</td>',
-                            );
-                            $rateTableRows = "</tr>";
-                            $form['ratetableend' . $i . '_' . $k] = array(
-                              '#markup' => $rateTableRows,
-                            );
-                            $k++;
+                            foreach ($surveyInfoChoice as $recordcoice) {
+                                $form['answer' . $i . '_' . $k] = array(
+                                '#title' => $recordcoice->choice,
+                                '#type' => 'checkbox',
+                                '#default_value' => '0',
+                                '#attributes' => array('id' => ('answer' . $i . $k)),
+                                );
+                                $k = $k + 1;
+                            }
+                            if ($has_others == 'Y') {
+                                $form['checkboxOtherTitle' . $i] = array(
+                                '#markup' => 'Others:',
+                                );
+                                $form['other' . $i] = array(
+                                '#type' => 'textfield',
+                                '#size' => 50,
+                                '#maxlength' => 255,
+                                );
+                            }
+                            break;
                         }
-
-                        $form['ratetableend' . $i] = array(
-                          '#markup' => '</table>',
-                        );
+                    case 6: {
+                            $k = 1;
 
 
+                            $form['rateTitle' . $i] = array(
+                            '#markup' => $questionTitle, 
+                            );
+                            
+                            $rateTable = '<table class="tb_rate">';
+                            $rateTableHeader = "<tr>";
+                            $rateColHeader = "<th></th>";
+
+                            for ($x = 0; $x < $counter; $x++) {
+                                $rateColHeader .= "<th>";
+                                if ($show_legend == 1) {
+                                    $rateColHeader .= $rateLegendarry[$x];
+                                }
+                                if ($show_scale == 1) {
+                                    $rateColHeader .= " ( " . $rateScalearry[$x] . " ) ";
+                                }
+                                $rateColHeader .= "</th>";
+                            }
+                            $rateTableHeader .= $rateColHeader;
+                            $rateTableHeader .= "</tr>";
+
+                            
+
+                            $form['ratetableopen' . $i] = array(
+                            '#markup' => $rateTable,
+                            );
+
+                            
+                            foreach ($surveyInfoChoice as $recordchoice) {
+                                $form['hiddenchoice' . $i . '_' . $k] = array(
+                                '#type' => 'hidden',
+                                '#value' => $recordchoice->id,
+                                '#attributes' => array('id' => 'hiddenchoice'),
+                                );
+
+
+                                $rateTableRows = "<tr>";
+                                $rateTableRows .= "<td>" . $recordchoice['choice'] . "</td>";
+                                $form['ratetablecolopen' . $i . '_' . $k] = array(
+                                '#markup' => $rateTableRows,
+                                );
+                                $rateColSpan = $counter + 1;
+                                $form['answer' . $i . '_' . $k] = array(
+                                '#type' => 'radios',
+                                '#options' => $rateLegendarry,
+                                '#prefix' => '<td colspan="' . $rateColSpan . '" style="text-wrap=nowrap;">',
+                                '#suffix' => '</td>',
+                                );
+                                $rateTableRows = "</tr>";
+                                $form['ratetableend' . $i . '_' . $k] = array(
+                                '#markup' => $rateTableRows,
+                                );
+                                $k++;
+                            }
+
+                            $form['ratetableend' . $i] = array(
+                            '#markup' => '</table>',
+                            );
+
+
+                            
+                            break;
+                            
+                        }
                         
+                    default:
                         break;
-                        
-                    }
-                    
-                default:
-                    break;
+                }
+                $form['questionsepartor' . $i] = array(
+                    '#suffix' => '<div class="greyBorderBottom"></div>',
+                );
+                $i++;
+                
             }
-            $form['questionsepartor' . $i] = array(
-                '#suffix' => '<div class="greyBorderBottom"></div>',
-              );
-            $i++;
-            
-
         }
 
-        $form['actions']['submitSurvey'] = array(
-            '#type' => 'submit',
-            '#value' => t('Submit Survey'),
-            '#access' => $isShowSubmit,
-            '#attributes' => array('onClick' => 'submitSurvey();'),
-        );
+        if ($isShowSubmit && $survey->is_visible==1 && $survey->is_completed==1  ) {
+            $form['actions']['submitSurvey'] = array(
+                '#type' => 'submit',
+                '#value' => t('Submit Survey'),
+                '#access' => $isShowSubmit,
+                '#attributes' => array('onClick' => 'submitSurvey();'),
+            );
 
-        $form['actions']['Rest'] = array(
-            '#type' => 'submit',
-            '#value' => t('Reset'),
-            '#attributes' => array('onClick' => 'resetSurvey();'),
-          );
+            $form['actions']['Rest'] = array(
+                '#type' => 'submit',
+                '#value' => t('Reset'),
+                '#attributes' => array('onClick' => 'resetSurvey();'),
+            );
+        } else {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addStatus( t('This survey cannot be submitted.'));    
+            $form['Close2'] = array(
+                '#type' => 'button',
+                '#value' => t('Close'),
+                '#prefix' => '&nbsp;',
+                '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                '#limit_validation_errors' => array(),
+              );               
+        }
   
           $form['actions']['Close'] = array(
             '#type' => 'button',
             '#value' => t('Close'),
             '#prefix' => '&nbsp;',
-            //'#attributes' => array('onClick' => 'window.open(\'bookmark\', \'_self\'); return false;'),
             '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
           );
@@ -348,6 +401,7 @@ class SurveyView extends FormBase {
           );        
 
         return $form;
+        
     }
 
     public function validateForm(array &$form, FormStateInterface $form_state) {
@@ -369,8 +423,8 @@ class SurveyView extends FormBase {
             }
 
             if ($required == 'Y') {
-                if (($type_id == 1) || ($type_id == 2) ) {
-                    if (${'answer' . $i}['value'] == '') {
+                if ( $type_id == 2 ) {
+                    if ((${'answer' . $i} == '')) {
                         $errorMessage .= $this->t("Question" . $i . " is blank<br>");
                         $hasError = true;
                         if ($firstError == 0) {
@@ -407,7 +461,7 @@ class SurveyView extends FormBase {
                             $hasError = false;
                         $j++;
                     }
-                    if (${'other' . $i}['value'] != '') {
+                    if (${'other' . $i} != '') {
                         $hasError = false;
                     }
                     if ($hasError) {
@@ -467,141 +521,156 @@ class SurveyView extends FormBase {
             'modify_datetime' => date('Y-m-d H:i:s'),
             'survey_id' => $survey_id,
         );
-        $query = \Drupal::database()->insert('kicp_survey_respondent')
-        ->fields($RespondentEntry);
-        $Respondent_id = $query->execute();
-
-        $questionInfo = SurveyDatatable::getSurveyQuestionAll($survey_id);
-
-        $i=1;
-        foreach ($questionInfo as $record) {
-
-            foreach ($record as $key => $value) {
-                $$key = $value;
-            }
 
 
-            if (($type_id == 1) || ($type_id == 2) ) {
+        try {
+            $query = \Drupal::database()->insert('kicp_survey_respondent')
+            ->fields($RespondentEntry);
+            $Respondent_id = $query->execute();
 
-                $QuestionEntry = array(
-                    'question_id' => $record['id'],
-                    'response' => ${'answer' . $i},
-                    'create_datetime' => date('Y-m-d H:i:s'),
-                    'modify_datetime' => date('Y-m-d H:i:s'),
-                    'survey_id' => $survey_id,
-                    'respondent_id' => $Respondent_id,
-                );
-                $return = SurveyDatatable::insertResponse($QuestionEntry);
+            $questionInfo = SurveyDatatable::getSurveyQuestionAll($survey_id);        
+            $i=1;
+            foreach ($questionInfo as $record) {
 
-            } elseif ($type_id == 3) {
-                $QuestionEntry = array(
-                    'question_id' => $record['id'],
-                    'response' => ${'answer' . $i}['value'],
-                    'create_datetime' => date('Y-m-d H:i:s'),
-                    'modify_datetime' => date('Y-m-d H:i:s'),
-                    'survey_id' => $survey_id,
-                    'respondent_id' => $Respondent_id,
-                );
-                $return = SurveyDatatable::insertResponse($QuestionEntry);
-            } elseif ($type_id == 4) {
-                if (${'other' . $i} == '') {
-                    $QuestionEntry = array(
-                      'question_id' => $record['id'],
-                      'response' => ${'answer' . $i},
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'survey_id' => $survey_id,
-                      'respondent_id' => $Respondent_id,
-                    );
+                foreach ($record as $key => $value) {
+                    $$key = $value;
                 }
-                else {
-                    $QuestionEntry = array(
-                      'question_id' => $record['id'],
-                      'response' => ${'other' . $i},
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'survey_id' => $survey_id,
-                      'respondent_id' => $Respondent_id,
-                    );
-                }
-                $return = SurveyDatatable::insertResponse($QuestionEntry);
 
-            } elseif ($type_id == 5) {
+                if ($type_id == 1) {
 
-                $surveyInfoChoice = SurveyDatatable::getSurveyChoice($record['id']);
-                foreach ($surveyInfoChoice as $recordcoice) {
-                    if (${'answer' . $i . '_' . $j} == 1) {
-                        $QuestionEntry = array(
-                          'question_id' => $record['id'],
-                          'response' => $recordcoice['id'],
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
-                          'survey_id' => $survey_id,
-                          'respondent_id' => $Respondent_id,
-                        );
-                        $return = SurveyDatatable::insertResponse($QuestionEntry);
-                            }
-                    $j = $j + 1;
-                }
-                if (${'other' . $i} != '') {
-                    $QuestionEntry = array(
-                      'question_id' => $record['id'],
-                      'response' => ${'other' . $i},
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'survey_id' => $survey_id,
-                      'respondent_id' => $Respondent_id,
-                    );
-                    $return = SurveyDatatable::insertResponse($QuestionEntry);
-                }
-            }  elseif ($type_id == 6) {
-
-                $surveyInfoChoiceSumbit = SurveyDatatable::getSurveyChoice($record['id']);
-                $j=1;
-                foreach ($surveyInfoChoiceSumbit as $recordcoice) {
                     $QuestionEntry = array(
                         'question_id' => $record['id'],
-                        'response' => ${'hiddenchoice' . $i . '_' . $j},
-                        'rank' => ${'answer' . $i . '_' . $j},
+                        'response' => ${'answer' . $i},
+                        'create_datetime' => date('Y-m-d H:i:s'),
+                        'modify_datetime' => date('Y-m-d H:i:s'),
+                        'survey_id' => $survey_id,
+                        'respondent_id' => $Respondent_id,
+                      );
+                    $return = SurveyDatatable::insertResponse($QuestionEntry);
+
+                } elseif ( $type_id == 2) {
+                    $QuestionEntry = array(
+                        'question_id' => $record['id'],
+                        'response' => ${'answer' . $i},
                         'create_datetime' => date('Y-m-d H:i:s'),
                         'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                     );
-                    $return = SurveyDatatable::insertResponseRank($QuestionEntry);
-                    $j++;
+                    $return = SurveyDatatable::insertResponse($QuestionEntry);
+
+                } elseif ($type_id == 3) {
+                    $QuestionEntry = array(
+                        'question_id' => $record['id'],
+                        'response' => ${'answer' . $i}['value'],
+                        'create_datetime' => date('Y-m-d H:i:s'),
+                        'modify_datetime' => date('Y-m-d H:i:s'),
+                        'survey_id' => $survey_id,
+                        'respondent_id' => $Respondent_id,
+                    );
+                    $return = SurveyDatatable::insertResponse($QuestionEntry);
+                } elseif ($type_id == 4) {
+                    if (${'other' . $i} == '') {
+                        $QuestionEntry = array(
+                        'question_id' => $record['id'],
+                        'response' => ${'answer' . $i},
+                        'create_datetime' => date('Y-m-d H:i:s'),
+                        'modify_datetime' => date('Y-m-d H:i:s'),
+                        'survey_id' => $survey_id,
+                        'respondent_id' => $Respondent_id,
+                        );
+                    }
+                    else {
+                        $QuestionEntry = array(
+                        'question_id' => $record['id'],
+                        'response' => ${'other' . $i},
+                        'create_datetime' => date('Y-m-d H:i:s'),
+                        'modify_datetime' => date('Y-m-d H:i:s'),
+                        'survey_id' => $survey_id,
+                        'respondent_id' => $Respondent_id,
+                        );
+                    }
+                    $return = SurveyDatatable::insertResponse($QuestionEntry);
+
+                } elseif ($type_id == 5) {
+
+                    $surveyInfoChoice = SurveyDatatable::getSurveyChoice($record['id']);
+                    foreach ($surveyInfoChoice as $recordcoice) {
+                        if (${'answer' . $i . '_' . $j} == 1) {
+                            $QuestionEntry = array(
+                            'question_id' => $record['id'],
+                            'response' => $recordcoice['id'],
+                            'create_datetime' => date('Y-m-d H:i:s'),
+                            'modify_datetime' => date('Y-m-d H:i:s'),
+                            'survey_id' => $survey_id,
+                            'respondent_id' => $Respondent_id,
+                            );
+                            $return = SurveyDatatable::insertResponse($QuestionEntry);
+                                }
+                        $j = $j + 1;
+                    }
                     if (${'other' . $i} != '') {
                         $QuestionEntry = array(
-                          'question_id' => $record['id'],
-                          'response' => ${'other' . $i},
-                          'rank' => ${'other' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
-                          'survey_id' => $survey_id,
-                          'respondent_id' => $Respondent_id,
+                        'question_id' => $record['id'],
+                        'response' => ${'other' . $i},
+                        'create_datetime' => date('Y-m-d H:i:s'),
+                        'modify_datetime' => date('Y-m-d H:i:s'),
+                        'survey_id' => $survey_id,
+                        'respondent_id' => $Respondent_id,
                         );
                         $return = SurveyDatatable::insertResponse($QuestionEntry);
                     }
+                }  elseif ($type_id == 6) {
+
+                    $surveyInfoChoiceSumbit = SurveyDatatable::getSurveyChoice($record['id']);
+                    $j=1;
+                    foreach ($surveyInfoChoiceSumbit as $recordcoice) {
+                        $QuestionEntry = array(
+                            'question_id' => $record['id'],
+                            'response' => ${'hiddenchoice' . $i . '_' . $j},
+                            'rank' => ${'answer' . $i . '_' . $j},
+                            'create_datetime' => date('Y-m-d H:i:s'),
+                            'modify_datetime' => date('Y-m-d H:i:s'),
+                            'survey_id' => $survey_id,
+                            'respondent_id' => $Respondent_id,
+                        );
+                        $return = SurveyDatatable::insertResponseRank($QuestionEntry);
+                        $j++;
+                        if (${'other' . $i} != '') {
+                            $QuestionEntry = array(
+                            'question_id' => $record['id'],
+                            'response' => ${'other' . $i},
+                            'rank' => ${'other' . $i},
+                            'create_datetime' => date('Y-m-d H:i:s'),
+                            'modify_datetime' => date('Y-m-d H:i:s'),
+                            'survey_id' => $survey_id,
+                            'respondent_id' => $Respondent_id,
+                            );
+                            $return = SurveyDatatable::insertResponse($QuestionEntry);
+                        }
+
+                    }
 
                 }
-
+                $i++;
             }
-            $i++;
+
+            $url = new Url('survey.survey_content');
+            $form_state->setRedirectUrl($url);
+
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Thanks you for sumbiting the answers.'));  
+            
+        } catch (Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+              t('Survey is not submitted' )
+              );
+            \Drupal::logger('error')->notice('Survey is not submitted: ' . $variables);            
         }
-
-        $url = new Url('survey.survey_content');
-        $form_state->setRedirectUrl($url);
-
-        $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('Thanks you for sumbiting the answers.'));  
-
-
-
 
     }
     
-
-
 }
 
 

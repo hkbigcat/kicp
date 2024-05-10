@@ -118,6 +118,7 @@ class SurveyAddPage1 extends FormBase {
 
         $form['ReadyVote'] = array(
           '#title' => t('Ready for voting'),
+          '#description' => t('If disabled, the survey can be accessed but cannot be submitted.'),
           '#type' => 'checkbox',
           '#default_value' => 1,
         );

@@ -13,22 +13,27 @@
             <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
         </div>
         <div class="forum_post_content">
-            <form method="post" name="form_{{ thread['post_id'] }}" action="{{ path('forum.forum_topic_add') }}">
+            <form method="post" name="form_{{ thread['post_id'] }}" action="{{ path('forum.forum_topic_add', {'forum_id': forum_info.forum_id }) }}">
             <div style="width:70%;float:left;padding-botton:20px; display:block;">
                     {{ thread['content']  | raw }}
                     <div style="display:block;margin-top:10px;">
-                        <span class="blog_subtitle" >Posted on:</span> {{ thread['create_datetime'] }}
+                        {% if (thread['attachment'])  %}
+                            {% for attach in thread['attachment'] %}
+                            <div><i class="fa-solid fa-paperclip"></i><span class="w20px"></span><a href="{{ url('<front>') }}system/files/forum/file/{{ "%06d" | format(thread['topic_id']) }}/{{ "%06d" | format(thread['post_id']) }}/{{attach}}">{{attach}}</a></div>
+                            {% endfor %} 
+                            <div class="spacer"></div>
+                        {% endif %}                      
+                        <div><span class="blog_subtitle" >Posted on:</span> {{ thread['create_datetime'] }}</div>
                     </div>
             </div>
             <div id="forum_post_87" style="width:23%;float:right;display:block;">
-                <div>
-                    <div style="float:left;"><button class="kicp_button" onClick="jQuery('#quotePost_{{ thread['post_id'] }}').val({{ thread['post_id'] }});jQuery('#form_{{ thread['post_id'] }}').submit();"></i> Quote </button>
-                    <div style="float:left;"><button class="kicp_button" onClick="jQuery('#form_{{ thread['post_id'] }}').submit();"> Reply this Thread </button>
+                <div style="float:left;">
+                    <button class="kicp_button" onClick="jQuery('#quotePost_{{ thread['post_id'] }}').val({{ thread['post_id'] }});jQuery('#form_{{ thread['post_id'] }}').submit();"></i> Quote </button>
+                    <button class="kicp_button" onClick="jQuery('#form_{{ thread['post_id'] }}').submit();"> Reply this Thread </button>
                 </div>
             </div>
             <input type="hidden" name="post_id" id="post_id" value="{{ thread['post_id'] }}">
             <input type="hidden" name="topic_id" id="topic_id" value="{{ thread['topic_id'] }}">
-            <input type="hidden" name="forum_id" id="forum_id" value="3">
             <input type="hidden" name="quotePost" id="quotePost_{{ thread['post_id'] }}" value="">
             </form>
         </div>

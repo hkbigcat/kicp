@@ -12,7 +12,7 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
-use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
+use Drupal\activities\Common\ActivitiesDatatable;
 
 class ActivityTypeChange extends FormBase {
 
@@ -34,7 +34,7 @@ class ActivityTypeChange extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $evt_type_id="") {
         
-        $activityTypeInfoAry = PPCActivitiesDatatable::getActivityTypeInfo($evt_type_id);
+        $activityTypeInfoAry = ActivitiesDatatable::getActivityTypeInfo($evt_type_id);
 
         // display the form
 
@@ -107,18 +107,26 @@ class ActivityTypeChange extends FormBase {
             $$key = $value;
         }
         
-        try {
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();           
             
-            $typeEntry = array(
-                'evt_type_name' => $evt_type_name,
-                'description' => $evt_description,
-                'display_order' => $display_order,
-            );
+        $typeEntry = array(
+            'evt_type_name' => $evt_type_name,
+            'description' => $evt_description,
+            'display_order' => $display_order,
+        );
 
+        try {            
             $query = \Drupal::database()->update('kicp_km_event_type')
             ->fields(  $typeEntry )
             ->condition('evt_type_id', $evt_type_id)
             ->execute();
+
+            \Drupal::logger('activities')->info('Type updated id: %id, Type name: %type_name.',   
+            array(
+                '%id' => $evt_type_id,
+                '%type_name' => $evt_type_name,
+            )); 
 
             $url = Url::fromUri('base://activities_admin');
             $form_state->setRedirectUrl($url);
@@ -128,11 +136,14 @@ class ActivityTypeChange extends FormBase {
 
         }
         catch (Exception $e) {
-
-            \Drupal::messenger()->addError(
-                t('Activity Type is not updated. '.$e )
-                );
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+                t('Activity Type is not updated. ' )
+              );
+          \Drupal::logger('activities')->error('Activity Type is not updated: ' . $variables);                  
+          $transaction->rollBack();                     
         }
+        unset($transaction);
     }
 
 }

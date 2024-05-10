@@ -48,7 +48,6 @@ class ActivityItemChange extends FormBase  {
         ];
     }
 	
-	
 
     /**
      * {@inheritdoc}
@@ -365,17 +364,7 @@ class ActivityItemChange extends FormBase  {
             '#value' => t('Save'),
         );
         
-
-        $form['mgmt'] = array(
-            '#type' => 'hidden',
-            '#value' => $_REQUEST['mgmt'],
-        );
-        
-        $form['evt_type_id'] = array(
-            '#type' => 'hidden',
-            '#value' => $_REQUEST['evt_type_id'],
-        );
-        
+             
         $form['evt_id'] = array(
             '#type' => 'hidden',
             '#value' => $evt_id,
@@ -385,7 +374,7 @@ class ActivityItemChange extends FormBase  {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'../activities_admin_event/'.$eventInfo['evt_type_id'].'\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
         
@@ -475,9 +464,9 @@ class ActivityItemChange extends FormBase  {
         
         $hasImage = false;
             
-        if ($_FILES['files']['name']['group_image'] != "") {
+        if ($_FILES['files']['name']['evt_logo'] != "") {
             $hasImage = true;
-            $img_name = $_FILES['files']['name']['group_image'];
+            $img_name = $_FILES['files']['name']['evt_logo'];
         }
         $evt_is_cop_evt = 1;
         $evt_cop_id = $evt_cop_id;
@@ -510,9 +499,10 @@ class ActivityItemChange extends FormBase  {
             $eventEntry['modify_datetime'] = date('Y-m-d H:i:s', $current_time);
         }
 
-
-          try {
-            $query = \Drupal::database()->update('kicp_km_event')
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();       
+        try {
+            $query = $database->update('kicp_km_event')
             ->fields( $eventEntry)
             ->condition('evt_id', $evt_id)
             ->execute();    
@@ -520,12 +510,7 @@ class ActivityItemChange extends FormBase  {
             if ($tags != $tags_prev) {
                 // rewrite tags
                 if ($tags_prev != '') {
-                    $query = $database->update('kicp_tags')->fields([
-                        'is_deleted'=>1 , 
-                      ])
-                      ->condition('fid', $evt_id)
-                      ->condition('module', 'activities')
-                      ->execute();                
+                    $return2 = TagStorage::markDelete($this->module, $evt_id);  
                 }
                 if ($tags != '') {
                     $entry1 = array(
@@ -558,11 +543,16 @@ class ActivityItemChange extends FormBase  {
                 $file = file_save_upload('evt_logo', $validators, $image_path, $delta);
           
                 $file[0]->setPermanent();
-                $file[0]->uid = $file_id;
+                $file[0]->uid = $evt_id;
                 $file[0]->save();
                 $url = $file[0]->createFileUrl(FALSE);
 
             }            
+            \Drupal::logger('activities')->info('Event is updated id: %id, Event name: %evt_name.',   
+            array(
+                '%id' =>  $evt_id,
+                '%evt_name' =>  $evt_name,
+            ));    
 
             $url = Url::fromUri('base:/activities_admin_event/'.$form_evt_type_id);
             $form_state->setRedirectUrl($url);
@@ -572,13 +562,14 @@ class ActivityItemChange extends FormBase  {
 
         }
         catch (\Exception $e) {
-            \Drupal::messenger()->addStatus(
-                t('Unable to save event at this time due to datbase error. Please try again. '.serialize($eventEntry) )
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Activity Item is not updated.' )
                 );
-
-           
+            \Drupal::logger('activities')->error('Activity Item is not updated.: '.$variables);                    
+            $transaction->rollBack(); 
         }	
-
+        unset($transaction);
 
     }
 

@@ -108,26 +108,6 @@ ppcactivities.admin_cop_category_add:
   options:
     no_cache: TRUE
 
-ppcactivities.admin_cop_item_change:
-  path: '/ppcactivities_cop_item_change/{cop_id}'
-  defaults:
-    _form: '\Drupal\ppcactivities\Form\PPCActivityCOPItemChange'
-    _title: 'PPC Activities - Edit COP Item'
-  requirements:
-    _permission: 'activities_admin'
-  options:
-    no_cache: TRUE
-
-ppcactivities.admin_type_item_add:
-  path: '/ppcactivities_type_item_add'
-  defaults:
-    _form: '\Drupal\ppcactivities\Form\PPCActivityTypeItemAdd'
-    _title: 'PPC Activities - Add COP Item'
-  requirements:
-    _permission: 'activities_admin'
-  options:
-    no_cache: TRUE
-
 ppcactivities.admin_event:
   path: '/ppcactivities_admin_event/{type_id}'
   defaults:

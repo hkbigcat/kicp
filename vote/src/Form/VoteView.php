@@ -42,14 +42,79 @@ class VoteView extends FormBase {
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
 
         $vote_id = (isset($_REQUEST['vote_id']) && $_REQUEST['vote_id'] != "") ? $_REQUEST['vote_id'] : "";
-
         $vote = VoteDatatable::getVote($vote_id);
+        
+        $isShowSubmit = true;
+        if (!$vote) {
+          $isShowSubmit = false;
+          $messenger = \Drupal::messenger(); 
+          $messenger->addStatus( t('This vote does not exist or you do not have authroity'));             
+          return $form; 
+        }        
         $questionInfo = VoteDatatable::getVoteQuestionAll($vote_id);
+        $respondent = VoteDatatable::checkVoteRespondentSumbited($this->my_user_id, $vote_id);
 
+        $dateType_start = new \DateTime($vote->start_date);
+        $dateType_expiry = new \DateTime($vote->expiry_date);
+        $currentdate = new \DateTime(date('Y-m-d 00:00:00'));        
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
+        $isShowSubmit = true;
+        if ($dateType_start > $currentdate) {
+            $isShowSubmit = false;
+            $form['intro'] = array(
+              '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This vote does not start yet.</p>'),
+            );            
+            if (!$isSiteAdmin and ( $this->my_user_id != $vote->user_id)) {      
+              $form['Close2'] = array(
+                  '#type' => 'button',
+                  '#value' => t('Close'),
+                  '#prefix' => '&nbsp;',
+                  '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                  '#limit_validation_errors' => array(),
+                );    
+              return $form; 
+          }
+        }
+        if ($dateType_expiry < $currentdate) {
+          $isShowSubmit = false;
+          $form['intro'] = array(
+                '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This vote is ended.</p>'),
+          );    
+          if (!$isSiteAdmin and ( $this->my_user_id != $vote->user_id))  {
+              $form['Close2'] = array(
+                  '#type' => 'button',
+                  '#value' => t('Close'),
+                  '#prefix' => '&nbsp;',
+                  '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                  '#limit_validation_errors' => array(),
+                );    
+               return $form; 
+          }              
+        }
+
+        if ($respondent) {
+          $isShowSubmit = false;
+          $form['intro'] = array(
+              '#markup' => t('<p><i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You have already answered this Vote</p>'),
+            );
+          if (!$isSiteAdmin and (  $this->my_user_id != $vote->user_id)) {    
+              $form['Close2'] = array(
+                  '#type' => 'button',
+                  '#value' => t('Close'),
+                  '#prefix' => '&nbsp;',
+                  '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+                  '#limit_validation_errors' => array(),
+                );    
+              return $form; 
+          }
+      }          
+        
 //page 1        
 
         $form['VoteTitle'] = array(
-          '#markup' => '<span class= "title">' . $vote->title . '</span><p>',
+          '#markup' => '<span class="titleView">' . $vote->title . '</span><p>',
         );
 
         $form['VoteDescription'] = array(
@@ -57,121 +122,117 @@ class VoteView extends FormBase {
         );
         $i = 1;
         $form['mandatoryIntro'] = array(
-          '#markup' => '<br><br><strong>Question marked with <span class="redstar">&nbsp;*</span> is mandatory.</strong></p>',
+          '#markup' => '<p><strong>Question marked with <span class="redstar">&nbsp;*</span> is mandatory.</strong></p>',
         );
 
-        $form['Votespace'] = array(
-          '#markup' => '<p>',
-        );
+
         if ($vote->file_name != '') {
+            $file_path = 'download/vote/' . $vote_id;
             $form['filePath'] = array(
-              '#markup' => '<p><a href="' . $file_path . '" target="_blank"><img src="modules/custom/common/images/icon_attachment.png" border="0" align="absmiddle">' . $vote->file_name. '</a><br>',
+              '#markup' => '<p><a href="' . $file_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $vote->file_name. '</a><br>',
             );
         }
-        $redstar = '<span class="redstar">&nbsp;*</span>';
+        $redstar = '<span class="redstar1">&nbsp;*</span>';
         $questionCounter = 0;
-        foreach ($questionInfo as $record) {
-            $questionCounter++;
-            $choicearry = [];
-           
-            foreach ($record as $key => $value) {
-                $$key = $value;
-            }
-            $voteInfoChoice = VoteDatatable::getVoteChoice($id);
-            $k = 1;
-        
-            $counter = 0;
-           
-            if ($record['has_others'] == 'Y')
-               
-            $this_question_id = str_pad($record->id, 6, "0", STR_PAD_LEFT);
-            $file_question_path = 'download?module=vote_question&file_id=' . $vote_id . '&fname=' . $record->file_name . '&question_id=' . $record->id;
-          
-            $questionTitle = "";
 
-            if ($record->required == 'Y') {
-                $questionTitle .= $redstar; // . $record->name;
-            }
+        if ($questionInfo) {
+          foreach ($questionInfo as $record) {
+              $questionCounter++;
+              $choicearry = [];
+            
+              foreach ($record as $key => $value) {
+                  $$key = $value;
+              }
+              $voteInfoChoice = VoteDatatable::getVoteChoice($id);
+              $k = 1;
+                                
+              $questionTitle = "";
 
-            $questionTitle .= t($record['content']);
+              if ($record['required'] == 'Y') {
+                  $questionTitle .= $redstar; 
+              }
 
-            $form['QuestionName' . $i] = array(
-              '#markup' => t($record['name']),
-            );
+              $questionTitle .= t($record['content']);
 
-            if ($record['file_name'] != '') {
-                $form['fileQuestionPath' . $i] = array(
-                  '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><img src="modules/custom/common/images/icon_attachment.png" border="0" align="absmiddle">' . $record['file_name'] . '</a><br>',
+              $form['QuestionName' . $i] = array(
+                '#markup' => t('<span class="sectionView">'.$record['name'].'</span>'),
+              );
+
+              if ($record['file_name'] != '') {
+                  $file_question_path = 'download/vote_question/' . $vote_id . '?question='.$record['id'];
+                  $form['fileQuestionPath' . $i] = array(
+                    '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $record['file_name'] . '</a></p><div class="spacer"></div>',
+                  );
+              }
+
+              switch ($type_id) {
+                  case 1: {
+                          $yesno = array();
+                          $yesno["Yes"] = "Yes";
+                          $yesno["No"] = "No";
+
+                          $form['answer' . $i] = array(
+                            '#title' => t($questionTitle), 
+                            '#type' => 'select',
+                            '#options' => $yesno,
+                          );
+                          break;
+                      }
+              
+                  case 4: {
+                          foreach ($voteInfoChoice as $result) {
+                              $choicearry[$result['id']] = $result['choice'];
+                          }
+
+                          $form['answer' . $i] = array(
+                            '#title' => t($questionTitle), 
+                            '#type' => 'radios',
+                            '#options' => $choicearry,
+                            '#attributes' => array('onClick' => 'clearRadioOther(\'other' . $i . '\')'),
+                          );
+                          if ($record['has_others'] == 'Y')
+                              $form['other' . $i] = array(
+                                '#title' => 'Others:',
+                                '#type' => 'textfield',
+                                '#size' => 50,
+                                '#maxlength' => 255,
+                                '#attributes' => array('onClick' => 'clearRadio(\'answer' . $i . '\')', 'id' => 'other' . $i),
+                              );
+                          break;
+                      }
+                  case 5: {
+                          $k = 1;
+                          $form['CheckBoxTitle' . $i] = array(
+                            '#markup' => t($questionTitle), 
+                          );
+
+                          foreach ($voteInfoChoice as $recordcoice) {
+                              $form['answer' . $i .'_'. $k] = array(
+                                '#title' => $recordcoice['choice'],
+                                '#type' => 'checkbox',
+                                '#default_value' => '0',
+                                '#attributes' => array('id' => ('answer' . $i . $k)),
+                              );
+                              $k = $k + 1;
+                          }
+                          if ($record['has_others'] == 'Y')
+                              $form['other' . $i] = array(
+                                '#title' => 'Others:',
+                                '#type' => 'textfield',
+                                '#size' => 50,
+                                '#maxlength' => 255,
+                              );
+                          break;
+                      }
+                
+                  default:
+                      break;
+                }
+                $form['questionsepartor' . $i] = array(
+                  '#suffix' => '<div class="greyBorderBottom"></div>',
                 );
-            }
-
-            switch ($type_id) {
-                case 1: {
-                        $yesno = array();
-                        $yesno["Yes"] = "Yes";
-                        $yesno["No"] = "No";
-
-                        $form['answer' . $i] = array(
-                          '#title' => t($questionTitle), 
-                          '#type' => 'select',
-                          '#options' => $yesno,
-                        );
-                        break;
-                    }
-             
-                case 4: {
-                        foreach ($voteInfoChoice as $result) {
-                            $choicearry[$result['id']] = $result['choice'];
-                        }
-
-                        $form['answer' . $i] = array(
-                          '#title' => t($questionTitle), 
-                          '#type' => 'radios',
-                          '#options' => $choicearry,
-                          '#attributes' => array('onClick' => 'clearRadioOther(\'other' . $i . '\')'),
-                        );
-                        if ($record['has_others'] == 'Y')
-                            $form['other' . $i] = array(
-                              '#title' => 'Others:',
-                              '#type' => 'textfield',
-                              '#size' => 50,
-                              '#maxlength' => 255,
-                              '#attributes' => array('onClick' => 'clearRadio(\'answer' . $i . '\')', 'id' => 'other' . $i),
-                            );
-                        break;
-                    }
-                case 5: {
-                        $k = 1;
-                        $form['CheckBoxTitle' . $i] = array(
-                          '#markup' => t($questionTitle), 
-                        );
-
-                        foreach ($voteInfoChoice as $recordcoice) {
-                            $form['answer' . $i .'_'. $k] = array(
-                              '#title' => $recordcoice['choice'],
-                              '#type' => 'checkbox',
-                              '#default_value' => '0',
-                              '#attributes' => array('id' => ('answer' . $i . $k)),
-                            );
-                            $k = $k + 1;
-                        }
-                        if ($record['has_others'] == 'Y')
-                            $form['other' . $i] = array(
-                              '#title' => 'Others:',
-                              '#type' => 'textfield',
-                              '#size' => 50,
-                              '#maxlength' => 255,
-                            );
-                        break;
-                    }
-               
-                default:
-                    break;
-            }
-            $form['questionsepartor' . $i] = array(
-              '#suffix' => '<div class="greyBorderBottom"></div>',
-            );
-            $i++;
+                $i++;
+          }
         }
 
         $form['actions']['print'] = array(
@@ -179,30 +240,39 @@ class VoteView extends FormBase {
           '#value' => t('Print'),
           '#attributes' => array('onClick' => 'printDiv("vote-view-form");'),
         );
- if ($vote->is_visible == 1) {
-     
-        
-        $form['actions']['submitVote'] = array(
-          '#type' => 'submit',
-          '#value' => t('Submit Vote'),
-          '#access' => $isShowSubmit,
-          '#attributes' => array('onClick' => 'submitVote();'),
-        );
-        $form['hiddenSubmit'] = array(
-          '#type' => 'hidden',
-          '#value' => 0,
-          '#attributes' => array('id' => 'hiddenSubmit'),
-        );
-}
- else {
-  $messenger = \Drupal::messenger(); 
-  $messenger->addMessage( t('This vote is not ready for voting'));  
-}
-        $form['actions']['Rest'] = array(
-          '#type' => 'submit',
-          '#value' => t('Reset'),
-          '#attributes' => array('onClick' => 'resetVote();'),
-        );
+
+
+
+      if ($isShowSubmit && $vote->is_visible==1 && $vote->is_completed==1  ) {    
+          $form['actions']['submitVote'] = array(
+            '#type' => 'submit',
+            '#value' => t('Submit Vote'),
+            '#access' => $isShowSubmit,
+            '#attributes' => array('onClick' => 'submitVote();'),
+          );
+          $form['hiddenSubmit'] = array(
+            '#type' => 'hidden',
+            '#value' => 0,
+            '#attributes' => array('id' => 'hiddenSubmit'),
+          );
+
+          $form['actions']['Rest'] = array(
+            '#type' => 'submit',
+            '#value' => t('Reset'),
+            '#attributes' => array('onClick' => 'resetVote();'),
+          );
+        } else {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addStatus( t('This vote cannot be submitted.'));    
+          $form['Close2'] = array(
+              '#type' => 'button',
+              '#value' => t('Close'),
+              '#prefix' => '&nbsp;',
+              '#attributes' => array('onClick' => 'history.go(-1); return false;'),
+              '#limit_validation_errors' => array(),
+            );       
+        }
+
 
         $form['actions']['Close'] = array(
           '#type' => 'button',
@@ -248,19 +318,7 @@ class VoteView extends FormBase {
             }
 
             if($required == 'Y'){
-                    if ($type_id == 2) {
-                    if (${'answer' . $i}['value'] == '') {
-                        $errorMessage .= $this->t("Question" . $i . " is blank<br>");
-                        $hasError = true;
-                        if($firstError == 0){$firstError = $i;}
-                    }
-                } elseif ($type_id == 3) {
-                    if ((!isset(${'answer' . $i}['value']) || ${'answer' . $i}['value'] == '')) {
-                        $errorMessage .= $this->t("Question" . $i . " is blank<br>");
-                        $hasError = true;
-                        if($firstError == 0){$firstError = $i;}
-                    }
-                } elseif ($type_id == 4) {
+                if ($type_id == 4) {
                     if ((!isset(${'answer' . $i}) || ${'answer' . $i} == '') && (!isset(${'other' . $i}) || ${'other' . $i} == '')) {
                         $errorMessage .= $this->t("Question" . $i . " is blank<br>");
                         $hasError = true;
@@ -272,17 +330,17 @@ class VoteView extends FormBase {
                     $k = 1;
                     $hasError = true;
                     foreach ($voteInfoChoice as $result) {
-                        $choicearry[$result->choice] = $result->choice;
+                        $choicearry[$result['choice']] = $result['choice'];
                         $k++;
                     }
 
                     foreach ($choicearry as $recordcoice) {
-
+                        $tmp .= ${'answer' . $i .'_'. $j} ." ";
                         if (${'answer' . $i .'_'. $j} == 1)
                             $hasError = false;
                         $j++;
                     }
-                    if (${'other' . $i}['value'] != '') {
+                    if (isset(${'other' . $i}) && ${'other' . $i} != '') {
                         $hasError = false;
 
                     }
@@ -311,62 +369,45 @@ class VoteView extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-
-        $my_user_id = $authen->getUserId();
-        $record_user_id = $authen->getUserId();
-
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
 
-        $questionInfo = VoteDatatable::getVoteQuestionAll($vote_id);
+    
+        $RespondentEntry = array(
+          'submitted' => 'Y',
+          'username' => $this->my_user_id,
+          'create_datetime' => date('Y-m-d H:i:s'),
+          'modify_datetime' => date('Y-m-d H:i:s'),
+          'vote_id' => $vote_id,
+        );
+
         try {
 
-            $entry = array(
-              'start_vote' => 1,
-              'modify_datetime' => date('Y-m-d H:i:s'),
-              'modified_by' => $my_user_id,
-            );
-            $query = \Drupal::database()->update('kicp_vote')
-            ->fields($entry)
-            ->condition('vote_id', $vote_id)
-            ->execute();
-
+          $query = \Drupal::database()->insert('kicp_vote_respondent')
+          ->fields($RespondentEntry);
+          $Respondent_id = $query->execute();          
     
-            $i = 1;
+            $questionInfo = VoteDatatable::getVoteQuestionAll($vote_id);            
+            $i = 1;            
             foreach ($questionInfo as $record) {
 
                 foreach ($record as $key => $value) {
                     $$key = $value;
                 }
 
-                if ($i == 1) {
-                    $RespondentEntry = array(
-                      'submitted' => 'Y',
-                      'username' => $my_user_id,
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'vote_id' => $vote_id,
-                    );
-                    $query = \Drupal::database()->insert('kicp_vote_respondent')
-                    ->fields($RespondentEntry);
-                    $Respondent_id = $query->execute();
-            
-                }
-                    if (($type_id == 2) ) {
-                    $QuestionEntry = array(
-                      'question_id' => $id,
-                      'response' => ${'answer' . $i},
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'vote_id' => $vote_id,
-                      'respondent_id' => $Respondent_id,
-                    );
-                    $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
+                if (($type_id == 1)) {
+                  $QuestionEntry = array(
+                    'question_id' => $id,
+                    'response' => ${'answer' . $i},
+                    'create_datetime' => date('Y-m-d H:i:s'),
+                    'modify_datetime' => date('Y-m-d H:i:s'),
+                    'vote_id' => $vote_id,
+                    'respondent_id' => $Respondent_id,
+                  );
+                  $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
 
-                }     elseif (($type_id == 3) ) {
+                }  elseif (($type_id == 3) ) {
                     $QuestionEntry = array(
                       'question_id' => $id,
                       'response' => ${'answer' . $i}['value'],
@@ -376,17 +417,6 @@ class VoteView extends FormBase {
                       'respondent_id' => $Respondent_id,
                     );
 
-                    $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
-
-                } elseif (($type_id == 1)) {
-                    $QuestionEntry = array(
-                      'question_id' => $id,
-                      'response' => ${'answer' . $i},
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'vote_id' => $vote_id,
-                      'respondent_id' => $Respondent_id,
-                    );
                     $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
 
                   } elseif (($type_id == 4)) {

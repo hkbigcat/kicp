@@ -272,46 +272,47 @@ class BookmarkChange extends FormBase  {
         if($bTitle != $bTitle_prev || $bDescription != $bDescription_prev || $bAddress!= $bAddress_prev || $bStatus != $bStatus_prev || $tags != $tags_prev ) {
             $entry['bModified'] = date('Y-m-d H:i:s');
 
-          try {
 
-               $query = \Drupal::database()->update('kicp_bookmark')->fields($entry)
-                ->condition('bid', $bid)
-                ->execute();
+            $database = \Drupal::database();
+            $transaction = $database->startTransaction();     
+            try {
+
+                $query = $database->update('kicp_bookmark')->fields($entry)
+                    ->condition('bid', $bid)
+                    ->execute();
 
 
-                if ($tags != $tags_prev) {
-                    // rewrite tags
-                    if ($tags_prev != '') {
-                        $query = \Drupal::database()->update('kicp_tags')->fields([
-                            'is_deleted'=>1 , 
-                        ])
-                        ->condition('fid', $bid)
-                        ->condition('module', $this->module)
-                        ->execute();                
-                    }
-                    if ($tags != '') {
-                        $entry1 = array(
-                            'module' => $this->module,
-                            'module_entry_id' => intval($bid),
-                            'tags' => $tags,
+                    if ($tags != $tags_prev) {
+                        // rewrite tags
+                        if ($tags_prev != '') {
+                            $return2 = TagStorage::markDelete($this->module, $bid);     
+                        }
+                        if ($tags != '') {
+                            $entry1 = array(
+                                'module' => $this->module,
+                                'module_entry_id' => intval($bid),
+                                'tags' => $tags,
+                            );
+                            $return1 = TagStorage::insert($entry1);                
+                        }
+                    }   
+
+                    $url = Url::fromUserInput('/bookmark/');
+                    $form_state->setRedirectUrl($url);
+
+                    $messenger = \Drupal::messenger(); 
+                    $messenger->addMessage( t('Bookmark has been updated.'));
+
+                }
+                catch (\Exception $e) {
+                    $variables = Error::decodeException($e);
+                    \Drupal::messenger()->addError(
+                        t('Unable to save bookmark at this time due to datbase error. Please try again. ' )
                         );
-                        $return1 = TagStorage::insert($entry1);                
-                    }
-                }   
-
-                $url = Url::fromUserInput('/bookmark/');
-                $form_state->setRedirectUrl($url);
-
-                $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Bookmark has been updated.'));
-
-            }
-            catch (\Exception $e) {
-                \Drupal::messenger()->addStatus(
-                    t('Unable to save bookmark at this time due to datbase error. Please try again. ' )
-                    );
-            
-            }	
+                        \Drupal::logger('bookmark')->error('Bookmark is not updated: ' . $variables);   
+                        $transaction->rollBack();
+                }	
+                unset($transaction);
         }
 
     }

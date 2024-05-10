@@ -18,8 +18,7 @@
 
 {% include '@common/common-tags.html.twig' %}
 
-     <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_tag') }}">
-     <input type="hidden" name="notag_page" id="notag_page" value="{{ path('fileshare.fileshare_content') }}"> 
+     <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_content') }}">
 
  {% if items is empty %}
     <div class="spacer"></div> 
