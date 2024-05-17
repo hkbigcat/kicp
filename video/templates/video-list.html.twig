@@ -6,10 +6,11 @@
     {% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="../video_tag">
      <input type="hidden" name="notag_page" id="notag_page" value="../video">
-     <div style="float:right;width:360px;" id="cpRate_video_{{  media_event_id }}">{% include '@common/common-rating.html.twig' %}</div>
+     <div class="width30" style="float:right;" id="cpRate_video_{{  media_event_id }}">{% include '@common/common-rating.html.twig' %}</div>
 </div>
 <div id="video_content_div">
 {% for item in items %}
+    <div class="spacer"></div>
     <div class="homepage_div">
         <div id="Video_Item_{{ item['media_id']}}" class="video_list_item">
             <div class="video_list_image">

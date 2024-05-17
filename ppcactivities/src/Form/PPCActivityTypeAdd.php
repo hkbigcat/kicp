@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
+use Drupal\Core\Utility\Error;
 
 class PPCActivityTypeAdd extends FormBase {
 
@@ -107,7 +108,7 @@ class PPCActivityTypeAdd extends FormBase {
         $database = \Drupal::database();
         $transaction = $database->startTransaction();    
         try {            
-            $query = \$database->insert('kicp_ppc_event_type')
+            $query = $database->insert('kicp_ppc_event_type')
             ->fields( $categoryEntry);
             $evt_type_id = $query->execute();
             if ($evt_type_id) {

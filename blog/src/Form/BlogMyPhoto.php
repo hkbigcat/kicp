@@ -19,7 +19,7 @@ use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\Core\Utility\Error;
 
 class BlogMyPhoto extends FormBase  {
 
@@ -118,9 +118,7 @@ class BlogMyPhoto extends FormBase  {
         $BlogPhoto = 'private://blog/icon';
         $file_system = \Drupal::service('file_system');    
 
-        $transaction = $database->startTransaction();             
-
-
+        
         $BlogPhotoPath = $BlogPhoto.'/'. $user_owner_id;
         if (!is_dir($file_system->realpath($BlogPhotoPath))) {
             // Prepare the directory with proper permissions.
@@ -147,6 +145,9 @@ class BlogMyPhoto extends FormBase  {
         $entry = array(
             'image_name' =>  $filename,
           );
+
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();             
 
         try {  
             $query = \Drupal::database()->update('kicp_blog')->fields($entry)

@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\profile\Common\ProfileDatatable;
+use Drupal\Core\Utility\Error;
 
 class ProfileAddGroup extends FormBase {
 
@@ -114,6 +115,8 @@ class ProfileAddGroup extends FormBase {
         );
         $form_state->setRedirectUrl($url);
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();          
         try {
             
             if($type == "B") {
@@ -121,7 +124,7 @@ class ProfileAddGroup extends FormBase {
                     'user_id' => $authen->getUserId(),
                     'buddy_group_name' => $group_name,
                   );
-                  $query = \Drupal::database()->insert('kicp_buddy_group')
+                  $query = $database->insert('kicp_buddy_group')
                   ->fields($entry);
       
             } else {
@@ -131,23 +134,29 @@ class ProfileAddGroup extends FormBase {
                     'bool_trusted'  => 0,
                     'source' => 'U',
                   );
-                  $query = \Drupal::database()->insert('kicp_public_group')
-                  ->fields($entry);
-                  
+                  $query = $database->insert('kicp_public_group')
+                  ->fields($entry);     
             }
-            
-
             $return = $query->execute();
+
+            \Drupal::logger('profile')->info('added group id: %id, type: %type',   
+            array(
+                '%id' => $return,
+                '%type' => $type=='B'?'Buddy':'Public',
+            ));    
 
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Group has been added: '));
 
         } catch (Exception $e) {
-            
+            $variables = Error::decodeException($e);
+            \Drupal::logger('profile')->error('gorup is not added '  . $variables);   
             \Drupal::messenger()->addError(
                 t('Unable to add group at this time due to datbase error. Please try again.')
-              );             
+              );      
+              $transaction->rollback();       
         }
+        unset($transaction);
     }
 
 }

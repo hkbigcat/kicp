@@ -4,9 +4,9 @@
     width: 20%;
     min-width:220px;
     min-height: 440px;
-    float: left;
     display: inline-block;
     border: 1px solid #DDDDDD;
+    vertical-align: top;
     padding: 15px;
     margin: 8px;
     border-radius: 10px;
@@ -35,7 +35,6 @@
 }
 
 #right_content {
-    float:left;
     display:inline-block;
     /*width:940px;*/
     width:73%;
@@ -78,12 +77,10 @@
     box-shadow: 2px 2px 5px #E6E6E6;
     width: 46%;
     margin: 10px;
-    float: left;
     height: auto;
 }
 
 .type_item .left_inline {
-    float:left;
     display:inline-block;
 }
 

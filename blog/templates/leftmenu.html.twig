@@ -2,11 +2,14 @@
     <div class="title"><a href="{{ path('blog.blog_content') }}">Blog Home</a></div> 
     <div class="title">My Blog</div> 
     <ul>
-        <li><a href="{{ path('blog.blog_view' , {'blog_id': items['my_blog_id']}) }}">View My Blog</a></li>
+        {% set my_blog_id = items['my_blog_id']!=""?items['my_blog_id']:0 %}
+        <li><a href="{{ path('blog.blog_view' , {'blog_id': my_blog_id }) }}">View My Blog</a></li>
         <li><a href="{{ path('blog.add_data') }}">Write New Entry</a></li>
         <li><a href="{{ path('blog.my_photo') }}">My Photo</a></li>
         <li><a href="{{ path('blog.blog_delegate') }}">My Delegated Users</a></li>
+        {% if '/blog_entry' not in url('<current>') | render | render  and '/blog_view' not in url('<current>') | render | render %}
         <li><a href="#add-record" onclick="getAddGroupMemberUI('blog',{{ items['my_blog_id'] }});">My Blog Access Control</a></li>
+        {% endif  %}
     </ul>
     <div class="title">Other Blogs</div>
     <ul>

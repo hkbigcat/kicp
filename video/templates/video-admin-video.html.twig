@@ -1,15 +1,10 @@
-<div style="width: 35%; float:right; text-align:right;margin-top:-20px;">
+<div class="text-right">
     <button class="kicp_button size-2" onClick="self.location.href='{{ path('video.add_video_data' , {'media_event_id': media_event_id }) }}'"><i class="fa-solid fa-circle-plus"></i> Add Video</button>
     <button class="kicp_button size-1" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa fa-calendar" aria-hidden="true"></i> Event List Management</button> 
 </div>
-<h2 style="display:inline;">{{ eventname }}</h2>
+<h3>{{ eventname }}</h3>
 <div id="DivContentTable">
-    <form id="search_form" name="search_form" method="get">
-    <div style="width:100%;text-align:right;float:right;margin:5px;">
-        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Title / Description">
-    </div>
-    </form>
-
+{% include '@common/common-search-form.html.twig'  with {placeholder: 'Title / Description'}  %}  
     <div class="common_table_header">
         <div style="width:23%; text-align:left;margin-left:5px;">Video Title</div>
         <div style="width:8%;">Duration</div>

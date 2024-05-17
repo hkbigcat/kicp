@@ -14,6 +14,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\activities\Controller\ActivitiesController;
+use Drupal\Core\Utility\Error;
 
 class ActivityCOPCategoryAdd extends FormBase {
 

@@ -1,11 +1,9 @@
-  <div style="float:right">
+  <div class="text-right">
       <button class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_content') }}'"><i class="fa-solid far fa-file"></i> File Share </button>
       <button class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_folder_add') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
   </div>
-<form id="search_form" name="search_form" method="get">
-  <div style="width:100%;text-align:right;float:right;margin:5px;">
-  <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Folder Name"></div>
-</form>
+{% include '@common/common-search-form.html.twig'  with {placeholder: 'Folder Name'}  %}  
+
  <div class="common_table_header columns">
 	<div class="w30">Folder Name</div>
 	<div class="w40">Access Control</div>

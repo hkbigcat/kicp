@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity;
+use Drupal\Core\Utility\Error;
 
 class VoteCopy extends FormBase {
 
@@ -365,9 +366,6 @@ class VoteCopy extends FormBase {
         $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
         //*************** File [End]
 
-
-        $database = \Drupal::database();
-
         $entry = array(
           'title' => $title,
           'description' => $description['value'],
@@ -388,6 +386,8 @@ class VoteCopy extends FormBase {
           $entry['file_name'] = $originalfilename;
         }
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
 
             $query = $database->insert('kicp_vote')->fields( $entry);
@@ -446,7 +446,6 @@ class VoteCopy extends FormBase {
 
                       //copy file
                       if ($originalfilename != "") {           
-                        \Drupal::logger('vote')->info('originalfilename: '.$originalfilename);
                         VoteDatatable::copyAttach( $originalfilename, $original_vote_id, $vote_id, $result['id'], $new_question_id );                               
                       }
 
@@ -463,7 +462,6 @@ class VoteCopy extends FormBase {
               $session->set('questionNo', $questionNo);
               $_SESSION['vote_id'] = $vote_id;
               $session->set('totalQuestionNo', count($originalquestion));                        
-
               $url = Url::fromUserInput('/vote_add_page2/');
               $form_state->setRedirectUrl($url);
             } else {
@@ -471,6 +469,7 @@ class VoteCopy extends FormBase {
                 t('Vote is not created. ' )
                 );
                 \Drupal::logger('vote')->error('Vote is not created ' .$vote_id);   
+                $transaction->rollBack(); 
             }
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
@@ -478,7 +477,9 @@ class VoteCopy extends FormBase {
               t('Vote is not created. ' )
               );
             \Drupal::logger('vote')->error('Vote is not created '  . $variables);   
+            $transaction->rollBack(); 
         }
+        unset($transaction);
 
     }
 

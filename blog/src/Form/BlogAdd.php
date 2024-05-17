@@ -12,8 +12,8 @@ namespace Drupal\blog\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\blog\Common\BlogDatatable;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
 use Drupal\file\FileInterface;
@@ -22,7 +22,7 @@ use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\Core\Utility\Error;
 
 class BlogAdd extends FormBase  {
 
@@ -60,6 +60,16 @@ class BlogAdd extends FormBase  {
         $config = \Drupal::config('blog.settings'); 
 
         $my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
+        if (!$my_blog_id) {
+            $my_blog_id = BlogDatatable::createBlogAccount($this->my_user_id);
+            if (!$my_blog_id) {
+                $form['intro'] = array(
+                    '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i>Cannot create blog. Please contact KICP Administrator.'),
+                  );
+                  return $form; 
+            }
+        }
+
 
         $myBlogInfo = BlogDatatable::getBlogInfo($my_blog_id);
         $blogSelection[$my_blog_id] = $myBlogInfo['blog_name'];
@@ -81,7 +91,7 @@ class BlogAdd extends FormBase  {
             $form['blog_id'] = array(
               '#title' => t('blog_id'),
               '#type' => 'hidden',
-              '#default_value' => $blog_id,
+              '#default_value' => $my_blog_id,
             );
         }        
 
@@ -131,6 +141,17 @@ class BlogAdd extends FormBase  {
             '#rows' => 2,
             '#description' => 'Use semi-colon (;) as separator',
         );
+
+        $form['line'] = array(
+            '#markup' => t('<hr>'),
+            '#attributes' => array('style'=>'1px solid #888888;margin-top:30px;'),
+        );
+
+        $form['published'] = [
+            '#title' => t('Published'),
+            '#type' => 'checkbox',
+            '#default_value' => '1',
+        ];
         
         $form['actions']['submit'] = array(
             '#type' => 'submit',
@@ -192,6 +213,7 @@ class BlogAdd extends FormBase  {
             'blog_id' => $blog_id,
             'entry_title' => $bTitle,
             'entry_content' => $bContent['value'],
+            'is_visible' => $published,
             'created_by' => $this->my_user_id,
             'has_attachment' => $hasAttach,
         );

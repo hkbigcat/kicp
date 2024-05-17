@@ -9,8 +9,8 @@ namespace Drupal\activities\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\Follow;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\Core\Database\Database;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-
+use Drupal\Core\Utility\Error;
 
 class ActivitiesController extends ControllerBase {
     
@@ -636,7 +636,7 @@ class ActivitiesController extends ControllerBase {
             '#empty' => t('No entries available.'),
             '#tags' => $tags,
             '#tagsUrl' => $tmp,            
-            'pager' => ['#type' => 'pager',
+            '#pager' => ['#type' => 'pager',
             ],                      
         ];   
 
@@ -692,5 +692,92 @@ class ActivitiesController extends ControllerBase {
         return $response;
 
     }
+
+    public function EventRegistration($action="", $evt_id="") {
+        $msg = "";
+        if($action === 'enroll') {
+            $userInfo = ActivitiesDatatable::getUserInfoForRegistration($this->my_user_id);
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'uid' => $userInfo->uid,
+                'user_dept' => $userInfo->user_dept,
+                'user_rank' => $userInfo->user_rank,
+                'user_post_unit' => $userInfo->user_post_unit,
+                'is_portal_user' => 1,
+              );
+              $register_member_id = ActivitiesDatatable::insertRegistration($eventEntry);
+              if ($register_member_id) {
+                $msg = ActivitiesDatatable::getEventReplyMsg($evt_id);
+                \Drupal::logger('activities')->info('KM Event enroll id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your enrollment.'));
+              } 
+        } else if($action === 'cancel_enroll') {
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'cancel_enrol_datetime' => date('Y-m-d H:i:s'),
+              );
+              $register_member_id = ActivitiesDatatable::changeRegistration($eventEntry); 
+              if ($register_member_id) {
+                \Drupal::logger('activities')->info('KM Event cancel enroll id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your cancellation of enrollment.'));
+              }              
+        } else if($action === 'reenroll') {
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'is_reenrol' => 1,
+            );
+            $register_member_id = ActivitiesDatatable::changeRegistration($eventEntry); 
+            if ($register_member_id) {
+               $msg = ActivitiesDatatable::getEventReplyMsg($evt_id);
+              \Drupal::logger('activities')->info('KM Activities Enrollment (Re-enrollment) id: %id , user_id: %user_id',   
+              array(
+                  '%id' =>  $evt_id,
+                  '%user_id' =>  $this->my_user_id,
+              ));
+              $messenger = \Drupal::messenger(); 
+              $messenger->addMessage( t('We have received your re-enrollment.'));
+            }              
+        }  else if($action === 'cancel_reenrol') {
+           
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'cancel_reenrol_datetime' => date('Y-m-d H:i:s'),
+              );
+
+              $register_member_id = ActivitiesDatatable::changeRegistration($eventEntry); 
+              if ($register_member_id) {
+                \Drupal::logger('activities')->info('KM Activities Cancel Re-enrollment id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your cancellation of re-enrollment.'));
+              }              
+        }
+
+
+        return [
+            '#type' => 'markup',
+            '#markup' => $this->t('<p>'.$msg.'</p><p>Go Back to <a href="../../activities_detail/'.$evt_id.'">Event Page</a></p>'),
+          ];
+
+
+    }
+
 
 }

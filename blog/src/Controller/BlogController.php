@@ -9,8 +9,8 @@ namespace Drupal\blog\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\blog\Common\BlogDatatable;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -33,7 +33,8 @@ class BlogController extends ControllerBase {
         $this->my_user_id = $authen->getUserId();
         $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
 
-        $myBlogInfo = BlogDatatable::getBlogInfo($this->my_blog_id);
+        if ($this->my_blog_id)
+          $myBlogInfo = BlogDatatable::getBlogInfo($this->my_blog_id);
         
     }
     
@@ -90,13 +91,21 @@ class BlogController extends ControllerBase {
 
     public function viewBlog($blog_id) {
 
+        if ($blog_id==0) {
+            return [
+                '#type' => 'markup',
+                '#markup' => $this->t('You don\'t have a blog yet. <a href="../blog_add">Write your First Blog</a>.'),
+              ];
+
+        }
+
         $blog = BlogDatatable::getBlogInfo($blog_id);
         $entry = BlogDatatable::getBlogListContent($blog_id);
 
         if ($entry==null) {
             return [
                 '#type' => 'markup',
-                '#markup' => $this->t('Blog entries not avaiable'),
+                '#markup' => $this->t('Blog is not avaiable'),
               ];
         }
 

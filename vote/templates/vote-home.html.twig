@@ -6,7 +6,7 @@
 </div>
 <div id="DivContentTable">
   {% for item in items %}
-    <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns">
+    <div id="row_{{ loop.index0 + 1 }}" class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns space-between">
          <div class="w60 padding_right_45">
             <div class="entry_title"><a href="{{ path('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}">{{ item['title'] }}</a></div>
              {% set text = item['description']  | striptags   %} 
@@ -18,7 +18,9 @@
         </div>
         <div class="w20">
           {% include '@common/common-like.html.twig'  with {module: 'vote', 'record_id':  item['vote_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
-          <div style="display:block;float:left;"><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
+          {% if item['show_response'] %}
+          <div><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
+          {% endif %}
         </div>  
         <div class="w20">
           <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>

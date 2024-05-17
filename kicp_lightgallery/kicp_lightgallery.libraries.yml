@@ -6,8 +6,27 @@ kicp_lightgallery_key:
   header: true
   js:
     js/lightgallery.js: {}
+    js/lightgallery-all.min.js: {}
+    js/jquery.min.js: {}
+    js/prettify.js: {}
+    js/jquery.justifiedGallery.min.js: {}
+    js/transition.js: {}
+    js/collapse.js: {}
+    js/lightgallery.js: {}
+    js/lg-fullscreen.js: {}
+    js/lg-thumbnail.js: {}
+    js/lg-video.js: {}
+    js/lg-autoplay.js: {}
+    js/lg-zoom.js: {}
+    js/lg-pager.js: {}
+    js/jquery.mousewheel.min.js: {}
+    js/demos.js: {}
+    js/lightgallery/lg-zoom.min.js: {}
+    js/jquery-ui.min.js: {}
+
   dependencies:
     - core/jquery
     - core/drupalSettings
     - core/drupal
     - core/drupal.dialog
+

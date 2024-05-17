@@ -9,7 +9,7 @@ namespace Drupal\video\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\RatingData;
 use Drupal\video\Common\VideoDatatable;
 use Drupal\Core\Database\Database;
@@ -153,62 +153,71 @@ class VideoController extends ControllerBase {
         // delete record
         $err_code = 0;
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
         try {
-          $database = \Drupal::database();
           $query = $database->update('kicp_media_event_name')->fields([
             'is_deleted'=>1 , 
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),
           ])
           ->condition('media_event_id', $media_event_id)
           ->execute();
-
+          \Drupal::logger('video')->info('deleted event video id: %id',   
+          array(
+              '%id' => $media_event_id,
+          ));
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('Event has been deleted'));
-
           $err_code = 1;
-
           $response = array('result' => $err_code);
           return new JsonResponse($response);
-  
-  
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::logger('video')->error('Video event is not deleted '  . $variables);   
             \Drupal::messenger()->addStatus(
-                t('Unable to delete event at this time due to datbase error. Please try again. ' )
-                );
-
-            }	
+            t('Unable to delete event at this time due to datbase error. Please try again. ' )
+            );
+            $transaction->rollback();
+        }	
+        unset($transaction);
     }    
 
     public function VideoDelete($media_id="") {
 
         $err_code = 0;
-
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();          
         try {
-            $database = \Drupal::database();
             $query = $database->update('kicp_media_info')->fields([
               'is_deleted'=>1 , 
               'modify_datetime' => date('Y-m-d H:i:s', $current_time),
             ])
             ->condition('media_id', $media_id)
             ->execute();
+            \Drupal::logger('video')->info('deleted Video id: %id',   
+            array(
+                '%id' => $media_id,
+            ));             
      
+            
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Video has been deleted'));
-    
             $err_code = 1;
 
             $response = array('result' => $err_code);
             return new JsonResponse($response);
 
           }
-          catch (\Exception $e) {
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::logger('video')->error('Video is not deleted '  . $variables);   
               \Drupal::messenger()->addStatus(
                   t('Unable to delete video at this time due to datbase error. Please try again. ' )
                   );
-  
-              }	        
-
+            $transaction->rollback();
+           }	        
+        unset($transaction);
     }
     
 
@@ -223,10 +232,6 @@ class VideoController extends ControllerBase {
         if ($search_str && $search_str!="") {
             $privilege_group = VideoDatatable::getVideoPrivilegeGroup($search_str);
         }
-
-        
-
-        
         return [
                 '#theme' => 'video-admin-privilege',
                 '#items' => $video_privilege,
@@ -235,23 +240,24 @@ class VideoController extends ControllerBase {
                 '#pager' => ['#type' => 'pager',
                             ],
         ];         
-
-
     }
     
     public function AdminVideoEventPrivilegeAddAction($media_event_id="", $pub_group_id="") {
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction(); 
         try {
-          $database = \Drupal::database();
           $query = $database->insert('kicp_media_event_privilege')->fields([
             'media_event_id' => $media_event_id,
             'pub_group_id' => $pub_group_id,
             'is_deleted'=>0 , 
           ])
           ->execute();
-
+          \Drupal::logger('video')->info('added video preivilege id: %id',   
+          array(
+              '%id' => $media__event_id,
+          ));
           $search_str = \Drupal::request()->query->get('search_str');
-
           $url = Url::fromUserInput('/video_event_privilege/'.$media_event_id.'?search_str='.$search_str);
           return new RedirectResponse($url->toString());
 
@@ -260,36 +266,38 @@ class VideoController extends ControllerBase {
             \Drupal::messenger()->addStatus(
                 t('Unable to add privilege at this time due to datbase error. Please try again. ' )
                 );
+                $transaction->rollback();    
             }	
-
+        unset($transaction);
     }
 
     public function EventPrivilegeDelete($media_event_id="",$pub_group_id="") {
 
         $err_code = 0;
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
         try {
-            $database = \Drupal::database();
             $query = $database->update('kicp_media_event_privilege')->fields([
                 'is_deleted' => 1,
                 ])
                 ->condition('media_event_id', $media_event_id)
                 ->condition('pub_group_id', $pub_group_id)
                 ->execute();
-
-                $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Event Privilege has been deleted'));
-        
-                $err_code = 1;
-    
-
-    
+            \Drupal::logger('video')->info('deleted video preivilege id: %id',   
+            array(
+                '%id' => $media__event_id,
+            ));                
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Event Privilege has been deleted'));
+            $err_code = 1;
         }
         catch (\Exception $e) {
             \Drupal::messenger()->addStatus(
                 t('Unable to delete privilege at this time due to datbase error. Please try again. ' )
                 );
+                $transaction->rollback(); 
             }
-
+        unset($transaction);
         $response = array('result' => $err_code);
         return new JsonResponse($response);  
 

@@ -8,7 +8,7 @@
 </div>
 <div class="access_control_header" style="width:100%; display:flex;">
 	<div style="width:40%;padding:2px;border:1px solid #FFFFFF;">Load Group List:</div>
-	<div style="width:57%;padding:2px;border:1px solid #FFFFFF;"><a href="javascript:;" style="border-bottom:0px;" tabindex="2"><img src="modules/custom/common/images/btn_load.gif" border="0" alt="Load" title="Load" onclick="get_search_public_group(jQuery('#pub_group_search_str').val(), '{{module}}', {{ record_id }})" id="loadBtn"></a></div>
+	<div style="width:57%;padding:2px;border:1px solid #FFFFFF;"><a href="javascript:;" style="border-bottom:0px;" tabindex="2"><img src="{{ url('<front>') }}modules/custom/common/images/btn_load.gif" border="0" alt="Load" title="Load" onclick="get_search_public_group(jQuery('#pub_group_search_str').val(), '{{module}}', {{ record_id }})" id="loadBtn"></a></div>
 </div>
 {% endif %}
 <div id="div_public_group" style="padding:2px;width:99%;">
@@ -20,7 +20,7 @@
     {% for item in items %}
 	<div style="display:inline-block;width:100%;border-bottom:1px dotted #CCCCCC;">
 		<div style="width:8%;display:inline-block;vertical-align:top;"><img src="modules/custom/common/images/icon_group_p.gif"></div>
-		<div style="display:inline-block;width:75%;"><a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_P{{  item['group_id'] }}', '{{  item['group_type'] }}',{{  item['group_id'] }})"><span id="group_member_P{{  item['group_id'] }}">{{  item['group_name'] }}</span></a></div>
+		<div style="display:inline-block;width:75%;"><a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_P{{  item['group_id'] }}', 'P',{{  item['group_id'] }})"><span id="group_member_P{{  item['group_id'] }}">{{  item['group_name'] }}</span></a></div>
 		<div style="display:inline-block;width:15%;text-align:center;vertical-align:top;"><a href="javascript:;" onclick="add_access_control('{{module}}','{{ record_id }}','P','{{  item['group_id'] }}')">Add</a></div>
 	</div>
     {% endfor %}

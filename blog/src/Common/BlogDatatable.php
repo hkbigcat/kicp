@@ -4,10 +4,11 @@ namespace Drupal\blog\Common;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\LikeItem;
 use Drupal\common\CommonUtil;
 use Drupal\common\Follow;
+use Drupal\Core\Utility\Error;
 
 class BlogDatatable {
 
@@ -41,7 +42,7 @@ class BlogDatatable {
             FROM kicp_blog_entry a
             INNER JOIN kicp_blog b ON (a.blog_id=b.blog_id)
             INNER JOIN xoops_users c ON (b.user_id=c.user_id AND c.user_is_inactive=0) $sql_access 
-            WHERE a.is_deleted = 0 AND b.is_deleted=0 $sql_access2 $sql_access3 
+            WHERE a.is_deleted = 0 AND b.is_deleted=0 AND (b.user_id = '$my_user_id' or a.is_visible = 1 or b.blog_id in (select blog_id from kicp_blog_delegated where user_id = '$my_user_id' )) $sql_access2 $sql_access3 
             ORDER BY a.entry_modify_datetime DESC limit $limit";
         } else {
             $sql2="";
@@ -74,8 +75,7 @@ class BlogDatatable {
 
 
     }
-
-    
+   
     public static function getBlogEntryContent($entry_id="") {
 
         # return "false" if the entry_id is EMPTY
@@ -103,16 +103,15 @@ class BlogDatatable {
             $sql_access3 = " having b.user_id = '".$my_user_id."' OR COUNT(aa.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0 ";
         }
 
-
-        $sql = "SELECT b.blog_name, b.user_id, a.entry_id, a.entry_title, a.entry_content, a.created_by, a.blog_id, a.is_pub_comment, a.entry_create_datetime, a.entry_modify_datetime, a.is_deleted, c.user_name AS user_full_name, a.has_attachment, b.user_id
+        $sql = "SELECT b.blog_name, b.user_id, a.entry_id, a.entry_title, a.entry_content, a.created_by, a.blog_id, a.is_visible, a.is_pub_comment, a.entry_create_datetime, a.entry_modify_datetime, a.is_deleted, c.user_name AS user_full_name, a.has_attachment, b.user_id
                 FROM kicp_blog_entry a
                 LEFT JOIN kicp_blog b ON (a.blog_id=b.blog_ID)
-                LEFT JOIN xoops_users c ON (c.user_id=b.user_id) $sql_access
-                WHERE a.entry_id = '$entry_id'
-                AND a.is_archived = 0 AND a.is_banned = 0 $cond AND a.is_visible = 1
-                AND b.is_archived = 0 AND b.is_banned = 0 AND b.is_deleted = 0 AND b.is_visible = 1 $sql_access2 $sql_access3 ";
+                LEFT JOIN xoops_users c ON (c.user_id=b.user_id) $sql_access 
+                WHERE a.entry_id = '$entry_id' 
+                AND a.is_archived = 0 AND a.is_banned = 0 $cond 
+                AND b.is_archived = 0 AND b.is_banned = 0 AND b.is_deleted = 0 
+                AND (b.user_id = '$my_user_id' or a.is_visible = 1 or b.blog_id in (select blog_id from kicp_blog_delegated where user_id = '$my_user_id' ) ) $sql_access2 $sql_access3 ";
 
-        
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
 
@@ -121,6 +120,8 @@ class BlogDatatable {
             $result["countlike"] = LikeItem::countLike('blog', $result["entry_id"]);
             $result["liked"] = LikeItem::countLike('blog', $result["entry_id"],$my_user_id);
             $result["follow"] = Follow::getFollow($result["user_id"], $my_user_id);
+            $result["delegate"] = self::isBlogDelegatedUser($result["blog_id"], $my_user_id);
+            
         }
         
         return $result;
@@ -173,7 +174,9 @@ class BlogDatatable {
            return  NULL;
         }
 
-        return $result->blog_id;
+        if ($result)
+            return $result->blog_id;
+        else return NULL;
 
     }
 
@@ -241,11 +244,22 @@ class BlogDatatable {
                 $query -> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
                 $query-> having('b.user_id = :user_id OR COUNT(ac.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0', [':user_id' => $my_user_id]);
               }      
-            $query-> fields('a', ['entry_id', 'entry_title','entry_content','blog_id','created_by', 'is_pub_comment', 'entry_create_datetime', 'entry_modify_datetime', 'has_attachment']);
+            $query-> fields('a', ['entry_id', 'entry_title','entry_content','blog_id','is_visible', 'created_by', 'is_pub_comment', 'entry_create_datetime', 'entry_modify_datetime', 'has_attachment']);
             $query-> fields('b', ['blog_name', 'user_id']);
             $query-> condition('a.blog_id ', $blog_id, '=');
             $query-> condition('a.is_deleted', '0', '=');
             $query-> condition('b.is_deleted', '0', '=');
+
+            $delegate = $database-> select('kicp_blog_delegated', 'dele');
+            $delegate-> condition('user_id', $my_user_id);
+            $delegate-> addField('dele', 'blog_id');
+
+            $orGroup = $query->orConditionGroup();
+            $orGroup->condition('b.user_id', $my_user_id);
+            $orGroup->condition('a.is_visible', 1);
+            $orGroup->condition('b.blog_id',  $delegate, 'IN');
+            $query->condition($orGroup);
+
             $query-> groupBy('a.entry_id');
             $query-> orderBy('entry_modify_datetime', 'DESC');
             $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(5);
@@ -608,6 +622,46 @@ class BlogDatatable {
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();      
         return $result->commentTotal;
+    }
+
+    public static function createBlogAccount($user_id="") {
+
+        if ($user_id=="") return null;
+
+        $sql = "SELECT user_name  FROM xoops_users WHERE user_id='$user_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if (!$result) return null;
+        $user_name = $result->user_name;   
+        $blog_name = 'Blog of ' . $user_name;
+
+        $entry = array(
+            'blog_name' => $blog_name,
+            'user_id' => $user_id,
+            'blog_type' => 'P',
+        );
+        $transaction = $database->startTransaction();     
+
+        try {        
+            $query = $database->insert('kicp_blog')->fields($entry);
+            $blog_id = $query->execute();
+            if ($blog_id) {
+                \Drupal::logger('blog')->info('Blog Created id: %id',   
+                array(
+                    '%id' => $blog_id,
+                ));            
+                return $blog_id;
+            } else return null;     
+        }  catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+            t('Blog cannot be created. ' )
+            );
+            \Drupal::logger('blog')->error('Blog is not created '  . $variables);    
+            $transaction->rollBack();               
+            return null;
+        }	
+        unset($transaction);
     }
 
 }

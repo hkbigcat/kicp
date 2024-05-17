@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\AccessControl;
+use Drupal\Core\Utility\Error;
 
 class SurveyAddPage2 extends FormBase {
 
@@ -120,7 +121,7 @@ class SurveyAddPage2 extends FormBase {
             
   
         }
-        if ( !isset($surveyChoice) || $surveyChoice==null || $surveyChoice->id == '') {
+        if ( !isset($surveyChoice) || $surveyChoice==null || $choiceCounter == 0) {
             $resultChoicearry = array(
               '#choice' => '',
             );
@@ -173,6 +174,7 @@ class SurveyAddPage2 extends FormBase {
           '#title' => t('Question ' . $questionNumber . '</p> 	Please type the question below'),
           '#type' => 'text_format',
           '#format' => 'basic_html',
+          '#allowed_formats' => ['basic_html'],
           '#rows' => 10,
           '#cols' => 30,
           '#attributes' => array('style' => 'height:400px;'),
@@ -197,7 +199,7 @@ class SurveyAddPage2 extends FormBase {
           '#options' => $questionTypeSelect,
           '#attributes' => array('onChange' => 'showDiv(this.value)', 'id' => 'answerType', 'onload' => 'showDiv(this.value)'),
           '#prefix' => '<div class="div_inline_column">',
-          '#suffix' => '</div>Reminder: The Answer Type of a confirmed question cannot be changed.',
+          '#suffix' => '</div><div class="w20px"></div>Reminder: The Answer Type of a confirmed question cannot be changed.',
           '#default_value' => $resultQuestionarry['answerType'],
         );
 
@@ -223,14 +225,12 @@ class SurveyAddPage2 extends FormBase {
           '#title' => t('Display Scale'),
           '#type' => 'checkbox',
           '#prefix' => '<div id="Rate">',
-          '#attributes' => array('style' => 'display:inline-block;float:left;'),
           '#default_value' => $resultQuestionarry['show_scale'],
         );
 
         $form['DisplayLegend'] = array(
           '#title' => t('Display Legend'),
           '#type' => 'checkbox',
-          '#attributes' => array('style' => 'display:inline-block;float:left;'),
           '#default_value' => $resultQuestionarry['show_legend'],
         );
         $form['Rateintro1'] = array(
@@ -344,21 +344,24 @@ class SurveyAddPage2 extends FormBase {
         $form['btAddanother'] = array(
           '#type' => 'submit',
           '#value' => t('Add another answer line'),
-          '#attributes' => array('style' => 'display:inline-block;float:left; ', 'onClick' => 'addAnswerLine("RadioCheckbox");'),
-          '#prefix' => '<div class="div_inline_column">  ',
+          '#attributes' => array( 'onClick' => 'addAnswerLine("RadioCheckbox");'),
+          '#prefix' => '<div class="inline">',
+          '#suffix' => '<div class="w30px"></div>',
         );
 
         $form['btClearAll'] = array(
           '#type' => 'submit',
           '#value' => t('Clear all answer lines'),
-          '#attributes' => array('style' => 'display:inline-block;float:left;', 'onClick' => 'clearAnswerLine("RadioCheckbox");'),
+          '#attributes' => array('onClick' => 'clearAnswerLine("RadioCheckbox");'),
+          '#suffix' => '<div class="w30px"></div>',
         );
 
         $form['btReset'] = array(
           '#type' => 'submit',
           '#value' => t('Reset Whole question'),
-          '#attributes' => array('style' => 'display:inline-block;float:left;', 'onClick' => 'resetSurvey();showDiv(0);'),
-          '#suffix' => '</div><br></div>',
+          '#attributes' => array( 'onClick' => 'resetSurvey();showDiv(0);'),
+          //'#suffix' => '</div><br></div>',
+          '#suffix' => '</div><div class="spacer"></div></div>',
         );
 
         $form['#suffix'] = '</div>';
@@ -407,29 +410,41 @@ class SurveyAddPage2 extends FormBase {
           '#attributes' => array('id' => 'hiddenJump'),
         );
         */
+
+        $form['QuestionButtonLine'] = array(
+          '#markup' => '<div class="inline">',
+        );
+         
         for ($i = 1; $i <= $totalQuestionNo; $i++) {
             if ($i != $questionNumber) {
                 $form['btQuestion' . $i] = array(
                   '#type' => 'submit',
                   '#name' => 'btQuestion' . $i,
                   '#value' => $i,
-                  '#attributes' => array('style' => 'display:inline-block;float:left; margin-left:5px; margin-right:5px; ', ),
+                  //'#attributes' => array('style' => 'display:inline-block;float:left; margin-left:5px; margin-right:5px; ', ),
                 );
             }
         }
         $form['btNewQuestion'] = array(
           '#type' => 'submit',
           '#name' => 'btNewQuestion',
-          '#value' => t('NewQuestion'),
-          '#attributes' => array('id' => 'NewQuestion', 'style' => 'display:inline-block;float:left; margin-left:5px; margin-right:5px ', ),
+          '#value' => t('Save & New Question'),
+          '#attributes' => array('id' => 'NewQuestion'),
+          '#prefix' => '<div class="w30px"></div>',
           '#suffix' => '</div>',
         );
- 
+
+        $form['btSaveOnly'] = array(
+          '#type' => 'submit',
+          '#name' => 'btSaveOnly',
+          '#value' => t('Save This Question'),
+        );
+        
 
         $form['actions']['submit'] = array(
           '#type' => 'submit',
-          '#value' => t('Save'),
-          '#attributes' => array('style' => 'margin-left:30px;', ),
+          '#value' => t('Save & Complete'),
+          //'#attributes' => array('style' => 'margin-left:30px;', ),
         );
 
         $jsOutput = '<script>showDiv(' . $resultQuestionarry['answerType'] . ');</script>';
@@ -498,8 +513,6 @@ class SurveyAddPage2 extends FormBase {
             $$key = $value;
         }
 
-        $hiddenAddanother = 0;
-        $hiddenJump = 0;
         $button_clicked = $form_state->getTriggeringElement()['#name'];
 
         if (substr($button_clicked,0,10)=="btQuestion") {
@@ -514,11 +527,12 @@ class SurveyAddPage2 extends FormBase {
 
         $hiddenJump = 0;
         $hiddenAddanother = ($button_clicked == "btNewQuestion")?1:0;
-        
+        $btSaveOnly = ($button_clicked == "btSaveOnly")?1:0;
+
         $get_survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
         $questionInfo = SurveyDatatable::getSurveyQuestion($get_survey_id, $questionNo);
 
-        if ($deleteFile == 1) {
+        if (isset($deleteFile) && $deleteFile == 1) {
           $attach_deleted = SurveyDatatable::DeleteSurveyEntryAttachment($get_survey_id,$questionInfo->id );
           $query = \Drupal::database()->update('kicp_survey_question')->fields([
             'file_name' => '',
@@ -539,6 +553,7 @@ class SurveyAddPage2 extends FormBase {
         $question_id = $questionId;
 
         $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
            
 //        if ($hiddenIsEdit == 0) {
@@ -550,8 +565,6 @@ class SurveyAddPage2 extends FormBase {
               'position' => $questionNo,
               'has_Others' => $includeOption,
               'required' => $required,
-              'create_datetime' => date('Y-m-d H:i:s'),
-              'modify_datetime' => date('Y-m-d H:i:s'),
               'type_id' => $answerType,
               'modified_by' => $this->my_user_id,
               'file_name' => $this_filename,
@@ -563,27 +576,18 @@ class SurveyAddPage2 extends FormBase {
             $query = $database->insert('kicp_survey_question')->fields( $entry);
             $question_id = $query->execute();
 
-              if ($question_id) {
+            if ($question_id) {
 
                 // if file is selected-------------------------------------------------------------------------
                 if ($_FILES['files']['name']['filename'] != "") {
                   SurveyDatatable::saveAttach( $_FILES['files']['name']['filename'], $this_filename, $get_survey_id, $question_id);
                 }
-                // write logs to common log table
-
-                \Drupal::logger('survey')->info('Created question id: %id, filename: %filename.',   
-                array(
-                    '%id' => $question_id,
-                    '%filename' => isset($this_filename)?$this_filename:'no file',
-                ));   
 
                 for ($i = 1; $i <= $hiddenExistingChoices; $i++) {
                     if (${'title' . $i} != '') {
                         $entry = array(
                           'question_id' => $question_id,
                           'choice' => ${'title' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'modified_by' => $this->my_user_id,);
 
                         $query = $database->insert('kicp_survey_question_choice')->fields( $entry);
@@ -602,8 +606,6 @@ class SurveyAddPage2 extends FormBase {
                             $entry = array(
                               'question_id' => $question_id,
                               'choice' => trim(str_replace('"', '', $eachInput)),
-                              'create_datetime' => date('Y-m-d H:i:s'),
-                              'modify_datetime' => date('Y-m-d H:i:s'),
                               'modified_by' => $this->my_user_id,);
 
                               $query = $database->insert('kicp_survey_question_choice')->fields( $entry);
@@ -618,8 +620,6 @@ class SurveyAddPage2 extends FormBase {
                           'scale' => ${'rateScale' . $i},
                           'legend' => ${'rateLegend' . $i},
                           'position' => ${'ratePosition' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'modified_by' => $this->my_user_id,);
 
                           $query = $database->insert('kicp_survey_question_rate')->fields( $entry);
@@ -644,8 +644,6 @@ class SurveyAddPage2 extends FormBase {
                               'scale' => $scale_value,
                               'legend' => $legend_value,
                               'position' => $position_value,
-                              'create_datetime' => date('Y-m-d H:i:s'),
-                              'modify_datetime' => date('Y-m-d H:i:s'),
                               'modified_by' => $this->my_user_id,);
 
                             $query = $database->insert('kicp_survey_question_rate')->fields( $entry);
@@ -662,17 +660,23 @@ class SurveyAddPage2 extends FormBase {
                       $session->set('questionNo', $questionNo);
                       $session->set('totalQuestionNo', $totalQuestionNo); 
                       $url = new Url('survey.survey_add_page2');
+                } elseif ($btSaveOnly == 1) {
+                  $url = new Url('survey.survey_add_page2');
                 } else {
                     $url = new Url('survey.survey_add_page3');
                 }
+                \Drupal::logger('survey')->info('Created question id: %id.',   
+                array(
+                    '%id' => $question_id,
+                ));   
                 $form_state->setRedirectUrl($url);
-            } else {
+              } else {
 
                 \Drupal::messenger()->addError(
                   t('New Survey question is not created. ' )
                   );
-                  \Drupal::logger('survey')->error('New Survey question is not created (3)');   
-                
+                \Drupal::logger('survey')->error('New Survey question is not created (3)');   
+                $transaction->rollBack();  
               }
             } else {   // is Edit
                 $entry = array(
@@ -700,13 +704,6 @@ class SurveyAddPage2 extends FormBase {
                   if ($_FILES['files']['name']['filename'] != "") {
                     SurveyDatatable::saveAttach( $_FILES['files']['name']['filename'], $this_filename, $get_survey_id, $question_id);
                   }
-                  // write logs to common log table
-                  \Drupal::logger('survey')->info('update question id: %id, name: %name, filename: %filename.',   
-                  array(
-                      '%id' => $question_id,
-                      '%name' =>  $name['value'],
-                      '%filename' => $this_filename,
-                  )); 
                   //update choice
                   $resetreuturn = SurveyDatatable::resetSurveyChoice($question_id);
                   for ($i = 1; $i <= $hiddenExistingChoices; $i++) {
@@ -714,8 +711,6 @@ class SurveyAddPage2 extends FormBase {
                           $entry = array(
                             'question_id' => $question_id,
                             'choice' => ${'title' . $i},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'modified_by' => $this->my_user_id,);
                             
                           $query = $database->insert('kicp_survey_question_choice')->fields( $entry);
@@ -733,9 +728,7 @@ class SurveyAddPage2 extends FormBase {
                               $entry = array(
                                 'question_id' => $question_id,
                                 'choice' => trim(str_replace('"', '', $eachInput)),
-                                'create_datetime' => date('Y-m-d H:i:s'),
-                                'modify_datetime' => date('Y-m-d H:i:s'),
-                                'modified_by' => $my_user_id,);
+                                'modified_by' => $this->my_user_id,);
 
                               $query = $database->insert('kicp_survey_question_choice')->fields( $entry);
                               $titlereuturn = $query->execute();                              
@@ -752,8 +745,6 @@ class SurveyAddPage2 extends FormBase {
                             'scale' => ${'rateScale' . $i},
                             'legend' => ${'rateLegend' . $i},
                             'position' => ${'ratePosition' . $i},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'modified_by' => $this->my_user_id,);
 
                           $query = $database->insert('kicp_survey_question_rate')->fields( $entry);
@@ -778,8 +769,6 @@ class SurveyAddPage2 extends FormBase {
                                   'scale' => $scale_value,
                                   'legend' => $legend_value,
                                   'position' => $position_value,
-                                  'create_datetime' => date('Y-m-d H:i:s'),
-                                  'modify_datetime' => date('Y-m-d H:i:s'),
                                   'modified_by' => $this->my_user_id,);
 
                                 $query = $database->insert('kicp_survey_question_rate')->fields( $entry);
@@ -788,6 +777,10 @@ class SurveyAddPage2 extends FormBase {
                             }
                         }
                     }
+                    \Drupal::logger('survey')->info('Created updated id: %id.',   
+                    array(
+                        '%id' => $question_id,
+                    ));                       
 
                     if ($hiddenAddanother == "1") {
                       $questionNo = $totalQuestionNo + 1;
@@ -799,6 +792,8 @@ class SurveyAddPage2 extends FormBase {
                       $session->set('questionNo', $questionNo);
                       $session->set('totalQuestionNo', $totalQuestionNo);                        
                       $url = new Url('survey.survey_add_page2');
+                    } elseif ($btSaveOnly == 1) {
+                        $url = new Url('survey.survey_add_page2');
                     } else {
                         $url = new Url('survey.survey_add_page3');
                     }
@@ -808,6 +803,7 @@ class SurveyAddPage2 extends FormBase {
                     t('update Survey : ( '.$get_survey_id.' ) question ( '.$questionNo.' )  is not sucesss. ' )
                     );
                     \Drupal::logger('survey')->error('question is not created (3) ');
+                    $transaction->rollBack();  
                 }
             }
         } catch (Exception $e) {
@@ -816,7 +812,9 @@ class SurveyAddPage2 extends FormBase {
               t('Squestion is not created. ' )
               );            
             \Drupal::logger('survey')->error('question is not created: ' . $variables);
+            $transaction->rollBack();  
         }
+        unset($transaction);
     }
 
 }

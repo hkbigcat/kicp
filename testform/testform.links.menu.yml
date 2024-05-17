@@ -1,0 +1,14 @@
+testform.admin_settings_link:
+  title: Test Form Settings
+  description: Cotnrol display of Test Form
+  route_name: testform.admin.settings
+  parent: system.admin_config_content
+  weight: 10
+
+testform.report_link:
+  title: List of Test Form
+  description: View listing of Test Form
+  route_name: testform.report
+  parent: system.admin_reports
+  weight: -5
+

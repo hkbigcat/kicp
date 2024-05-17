@@ -317,3 +317,13 @@ ppcactivities.admin_list_delete:
     _permission: 'activities_admin'
   options:
     no_cache: TRUE
+
+ppcactivities.register:
+  path: '/ppcactivities_register/{action}/{evt_id}'
+  defaults:
+    _controller: '\Drupal\ppcactivities\Controller\PPCActivitiesController::EventRegistration'
+    _title: 'Event Regsitration'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    

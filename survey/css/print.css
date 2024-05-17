@@ -1,0 +1,52 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 2017年11月13日, 下午05:05:58
+    Author     : ERKSS02
+*/
+/* Page setup*/
+@page {
+    size:  auto;   /* auto is the initial value */
+    margin: 0mm;  /* this affects the margin in the printer settings */
+}
+html{
+    background-color: #FFFFFF; 
+    margin: 0px;  /* this affects the margin on the html before sending to printer */
+}
+
+body{
+    margin: 10mm 15mm 10mm 15mm; /* margin you want for the content */
+}
+
+/* Hide header*/
+div.block-username-block, div.block-username-block, div.highlighted{
+    display: none !important;
+}
+
+/* Hide form control and borders*/
+span.cke_top, span.cke_buttom, span.cke_path, div.filter-wrapper, div.form-wrapper{
+    display:none;
+}
+/*div.cke_browser_webkit, div.cke_inner, div.cke_contents  {
+    border:0px !important;
+}*/
+input[type="submit"]{
+    display:none !important;
+}
+input[type="text"]{
+    border:0px !important;
+}
+select.form-select{
+    border:0px !important;
+    -webkit-appearance: none;
+}    
+select.form-select::-ms-expand {
+    display: none;
+}
+img{
+    display: none;
+}
+

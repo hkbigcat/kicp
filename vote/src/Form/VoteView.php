@@ -15,6 +15,7 @@ use Drupal\common\CommonUtil;
 use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
+use Drupal\Core\Utility\Error;
 
 class VoteView extends FormBase {
 
@@ -335,7 +336,6 @@ class VoteView extends FormBase {
                     }
 
                     foreach ($choicearry as $recordcoice) {
-                        $tmp .= ${'answer' . $i .'_'. $j} ." ";
                         if (${'answer' . $i .'_'. $j} == 1)
                             $hasError = false;
                         $j++;
@@ -377,14 +377,14 @@ class VoteView extends FormBase {
         $RespondentEntry = array(
           'submitted' => 'Y',
           'username' => $this->my_user_id,
-          'create_datetime' => date('Y-m-d H:i:s'),
-          'modify_datetime' => date('Y-m-d H:i:s'),
           'vote_id' => $vote_id,
         );
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();  
         try {
 
-          $query = \Drupal::database()->insert('kicp_vote_respondent')
+          $query =  $database->insert('kicp_vote_respondent')
           ->fields($RespondentEntry);
           $Respondent_id = $query->execute();          
     
@@ -400,32 +400,16 @@ class VoteView extends FormBase {
                   $QuestionEntry = array(
                     'question_id' => $id,
                     'response' => ${'answer' . $i},
-                    'create_datetime' => date('Y-m-d H:i:s'),
-                    'modify_datetime' => date('Y-m-d H:i:s'),
                     'vote_id' => $vote_id,
                     'respondent_id' => $Respondent_id,
                   );
                   $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
 
-                }  elseif (($type_id == 3) ) {
-                    $QuestionEntry = array(
-                      'question_id' => $id,
-                      'response' => ${'answer' . $i}['value'],
-                      'create_datetime' => date('Y-m-d H:i:s'),
-                      'modify_datetime' => date('Y-m-d H:i:s'),
-                      'vote_id' => $vote_id,
-                      'respondent_id' => $Respondent_id,
-                    );
-
-                    $vote_id = VoteDatatable::insertResponse($QuestionEntry);                    
-
-                  } elseif (($type_id == 4)) {
+                }  elseif (($type_id == 4)) {
                     if (${'other' . $i} == '') {
                         $QuestionEntry = array(
                           'question_id' => $id,
                           'response' => ${'answer' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'vote_id' => $vote_id,
                           'respondent_id' => $Respondent_id,
                         );
@@ -433,8 +417,6 @@ class VoteView extends FormBase {
                         $QuestionEntry = array(
                           'question_id' => $id,
                           'response' => ${'other' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'vote_id' => $vote_id,
                           'respondent_id' => $Respondent_id,
                         );
@@ -454,8 +436,6 @@ class VoteView extends FormBase {
                             $QuestionEntry = array(
                               'question_id' => $id,
                               'response' => $recordcoice['id'],
-                              'create_datetime' => date('Y-m-d H:i:s'),
-                              'modify_datetime' => date('Y-m-d H:i:s'),
                               'vote_id' => $vote_id,
                               'respondent_id' => $Respondent_id,
                             );
@@ -468,8 +448,6 @@ class VoteView extends FormBase {
                         $QuestionEntry = array(
                           'question_id' => $id,
                           'response' => ${'other' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'vote_id' => $vote_id,
                           'respondent_id' => $Respondent_id,
                         );
@@ -484,6 +462,11 @@ class VoteView extends FormBase {
             //end looping
             $k++;
 
+            \Drupal::logger('vote')->info('sumiited vote id: %vote_id. Respondent id: %respondent_id.',   
+            array(
+                '%vote_id' =>  $vote_id,
+                '%respondent_id' =>  $Respondent_id
+            ));   
             $url = new Url('vote.vote_content');
             $form_state->setRedirectUrl($url);
     
@@ -496,7 +479,9 @@ class VoteView extends FormBase {
               t('Vote is not created ' )
               );
             \Drupal::logger('error')->notice('Vote is not created: ' . $variables);
+            $transaction->rollBack();       
         }
+        unset($transaction);
     }
 
 }

@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity;
+use Drupal\Core\Utility\Error;
 
 class SurveyCopy extends FormBase {
 
@@ -351,10 +352,6 @@ class SurveyCopy extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-
-        $my_user_id = $authen->getUserId();
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
@@ -364,9 +361,6 @@ class SurveyCopy extends FormBase {
         $this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
         $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
         //*************** File [End]
-
-
-        $database = \Drupal::database();
 
         $entry = array(
           'title' => $title,
@@ -388,6 +382,8 @@ class SurveyCopy extends FormBase {
           $entry['file_name'] = $originalfilename;
         }
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
 
             $query = $database->insert('kicp_survey')->fields( $entry);
@@ -419,7 +415,7 @@ class SurveyCopy extends FormBase {
               ));     
 
               //copy access control
-              $access_result = SurveyDatatable::copyAccessControlGroupRecord($original_survey_id, $survey_id, $my_user_id);
+              $access_result = SurveyDatatable::copyAccessControlGroupRecord($original_survey_id, $survey_id,  $this->my_user_id);
 
               //copy question
               if (($original_survey_id) != '') {
@@ -452,11 +448,11 @@ class SurveyCopy extends FormBase {
                       }
 
                       if (($result['type_id'] == 4) or ( $result['type_id'] == 5)) {
-                          $copyreturnchoice = SurveyDatatable::copyQuestionChoice($result['id'], $new_question_id, $my_user_id);
+                          $copyreturnchoice = SurveyDatatable::copyQuestionChoice($result['id'], $new_question_id, $this->my_user_id);
                       }
                       if (($result['type_id'] == 6)) {
-                          $copyreturnchoice = SurveyDatatable::copyQuestionChoice($result['id'], $new_question_id, $my_user_id);
-                          $copyreturnrate = SurveyDatatable::copyQuestionRate($result['id'], $new_question_id, $my_user_id);
+                          $copyreturnchoice = SurveyDatatable::copyQuestionChoice($result['id'], $new_question_id, $this->my_user_id);
+                          $copyreturnrate = SurveyDatatable::copyQuestionRate($result['id'], $new_question_id, $this->my_user_id);
                       }            
                   }
                 }  
@@ -468,22 +464,25 @@ class SurveyCopy extends FormBase {
               $session->set('questionNo', $questionNo);
               $_SESSION['survey_id'] = $survey_id;
               $session->set('totalQuestionNo', count($originalquestion));                        
-
+              \Drupal::logger('survey')->info('survey copied ID : '.$survey_id);
               $url = Url::fromUserInput('/survey_add_page2/');
               $form_state->setRedirectUrl($url);
             } else {
               \Drupal::messenger()->addError(
-                t('Survey is not created. ' )
+                t('Survey is not copied. ' )
                 );
-                \Drupal::logger('survey')->error('Survey is not created ' .$survey_id);   
+                \Drupal::logger('survey')->error('Survey is not copied ' .$survey_id);   
+                $transaction->rollBack(); 
             }
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-              t('Survey is not created. ' )
+              t('Survey is not copied. ' )
               );
-            \Drupal::logger('survey')->error('Survey is not created '  . $variables);   
+            \Drupal::logger('survey')->error('Survey is not copied '  . $variables);   
+            $transaction->rollBack(); 
         }
+        unset($transaction);
 
     }
 

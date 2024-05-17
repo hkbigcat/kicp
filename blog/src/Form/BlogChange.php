@@ -12,8 +12,8 @@ namespace Drupal\blog\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\blog\Common\BlogDatatable;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
 use Drupal\file\FileInterface;
@@ -22,12 +22,22 @@ use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\Core\Utility\Error;
 
 class BlogChange extends FormBase  {
 
     public function __construct() {
         $this->module = 'blog';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->my_user_id = $authen->getUserId();        
+
+        $UserInfo = $authen->getKICPUserInfo($this->my_user_id);
+        if ($UserInfo==null) {
+            \Drupal::logger('blog')->error('uid not found for user_id: '.$this->my_user_id);       
+    
+        }
+
 
     }
 
@@ -173,6 +183,23 @@ class BlogChange extends FormBase  {
             '#value' => $tags_prev,
         ];
 
+        $form['line'] = array(
+            '#markup' => t('<hr>'),
+            '#attributes' => array('style'=>'1px solid #888888;margin-top:30px;'),
+        );
+
+        $form['published'] = [
+            '#title' => t('Published'),
+            '#type' => 'checkbox',
+            '#default_value' => $entry['is_visible'],
+        ];        
+
+        $form['published_prev'] = [
+            '#type' => 'hidden',
+            '#value' => $entry['is_visible'],
+        ];        
+
+
         $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => t('Save'),
@@ -217,19 +244,9 @@ class BlogChange extends FormBase  {
 
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();
-
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
-        }
-
-        $UserInfo = $authen->getKICPUserInfo($user_id);
-        if ($UserInfo==null) {
-            \Drupal::logger('blog')->error('uid not found for user_id: '.$user_id);       
-    
         }
 
         $blog_owner_id = BlogDatatable::getUIdByBlogId($blog_id);
@@ -315,7 +332,7 @@ class BlogChange extends FormBase  {
 
         $entry = array();
         // if any changes in content, update the timestamp
-        if($bTitle != $bTitle_prev || $bContent['value'] != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || !empty($files) ) {
+        if($bTitle != $bTitle_prev || $bContent['value'] != $bContent_prev || $delete_doc_id != "" || $tags != $tags_prev || $published != $published_prev || !empty($files) ) {
             $entry['entry_modify_datetime'] = date('Y-m-d H:i:s');
             if ($bTitle != $bTitle_prev) {
                 $entry['entry_title'] = $bTitle;
@@ -323,6 +340,9 @@ class BlogChange extends FormBase  {
             if ($bContent['value'] != $bContent_prev) {
                 $entry['entry_content'] = $content;
             }
+            if ($published != $published_prev) {
+                $entry['is_visible'] = $published;
+            }            
             $entry['has_attachment'] = $hasAttach;
         }
 

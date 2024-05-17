@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\user\Entity\User;
 use Drupal;
 use Drupal\common\LikeItem;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\Controller\CommonController;
 use Drupal\common\CommonUtil;
 use Drupal\common\Follow;
@@ -79,6 +79,7 @@ class MainpageController extends ControllerBase {
 
         $latest = MainpageDatatable::getLatest($this->my_user_id,$tags);
 
+
         return [
             '#theme' => 'mainpage-tags',
             '#items' => $latest,
@@ -86,8 +87,8 @@ class MainpageController extends ControllerBase {
             '#tagsUrl' => $tmp,
             '#pager' => ['#type' => 'pager',
                         ],
-        ];          
-
+        ];
+        
     }
 
     public function getFollow() {

@@ -347,3 +347,14 @@ activities.admin_list_delete:
     _permission: 'activities_admin'
   options:
     no_cache: TRUE
+
+activities.register:
+  path: '/activities_register/{action}/{evt_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::EventRegistration'
+    _title: 'Event Regsitration'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+

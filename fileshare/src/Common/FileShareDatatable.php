@@ -13,7 +13,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Condition;
 use \Drupal\Core\Routing;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\Follow;
 use Drupal\common\RatingData;
 use Drupal\common\CommonUtil;

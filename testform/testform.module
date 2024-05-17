@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file
+ * Test From modules hooks
+ */
+
+
+use Drupal\Core\Form\FormStateInterface;
+
+
+function testform_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  $node = $form_state->getFormObject()->getEntity();
+  $current_node_type = $node->getType();
+  $testform_config = \Drupal::config('testform.settings'); 
+  $allowed_types = $testform_config->get('allowed_types');
+
+  
+  if (in_array($current_node_type, $allowed_types)) {
+    $form['testform'] = [
+      '#type' => 'details',
+      '#title' => t('Test Form Collections'),
+      '#access' => \Drupal::currentUser()->hasPermission('administer testform'),
+      '#group' => 'advanced',
+      '#weight' => 50,
+    ];
+
+   
+    $enabler = \Drupal::service('testform.enabler');
+    $form['testform']['testform_enabled'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Collect Test form email addresses for this node'),
+      '#default_value' => $enabler->isEnabled($node),
+    ];
+   
+ 
+    foreach (array_keys($form['actions']) as $action) {
+     if ($action != 'preview' && isset($form['actions'][$action]['#type']) &&
+       $form['actions'][$action]['#type'] === 'submit') {
+       $form['actions'][$action]['#submit'][] = 'testform_form_node_form_submit';
+      }
+     }
+    
+    }  //in_array allowed
+
+
+  }
+
+
+function testform_form_node_form_submit($form, FormStateInterface $form_state) {
+
+  $enabler = \Drupal::service('testform.enabler');
+
+  $node = $form_state->getFormObject()->getEntity();
+
+  if ($form_state->getValue('testform_enabled')) {
+    $enabler->setEnabled($node);
+  } else {
+    $enabler->delEnabled($node);
+  }
+
+
+}

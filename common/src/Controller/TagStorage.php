@@ -63,64 +63,6 @@ class TagStorage  {
     }
 
 
-    /*
-    public static function change($entry) {
-        $tags = $entry['tags'];
-        $tag_array = explode(";", $tags);
-        $return_value = NULL;
-        $entry1 = array(
-          'is_deleted' => $entry['is_deleted'],
-        );
-
-        foreach ($tag_array as $tag) {
-            try {
-                $return_value = db_update('kicp_tags')
-                    ->fields($entry1)
-                    ->condition('module', $entry['module'])
-                    ->condition('fid', $entry['module_entry_id'])
-                    ->condition('tag', $tag)
-                    ->execute();
-            }
-            catch (\Exception $e) {
-                drupal_set_message(
-                    t(
-                        'db_change failed. Message = %message, query= %query', array('%message' => $e->getMessage(), '%query' => $e->query_string)
-                    ), 'error'
-                );
-                break;
-            }
-        }
-
-        return $return_value;
-    }
-
-    public static function delete($entry) {
-        $tags = $entry['tags'];
-        $tag_array = explode(";", $tags);
-        $return_value = NULL;
-
-        foreach ($tag_array as $tag) {
-            try {
-                $return_value = db_delete('kicp_tags')
-                    ->condition('module', $entry['module'])
-                    ->condition('fid', $entry['module_entry_id'])
-                    ->condition('tag', $tag)
-                    ->execute();
-            }
-            catch (\Exception $e) {
-                drupal_set_message(
-                    t(
-                        'db_delete failed. Message = %message, query= %query', array('%message' => $e->getMessage(), '%query' => $e->query_string)
-                    ), 'error'
-                );
-                break;
-            }
-        }
-
-        return $return_value;
-    }
-    */
-
     public static function markDelete($module, $entry_id) {
         $return_value = NULL;
 

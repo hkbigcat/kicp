@@ -3,7 +3,7 @@
 namespace Drupal\common\Common;
 
 use Drupal\Core\Database\Database;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 
 class CommonDatatable {
 
@@ -68,6 +68,8 @@ class CommonDatatable {
             $cond = ($user_id != "") ? ' AND buddy_user_id=\''.$user_id.'\'' : '';
             
             $sql ='SELECT buddy_user_id as user_id, buddy_user_name as user_name FROM kicp_buddy_user_list WHERE buddy_group_id='.$group_id.' AND is_deleted=0 '.$cond.' ORDER BY user_name';
+        } else {
+            return null;
         }
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  

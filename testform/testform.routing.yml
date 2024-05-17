@@ -1,0 +1,15 @@
+testform.admin.settings:
+  path: '/admin/config/content/testform'
+  defaults:
+    _form: '\Drupal\testform\Form\TestSettingForm'
+    _title: 'Test Form Setting'
+  requirements:
+    _permission: 'administer testform'
+
+testform.report:
+  path: '/admin/reports/testform'
+  defaults:
+    _controller: '\Drupal\testform\Controller\ReportController::report'
+    _title: 'List Test Form'
+  requirements:
+    _permission: 'access testform report'

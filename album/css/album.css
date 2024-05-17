@@ -1,0 +1,31 @@
+.homepage_div {
+    width: 40%;
+    min-width:320px;
+    float: left;
+    display: inline-block;
+    border: 1px solid #DDDDDD;
+    padding: 8px;
+    margin: 8px;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px #C7C7C7;
+    word-wrap: break-word;
+    height:30px;
+}
+
+.homepage_div:hover {
+    background: #F6F6F6;
+    box-shadow: 5px 5px 10px #888888;
+}
+
+.homepage_div .title {
+    font-weight: bold;
+    font-size: 12pt;
+    border-bottom: 1px solid #DDDDDD;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+.inline_row {
+    width:100%; 
+    display: flex;
+}

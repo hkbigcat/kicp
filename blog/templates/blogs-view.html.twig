@@ -36,8 +36,14 @@
         </div>
         <div class="entry_comment"><a href="{{ path('blog.blog_entry' , {'entry_id': item['entry_id']}) }}#comment_area">Comment ({{item['comment_total']}})</a></div><br>
             {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
-        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span> {{item ['entry_modify_datetime'] }}</div>
-        {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  item['entry_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
+        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span> 
+         {% if item['is_visible'] %}
+        {{item ['entry_modify_datetime'] }}
+        {% else %}
+        Not Yet Published
+        {% endif %}
+        </div>
+        <div class="text-right">{% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  item['entry_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}</div>
     </div>
     {% endif %}
    {% endfor %}

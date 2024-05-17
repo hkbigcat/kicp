@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\common\CommonUtil;
-
+use Drupal\Core\Utility\Error;
 
 class ProfileController extends ControllerBase {
 
@@ -65,10 +65,25 @@ class ProfileController extends ControllerBase {
             
             if($joinedMember == "N") {
                 $entry = array('cop_id' => $cop_id, 'user_id' => $user_id, 'is_subscribed_forum' => 0, 'cop_join_date' => date('Y-m-d H:i:s') );
-                $query = \Drupal::database()->insert('kicp_km_cop_membership')
-                ->fields($entry);
-                $return_value = $query->execute();
-                $joinedMember = 'Y';
+                try {
+                    $query = \Drupal::database()->insert('kicp_km_cop_membership')
+                    ->fields($entry);
+                    $return_value = $query->execute();
+                    $joinedMember = 'Y';
+                    \Drupal::logger('profile')->info('member added cop id: %id, user_id: %user_id.',   
+                    array(
+                        '%id' => $cop_id,
+                        '%user_id' => $user_id,
+                    ));                      
+                }  catch (\Exception $e) {
+                    $variables = Error::decodeException($e);
+                    \Drupal::logger('profile')->error('member is not added '  . $variables);   
+                    \Drupal::messenger()->addStatus(
+                        t('Unable to add member at this time due to datbase error. Please try again. ' )
+                        );
+                    $transaction->rollback();    
+                }
+                unset($transaction);
             }
             
         }
@@ -101,9 +116,9 @@ class ProfileController extends ControllerBase {
     public function ProfileGroupDelete($type="", $group_id="") {
 
         $err_code = 0;
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
         try {
-            $database = \Drupal::database();
-
             if ($type=="P") {
                 $query = $database->update('kicp_public_group')->fields([
                 'is_deleted' => 1,
@@ -117,21 +132,24 @@ class ProfileController extends ControllerBase {
                     ->condition('buddy_group_id', $group_id)
                     ->execute();
             }
-
-                $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Group has been deleted'));
-        
-                $err_code = 1;
-    
-
-    
+            \Drupal::logger('profile')->info('group deleted id: %id, type: %type.',   
+            array(
+                '%id' => $group_id,
+                '%type' => $type=='B'?'Buddy':'Public',
+            ));  
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Group has been deleted'));
+            $err_code = 1;    
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::logger('profile')->error('gorup is not deleted '  . $variables);   
             \Drupal::messenger()->addStatus(
                 t('Unable to delete group at this time due to datbase error. Please try again. ' )
                 );
+            $transaction->rollback();    
             }
-
+        unset($transaction);
         $response = array('result' => $err_code);
         return new JsonResponse($response);  
 
@@ -173,37 +191,54 @@ class ProfileController extends ControllerBase {
 
         $userInGroup = ProfileDatatable::checkUserInGroup($type, $group_id, $user_id);
         $search_str = \Drupal::request()->query->get('search_str');
-
+        
         if(!$userInGroup) {
             $userInfo = ProfileDatatable::getUserInfoByUserId($user_id);
+            
+            $database = \Drupal::database();
+            $transaction =  $database->startTransaction();   
+            try {
+                if ($type === "B") {
+                    $entry = array(
+                        'buddy_group_id' => $group_id,
+                        'buddy_user_id' => $user_id,
+                        'buddy_user_name' => $userInfo,
+                        'is_deleted' => 0,
+                        );
 
-            if ($type === "B") {
-                $entry = array(
-                    'buddy_group_id' => $group_id,
-                    'buddy_user_id' => $user_id,
-                    'buddy_user_name' => $userInfo,
-                    'is_deleted' => 0,
+                        $query = \Drupal::database()->insert('kicp_buddy_user_list')
+                        ->fields($entry);
+            
+                } else if($type == 'P') {
+                    $entry = array(
+                        'pub_group_id' => $group_id,
+                        'pub_user_id' => $user_id,
+                        'pub_user_name' => $userInfo,
+                        'is_deleted' => 0,
+                        );
+
+                        $query = \Drupal::database()->insert('kicp_public_user_list')
+                        ->fields($entry);    
+                }
+                $return_value = $query->execute();
+                \Drupal::logger('profile')->info('added member in group id: %id, type: %type, user_id: %user_id',   
+                array(
+                    '%id' => $group_id,
+                    '%type' => $type=='B'?'Buddy':'Public',
+                    '%user_id' => $user_id,
+                ));   
+
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('User has been added.'.$return_value));
+            } catch (\Exception $e) {
+                $variables = Error::decodeException($e);
+                \Drupal::logger('profile')->error('member is not added '  . $variables);   
+                \Drupal::messenger()->addStatus(
+                    t('Unable to add member at this time due to datbase error. Please try again. ' )
                     );
-
-                    $query = \Drupal::database()->insert('kicp_buddy_user_list')
-                    ->fields($entry);
-        
-            } else if($type == 'P') {
-                $entry = array(
-                    'pub_group_id' => $group_id,
-                    'pub_user_id' => $user_id,
-                    'pub_user_name' => $userInfo,
-                    'is_deleted' => 0,
-                    );
-
-                    $query = \Drupal::database()->insert('kicp_public_user_list')
-                    ->fields($entry);    
-            }
-            $return_value = $query->execute();
-
-            $messenger = \Drupal::messenger(); 
-            $messenger->addMessage( t('User has been added.'.$return_value));
-
+                $transaction->rollback();    
+                }
+            unset($transaction);
 
             $url = Url::fromUserInput('/profile_group_member/'.$type.'/'.$group_id.'?search_str='.$search_str);
             return new RedirectResponse($url->toString());  
@@ -215,9 +250,9 @@ class ProfileController extends ControllerBase {
     public function ProfileGroupMemberDelete($type="",$group_id="", $user_id="") {
 
         $err_code = 0;
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();   
         try {
-            $database = \Drupal::database();
-
             if ($type=="P") {
                 $query = $database->update('kicp_public_user_list')->fields([
                     'is_deleted' => 1,
@@ -233,17 +268,26 @@ class ProfileController extends ControllerBase {
                     ->condition('buddy_user_id', $user_id)
                     ->execute();
             }
-                $messenger = \Drupal::messenger(); 
-                $messenger->addMessage( t('Member has been deleted'));
-        
-                $err_code = 1;
+            \Drupal::logger('profile')->info('member deleted in group id: %id, type: %type, user_id: %user_id',   
+            array(
+                '%id' => $group_id,
+                '%type' => $type=='B'?'Buddy':'Public',
+                '%user_id' => $user_id,
+            ));              
+            $messenger = \Drupal::messenger(); 
+            $messenger->addMessage( t('Member has been deleted'));
+            $err_code = 1;
     
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::logger('profile')->error('member is not deleted '  . $variables);   
             \Drupal::messenger()->addStatus(
                 t('Unable to delete member at this time due to datbase error. Please try again. ' )
                 );
+            $transaction->rollback();    
             }
+        unset($transaction);            
 
         $response = array('result' => $err_code);
         return new JsonResponse($response);  

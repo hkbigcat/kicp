@@ -10,8 +10,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\common\Follow;
 use Drupal\vote\Common\VoteDatatable;
@@ -74,7 +74,7 @@ class VoteController extends ControllerBase {
         }
 
         $database = \Drupal::database();
-
+        $transaction = $database->startTransaction();   
         try {
             
             $query = \Drupal::database()->update('kicp_vote')->fields([
@@ -131,13 +131,11 @@ class VoteController extends ControllerBase {
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Vote has been deleted.'));    
             } else {
-
                 \Drupal::messenger()->addError(
                     t('Unable to delete vote at this time due to datbase error. Please try again. ' )
                     );
                 \Drupal::logger('vote')->error('Vote is not deleted: '.$vote_id);   
-                    
-
+                $transaction->rollBack();                     
             }
         }
         catch (\Exception $e) {
@@ -147,7 +145,7 @@ class VoteController extends ControllerBase {
             \Drupal::logger('vote')->error('Vote is not deleted: '.$vote_id);   
             
         }
-
+        unset($transaction); 
         $response = array('result' => $actual_files);
         return new JsonResponse($response);
 

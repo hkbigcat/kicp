@@ -10,10 +10,10 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\LikeItem;
 use Drupal\video\Common\VideoDatatable;
-
+use Drupal\Core\Utility\Error;
 
 class PPCActivitiesDatatable {
 
@@ -137,6 +137,8 @@ class PPCActivitiesDatatable {
 
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);        
+        if (!$result) 
+            return null;
         foreach ($result as $record) {
             $record["countlike"] = LikeItem::countLike('activities', $record["evt_id"]);
             $record["liked"] = LikeItem::countLike('activities', $record["evt_id"],$my_user_id);
@@ -187,6 +189,34 @@ class PPCActivitiesDatatable {
 
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
+        if (!$result) return null;
+
+        $NoOfEnrolled = self::numOfEventEnrollment($evt_id);
+        $NoOfEnrolled??0;
+        $CurrentTimestamp = time();
+        if($CurrentTimestamp > strtotime($result['evt_enroll_start']) && $CurrentTimestamp < strtotime($result['evt_enroll_end'])) {
+            $result["enroll_period"] = true;
+            if ( !$result['evt_capacity'] || $result['evt_capacity'] =="" || $result['evt_capacity'] == 0 || $result['evt_capacity'] > $NoOfEnrolled ) {
+                $RegistrationInfo = self::getEventRegistrationInfo($evt_id, $my_user_id);
+                if (!$RegistrationInfo) {
+                    $result["enroll_action"] = 'enroll';
+                    $result["enroll_text"] = 'Enroll';
+                } else if ($RegistrationInfo->evt_reg_datetime != "" && $RegistrationInfo->cancel_enrol_datetime == "" && $RegistrationInfo->cancel_reenrol_datetime == "") {
+                    $result["enroll_action"] = 'cancel_enroll';
+                    $result["enroll_text"] = 'Cancel Enroll';
+                } else if($RegistrationInfo->cancel_enrol_datetime != "" && $RegistrationInfo->is_reenrol == 0) { 
+                    $result["enroll_action"] = 'reenroll';
+                    $result["enroll_text"] = 'Re-enroll';
+                } else if($RegistrationInfo->is_reenrol == 1 && $RegistrationInfo->cancel_reenrol_datetime == "") {
+                    $result["enroll_action"] = 'cancel_reenrol';
+                    $result["enroll_text"] = 'Cancel Re-enroll';
+                } else {
+                    $result["enroll_text"] = 'Please contact KICP Adminitrator if you would like to re-enroll this event.';
+                }
+            }
+        } else {
+            $result["enroll_period"] = false;
+        }
 
         $result["has_video"] = VideoDatatable::getMediaEventbyEvtID($evt_id, 'PPC', $my_user_id);
 
@@ -214,21 +244,15 @@ class PPCActivitiesDatatable {
             return $result;
         }
     } 
-    
-    public static function getEventSubmitReply() {
-        $output = array();
 
-        $sql = 'SELECT id, reply, display FROM kicp_km_event_submitreply WHERE is_visible = 1 ORDER BY reply';
+    public static function getEventReplyMsg($evt_id="") {
+        $sql = "SELECT display FROM kicp_ppc_event_submitreply WHERE is_visible = 1 AND reply = (select submit_reply from kicp_ppc_event where evt_id='$evt_id')  ORDER BY id desc limit 1";
         $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
-        
-        foreach($result as $record) {
-            $output[$record['reply']] = $record['display'];
-        }
-        
-        return $output;
-    }
+        $result = $database-> query($sql)->fetchObject();  
+        return $result->display;
 
+    }
+    
     public static function getEventDeliverableByEventId($evt_id) {
         $record = array();
         $output = array();
@@ -248,7 +272,8 @@ class PPCActivitiesDatatable {
             $sql = "SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_ppc_event_deliverable WHERE evt_id='$evt_id' AND is_deleted = 0 $search_sql ORDER BY evt_deliverable_url";
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
-
+            if (!$result)
+              return null;
             $TagList = new TagList();
             foreach ($result as $record) {
                 $record["tags"] = $TagList->getTagsForModule('ppcactivities_deliverable', $record["evt_deliverable_id"]);
@@ -282,6 +307,31 @@ class PPCActivitiesDatatable {
         ORDER BY evt_reg_datetime DESC";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public static function numOfEventEnrollment($evt_id) {
+        
+        $sql = "SELECT COUNT(1) as total_enrol FROM kicp_ppc_event_member_list WHERE evt_id='$evt_id' AND evt_reg_datetime IS NOT NULL AND is_deleted = 0 AND (cancel_enrol_datetime IS NULL OR (is_reenrol = 1 AND cancel_reenrol_datetime IS NULL))" ;
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result->total_enrol;
+        
+    }
+
+    public static function getEventRegistrationInfo($evt_id, $user_id) {
+        
+        $sql = "SELECT evt_reg_datetime, is_enrol_successful, is_showup, is_reenrol, cancel_enrol_datetime, cancel_reenrol_datetime, is_deleted, is_enrol_successful, is_showup FROM kicp_ppc_event_member_list WHERE evt_id='$evt_id' AND user_id = '$user_id' ORDER BY evt_reg_datetime DESC LIMIT 1";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result;
+        
+    }    
+
+    public static function getUserInfoForRegistration($user_id) {
+        $sql = "SELECT uid, user_dept, user_rank, user_post_unit FROM xoops_users WHERE user_id= '$user_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
         return $result;
     }
     
@@ -333,15 +383,15 @@ class PPCActivitiesDatatable {
         $TagList = new TagList();
         $database = \Drupal::database();
 
-        $query = $database-> select('kicp_ppc_event', 'a');
-        $query->addField('a', 'evt_id','id');
-        $query->addField('a', 'evt_name','name');
-        $query->fields('a', ['evt_id']);
-        $query->addField('a', 'modify_datetime','record_time');
-        $query->addField('a', 'evt_description','highlight');
-        $query->fields('a', ['evt_start_date', 'evt_end_date']);
-        $query->addExpression('1', 'is_activity');
-        $query->condition('a.is_deleted', '0');
+        $query_event = $database-> select('kicp_ppc_event', 'a');
+        $query_event->addField('a', 'evt_id','id');
+        $query_event->addField('a', 'evt_name','name');
+        $query_event->fields('a', ['evt_id']);
+        $query_event->addField('a', 'modify_datetime','record_time');
+        $query_event->addField('a', 'evt_description','highlight');
+        $query_event->fields('a', ['evt_start_date', 'evt_end_date']);
+        $query_event->addExpression('1', 'is_activity');
+        $query_event->condition('a.is_deleted', '0');
 
         if ($tags && count($tags) > 0 ) {
             $tags1 = $database-> select('kicp_tags', 't');
@@ -351,7 +401,7 @@ class PPCActivitiesDatatable {
             $tags1-> addField('t', 'fid');
             $tags1-> groupBy('t.fid');
             $tags1-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
-            $query-> condition('evt_id', $tags1, 'IN');
+            $query_event-> condition('evt_id', $tags1, 'IN');
       }
       
         $table2 = $database-> select('kicp_ppc_event_deliverable', 'b'); 
@@ -360,7 +410,6 @@ class PPCActivitiesDatatable {
         $table2->fields('b', ['evt_id']);
         $table2->addField('b', 'modify_datetime','record_time');
         $table2->addField('b', 'evt_deliverable_url','highlight');
-        //$table2->addExpression("CONCAT('File name: ', evt_deliverable_url)",'highlight');
         $table2->addExpression('null', 'evt_start_date');
         $table2->addExpression('null', 'evt_end_date');
         $table2->addExpression('0', 'is_activity');
@@ -378,17 +427,13 @@ class PPCActivitiesDatatable {
             $table2-> condition('evt_deliverable_id', $tags2, 'IN');
         }
         
-
-
-        $query->union($table2);
+        $query = $database-> select($query_event->union($table2))
+        ->fields(NULL, ['id','name', 'evt_id', 'record_time', 'highlight', 'evt_start_date','evt_end_date', 'is_activity' ]);
         $query-> orderBy('record_time', 'DESC');          
-
-        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(5);
-        //$pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->union($table2)->limit(10);
-
-
+        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
         $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
-        
+        if (!$result)
+          return null;  
         foreach ($result as $record) {
             if ($record["is_activity"]) {
                 $record["tags"] = $TagList->getTagsForModule('ppcactivities', $record["id"]);
@@ -420,6 +465,49 @@ class PPCActivitiesDatatable {
         return ($record->maxOrder == "" ? 0 : $record->maxOrder);
         
     }
+
+    public static function insertRegistration($entry) {
+        $return_value = NULL;
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
+        try {
+            $query = $database->insert('kicp_ppc_event_member_list') ->fields($entry);
+            $return_value = $query->execute();
+        } 
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Enrollment is not created.' )
+                );
+            \Drupal::logger('ppcactivities')->error('PPC Event Enrollment is not created: '. $variables);
+            $transaction->rollBack();
+        }	        
+        unset($transaction);    
+        return $return_value;        
+    }
+
+
+    public static function changeRegistration($entry) {
+        $return_value = NULL;
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
+        try {
+            $query = $database->update('kicp_ppc_event_member_list') ->fields($entry)
+            ->condition('evt_id', $entry['evt_id'])
+            ->condition('user_id', $entry['user_id']);
+            $return_value = $query->execute();
+        } 
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Enrollment is not updated.' )
+                );
+            \Drupal::logger('ppcactivities')->error('PPC Event Enrollment is not updated: '. $variables);
+            $transaction->rollBack();
+        }	        
+        unset($transaction);    
+        return $return_value;
+    }        
 
 }
 

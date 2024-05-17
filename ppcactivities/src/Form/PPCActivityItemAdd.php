@@ -10,8 +10,8 @@ namespace Drupal\ppcactivities\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
@@ -21,7 +21,7 @@ use Drupal;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity;
-
+use Drupal\Core\Utility\Error;
 
 
 class PPCActivityItemAdd extends FormBase  {
@@ -356,7 +356,7 @@ class PPCActivityItemAdd extends FormBase  {
             'venue' => $evt_venue,
             'allow_likes' => 1,
             'num_likes' => 0,
-            'user_id' => $this->default_creator[$evt_cop_id],
+            'user_id' => $this->default_creator,
             'create_datetime' => date('Y-m-d H:i:s', $current_time),
             'modify_datetime' => date('Y-m-d H:i:s', $current_time),            
           );

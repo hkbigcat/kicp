@@ -11,14 +11,14 @@ namespace Drupal\bookmark\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\bookmark\Common\BookmarkDatatable;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal;
-
+use Drupal\Core\Utility\Error;
 
 class BookmarkChange extends FormBase  {
 
@@ -57,7 +57,7 @@ class BookmarkChange extends FormBase  {
         $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid);
 
 
-        if ($bookmark['bid'] == null) {
+        if ($bookmark['bid'] == null || $bookmark['user_id'] != $this->my_user_id ) {
             $output = '<p style="text-align:center">You cannot edit this bookmark.</p>';
             $form['intro'] = array(
             '#markup' => t($output),
@@ -92,12 +92,11 @@ class BookmarkChange extends FormBase  {
         
         $form['bTitle_prev'] = array(
             '#type' => 'hidden',
-            '#value' => $bTitle,
+            '#value' => $bookmark['bTitle'],
           );        
                  
         $form['bDescription'] = [
-            '#type' => 'text_format',
-            '#format' => 'full_html',
+            '#type' => 'textarea',
             '#title' => $this->t('Content'),
             '#rows' => 2,
             '#attributes' => array('style' => 'height:300px;'),
@@ -107,7 +106,7 @@ class BookmarkChange extends FormBase  {
 
         $form['bDescription_prev'] = array(
             '#type' => 'hidden',
-            '#value' => $bDescription,
+            '#value' => $bookmark['bDescription'],
           );        
 
         $form['bAddress'] = array(
@@ -121,19 +120,19 @@ class BookmarkChange extends FormBase  {
   
         $form['bAddress_prev'] = array(
             '#type' => 'hidden',
-            '#value' => $bAddress,
+            '#value' => $bookmark['bAddress'],
         );
 
         $form['bStatus'] = array(
             '#title' => t('Privacy'),
             '#type' => 'select',
             '#options' => array(0 => "Public", 2 => "Private"),
-            '#default_value' =>  $bookmark['bStatus'],
+            '#value' =>  $bookmark['bStatus'],
           );
 
         $form['bStatus_prev'] = array(
             '#type' => 'hidden',
-            '#default_value' => $bStatus,
+            '#value' => $bookmark['bStatus'],
         );          
 
         $TagList = new TagList();
@@ -155,6 +154,7 @@ class BookmarkChange extends FormBase  {
         $form['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style'=>'margin-bottom: 20px;'),            
         );
         
         $form['actions']['cancel'] = array(
@@ -205,41 +205,31 @@ class BookmarkChange extends FormBase  {
             $$key = $value;
         }
 
-        if (!isset($bTitle) or $bTitle == '') {
-            $form_state->setErrorByName(
-                'bTitle', $this->t("Title is blank")
-            );
-        }
 
-        if (isset($bDescription) and $bDescription['value'] != '' &&  strlen(trim($bDescription['value'])) > 30000) {
+        if (isset($bDescription) and $bDescription != '' &&  strlen(trim($bDescription)) > 30000) {
             $form_state->setErrorByName(
                 'bDescription', $this->t("Description exceeds 30,000 characters")
             );
         }
 
         // web address
-        if (!isset($bAddress) or $bAddress == '') {
+
+        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $bAddress)) {
             $form_state->setErrorByName(
-                'bAddress', $this->t("Web Address is blank")
+                'bAddress', $this->t(
+                    "The web address '%1' is invalid", array('%1' => $form_state->getValue('bAddress'))
+                )
             );
         }
         else {
-            if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $bAddress)) {
+            $url1 = filter_var($bAddress, FILTER_SANITIZE_URL); //// Remove all illegal characters
+            if (filter_var($url1, FILTER_VALIDATE_URL) === false) {
                 $form_state->setErrorByName(
-                    'bAddress', $this->t(
-                        "The web address '%1' is invalid", array('%1' => $form_state->getValue('bAddress'))
-                    )
+                    'bAddress', $this->t("The web address '%1' is invalid.", array('%1' => $form_state->getValue('bAddress')))
                 );
             }
-            else {
-                $url1 = filter_var($bAddress, FILTER_SANITIZE_URL); //// Remove all illegal characters
-                if (filter_var($url1, FILTER_VALIDATE_URL) === false) {
-                    $form_state->setErrorByName(
-                        'bAddress', $this->t("The web address '%1' is invalid.", array('%1' => $form_state->getValue('bAddress')))
-                    );
-                }
-            }
         }
+
 
         // tags
         if (isset($tags) and $tags != '') {
@@ -266,7 +256,7 @@ class BookmarkChange extends FormBase  {
             'bStatus' => $bStatus,
             'bTitle' => $bTitle,
             'bAddress' => $bAddress,
-            'bDescription' => $bDescription['value'],
+            'bDescription' => $bDescription,
           );
 
         if($bTitle != $bTitle_prev || $bDescription != $bDescription_prev || $bAddress!= $bAddress_prev || $bStatus != $bStatus_prev || $tags != $tags_prev ) {

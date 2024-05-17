@@ -10,8 +10,8 @@ namespace Drupal\activities\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
@@ -323,9 +323,6 @@ class ActivityItemAdd extends FormBase  {
     }    
     
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;

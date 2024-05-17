@@ -1,0 +1,7 @@
+{% if following %}
+<span id="DivFollow_{{ user_id }}" class="unfollow"><a href="javascript:;" onclick="updateFollowUserStatus('{{ user_id }}', 0, this)">Following</a></span>
+{% else %}
+<span id="DivFollow_{{ user_id }}" class="follow"><a href="javascript:;" onclick="updateFollowUserStatus('{{ user_id }}', 1, this)">Follow</i></a></span>
+{% endif %}
+
+

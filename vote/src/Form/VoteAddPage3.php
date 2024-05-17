@@ -19,7 +19,7 @@ use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\common\AccessControl;
-
+use Drupal\Core\Utility\Error;
 
 class VoteAddPage3 extends FormBase {
 
@@ -152,11 +152,12 @@ class VoteAddPage3 extends FormBase {
             $$key = $value;
         }
 
-
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
 
             $i = 1;
-
+            $order_changed = "";
             if ($hiddenremove == 0) {
                 foreach ($questionInfo as $record) {
 
@@ -168,14 +169,14 @@ class VoteAddPage3 extends FormBase {
                       'modify_datetime' => date('Y-m-d H:i:s'),
                       'modified_by' => $this->my_user_id,
                     );
-
-                    $database = \Drupal::database();
                     $query = $database->update('kicp_vote_question')->fields( $entry)
                     ->condition('id', $record['id']);
-                    $return = $query->execute();
+                    $affected_rows = $query->execute();
+                    if ($affected_rows) $order_changed .= $record['id'] . ", ";
 
                     $i++;
                 }
+                \Drupal::logger('vote')->info('question updated order: '.$order_changed);
                 $url = new Url('vote.vote_add_page4');
                 $form_state->setRedirectUrl($url);
             } else {
@@ -184,22 +185,19 @@ class VoteAddPage3 extends FormBase {
                 'modified_by' => $this->my_user_id,
                   'deleted'=> 'Y',
                    );
-
-                $database = \Drupal::database();
                 $query = $database->update('kicp_vote_question')->fields( $entry)
                 ->condition('id', $hiddenremove);
-                $return = $query->execute();
-
-                 $url = new Url('vote.vote_add_page3');
+                $affected_rows = $query->execute();
+                $url = new Url('vote.vote_add_page3');
                 $form_state->setRedirectUrl($url);
             }
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-              t('Squestion is not udpated. ' )
+              t('question is not udpated. ' )
               );  
             \Drupal::logger('vote')->error('question is not updated: ' . $variables);
-
+            $transaction->rollBack(); 
         }
     }
 

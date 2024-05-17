@@ -1,15 +1,12 @@
 <div id="right_content" style="width:100%;">
     <div id="DivContentTable">
     <div class="type_title">Event Management</div>
- <div style="width: 50%; text-align: right; margin-top: -50px; float: right;">
+<div class="text-right">
      <button class="kicp_button size-2" onClick="self.location.href='{{ path('ppcactivities.admin_item_add') }}'"><i class="fa-solid fa-circle-plus"></i> Add Event</button>
      <button  class="kicp_button size-2" onClick="self.location.href='{{ path('ppcactivities.admin_type') }}'"><i class="fa-regular fa-calendar-days"></i> Event Type Management</button>
      <button  class="kicp_button size-2" onClick="self.location.href='{{ path('ppcactivities.admin_category') }}'"><i class="fa-regular fa-calendar-days"></i> Category Management</button>
 </div>  
-<form id="search_form" name="search_form" method="get">
-  <div style="width:100%;text-align:right;float:right;margin:5px;">
-  <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Event Name"></div>
-</form>
+ {% include '@common/common-search-form.html.twig'  with {placeholder: 'Event Name'}  %}  
         <div class="common_table_header">
             <div style="width:4%;">&nbsp;</div>
             <div style="width:31%;text-align:left;">Event Name</div>

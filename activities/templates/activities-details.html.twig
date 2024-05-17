@@ -42,6 +42,16 @@
             {{ items['evt_description']  | raw  | nl2br  }}
         </div>
     </div>
+
+    {% if (items['enroll_action']) %}
+    <div class="text-center">
+      <button style="color: #eba300;font-size: larger;" onClick="self.location.href='{{ path('activities.register', { 'action' : items['enroll_action'] , 'evt_id': items['evt_id']  }  ) }}'"><i class="fa fa-check-square" aria-hidden="true"></i> {{items['enroll_text']}}</button>
+    </div>
+    {% else %}
+        {% if (items['enroll_text'] != "") %}
+        <p>{{items['enroll_text']}}</p>
+        {% endif %}
+    {% endif %}
 </div>
 
 

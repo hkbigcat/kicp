@@ -5,7 +5,7 @@ namespace Drupal\video\Common;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\Query\Condition;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\RatingData;
 use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Database\Query\PagerSelectExtender;
@@ -125,16 +125,13 @@ class VideoDatatable {
 
             $table2-> condition('media_id', $tags1, 'IN');
         }
-        //$table2->addExpression(':this_module2', 'this_module', array(':this_module2' => 'video_video'));
         $table2->addField('b', 'media_id','id');
-        $table2->addField('b', 'media_event_id');
-        $table2->addField('b', 'media_title');
-        $table2->addField('b', 'media_img');
+        $table2->fields('b', ['media_event_id', 'media_title', 'media_img']);
         $table2->addField('b', 'media_postdate', 'evt_date');
         $table2->addExpression(':is_event2', 'is_event', array(':is_event2' => 0));
         $table2->addField('b', 'modify_datetime', 'record_time');            
         
-        $query = $database-> select('kicp_media_event_name', 'a'); 
+        $query_event = $database-> select('kicp_media_event_name', 'a'); 
         if ($tags && count($tags) > 0 ) {
             $tags2 = $database-> select('kicp_tags', 't');
             $tags2-> condition('tag', $tags, 'IN');
@@ -143,28 +140,23 @@ class VideoDatatable {
             $tags2-> addField('t', 'fid');
             $tags2-> groupBy('t.fid');
             $tags2-> having('COUNT(fid) >= :matches', [':matches' => count($tags)]);        
-
-            $query-> condition('media_event_id', $tags2, 'IN');
+            $query_event-> condition('media_event_id', $tags2, 'IN');
         }
           
-          //$query->addExpression(':this_module', 'this_module', array(':this_module' => 'video'));
-          $query->addField('a', 'media_event_id','id');
-          $query->addField('a', 'media_event_id');
-          $query->addField('a', 'media_event_name', 'media_title');
-          $query->addField('a', 'media_event_image', 'media_img');
-          $query->addField('a', 'media_event_date', 'evt_date');
-          $query->addExpression(':is_event', 'is_event', array(':is_event' => 1));
-          $query->addField('a', 'modify_datetime', 'record_time');
+          $query_event->addField('a', 'media_event_id','id');
+          $query_event->addField('a', 'media_event_id');
+          $query_event->addField('a', 'media_event_name', 'media_title');
+          $query_event->addField('a', 'media_event_image', 'media_img');
+          $query_event->addField('a', 'media_event_date', 'evt_date');
+          $query_event->addExpression(':is_event', 'is_event', array(':is_event' => 1));
+          $query_event->addField('a', 'modify_datetime', 'record_time');
 
-          $query->union($table2, 'UNION');
-
+          $query = $database-> select($query_event->union($table2))
+          ->fields(NULL, ['id','media_event_id', 'media_title', 'media_img', 'evt_date','is_event', 'record_time']);
           $query-> orderBy('record_time', 'DESC');          
-
           $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(10);
-
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
 
-          //$result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
 
           if (!$result) {
             return null;

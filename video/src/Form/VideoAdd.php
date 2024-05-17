@@ -12,12 +12,13 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\video\Common\VideoDatatable;
 use Drupal\video\Controller\VideoController;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Utility\Error;
 
 class VideoAdd extends FormBase {
 
@@ -239,6 +240,8 @@ class VideoAdd extends FormBase {
             )
             );
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();            
         try {
             $newDateFormat = str_replace(':', '-', $vDate);
             $newDateFormat = date('Y-m-d', strtotime($newDateFormat));
@@ -257,7 +260,7 @@ class VideoAdd extends FormBase {
               'media_event_id' => $media_event_id,
             );
 
-            $query = \Drupal::database()->insert('kicp_media_info')
+            $query = $database->insert('kicp_media_info')
             ->fields( $entry);
             $eId = $query->execute();
 
@@ -324,6 +327,7 @@ class VideoAdd extends FormBase {
                     t('Video is not created. ' )
                     );
                     \Drupal::logger('video')->error('Video is not created (3)');
+                    $transaction->rollback();
             }
         }
         catch (Exception $e) {
@@ -332,8 +336,9 @@ class VideoAdd extends FormBase {
                 t('Video is not created. ' )
                 );
               \Drupal::logger('video')->error('Video is not created '  . $variables);   
-
+              $transaction->rollback();
         }
+        unset($transaction);
     }
 
 }

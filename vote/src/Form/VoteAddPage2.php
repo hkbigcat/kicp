@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\AccessControl;
+use Drupal\Core\Utility\Error;
 
 class VoteAddPage2 extends FormBase {
 
@@ -56,13 +57,10 @@ class VoteAddPage2 extends FormBase {
         $isEdit = 0;
 
         $questionInfo = VoteDatatable::getVoteQuestion($get_vote_id, $questionNumber);
-
         $voteInfoCount = VoteDatatable::getVoteQuestionCount( $get_vote_id);
 
-        //$voteInfoRate = array();
         if ($questionInfo) {
           $voteChoice = VoteDatatable::getVoteChoice($questionInfo->id);
-          //$voteInfoRate = VoteDatatable::getVoteRateView($questionInfo->id);
           $voteChoiceCount = VoteDatatable::getVoteChoiceCount($questionInfo->id);
         }
         $totalQuestionNo = !isset($voteInfoCount) || ($voteInfoCount == "" ) ? 1 : $voteInfoCount;
@@ -80,18 +78,6 @@ class VoteAddPage2 extends FormBase {
               $choiceCounter++;
           }
         }
-        /*
-        $ratearry = [];
-        $k = 1;
-        $rateCounter = 0;
-        foreach ($voteInfoRate as $rateresult) {
-            $ratearry[$k]['scale'] = $rateresult['scale'];
-            $ratearry[$k]['legend'] = $rateresult['legend'];
-            $ratearry[$k]['position'] = $rateresult['position'];
-            $k++;
-            $rateCounter++;
-        }
-        */
 
         if ($questionInfo==null) {
             $resultQuestionarry = array(
@@ -175,6 +161,7 @@ class VoteAddPage2 extends FormBase {
           '#title' => t('Question ' . $questionNumber . '</p> 	Please type the question below'),
           '#type' => 'text_format',
           '#format' => 'basic_html',
+          '#allowed_formats' => ['basic_html'],
           '#rows' => 10,
           '#cols' => 30,
           '#attributes' => array('style' => 'height:400px;'),
@@ -198,8 +185,8 @@ class VoteAddPage2 extends FormBase {
           '#type' => 'select',
           '#options' => $questionTypeSelect,
           '#attributes' => array('onChange' => 'showDiv(this.value)', 'id' => 'answerType', 'onload' => 'showDiv(this.value)'),
-          '#prefix' => '<div class="div_inline_column">',
-          '#suffix' => '</div>Reminder: The Answer Type of a confirmed question cannot be changed.',
+          '#prefix' => '<div class="inline">',
+          '#suffix' => '</div><div class="w20px"></div>Reminder: The Answer Type of a confirmed question cannot be changed.',
           '#default_value' => $resultQuestionarry['answerType'],
         );
 
@@ -218,14 +205,6 @@ class VoteAddPage2 extends FormBase {
           '#default_value' => ($resultQuestionarry['required']=='N')?'N':'Y',
         );
 
-        //Rate DIV---------------------------------------------------------------
-        /*
-        $form['hiddenExistingRates'] = array(
-          '#type' => 'hidden',
-          '#value' => $rateDefaultCount,
-          '#attributes' => array('id' => 'hiddenExistingRates'),
-        );
-        */
         $choiceDefaultCount = 10;
         if ($choiceCounter > $choiceDefaultCount) {
             $choiceDefaultCount = $choiceCounter;
@@ -261,21 +240,25 @@ class VoteAddPage2 extends FormBase {
         $form['btAddanother'] = array(
           '#type' => 'submit',
           '#value' => t('Add another answer line'),
-          '#attributes' => array('style' => 'display:inline-block;margin:20px;', 'onClick' => 'addAnswerLine("RadioCheckbox");'),
-          '#prefix' => '<div class="div_inline_column">  ',
+          '#attributes' => array('onClick' => 'addAnswerLine("RadioCheckbox");'),
+          //'#prefix' => '<div class="div_inline_column">  ',
+          '#prefix' => '<div class="inline">',
+          '#suffix' => '<div class="w30px"></div>',
         );
 
         $form['btClearAll'] = array(
           '#type' => 'submit',
           '#value' => t('Clear all answer lines'),
-          '#attributes' => array('style' => 'display:inline-block;margin:20px;', 'onClick' => 'clearAnswerLine("RadioCheckbox");'),
+          '#attributes' => array('onClick' => 'clearAnswerLine("RadioCheckbox");'),
+          '#suffix' => '<div class="w30px"></div>',
         );
 
         $form['btReset'] = array(
           '#type' => 'submit',
           '#value' => t('Reset Whole question'),
           '#attributes' => array('style' => 'display:inline-block;margin:20px;', 'onClick' => 'resetVote();showDiv(0);'),
-          '#suffix' => '</div></div>',
+          //'#suffix' => '</div></div>',
+          '#suffix' => '</div><div class="spacer"></div></div>',
         );
 
         $form['#suffix'] = '</div>';
@@ -325,29 +308,40 @@ class VoteAddPage2 extends FormBase {
         );
         */
 
+        $form['QuestionButtonLine'] = array(
+          '#markup' => '<div class="inline">',
+        );        
+
         for ($i = 1; $i <= $totalQuestionNo; $i++) {
             if ($i != $questionNumber) {
                 $form['btQuestion' . $i] = array(
                   '#type' => 'submit',
                   '#name' => 'btQuestion' . $i,
                   '#value' => $i,
-                  '#attributes' => array('style' => 'display:inline-block; margin-left:5px; margin-right:5px; ', ),
+                  //'#attributes' => array('style' => 'display:inline-block; margin-left:5px; margin-right:5px; ', ),
                 );
             }
         }
         $form['btNewQuestion'] = array(
           '#type' => 'submit',
           '#name' => 'btNewQuestion',
-          '#value' => t('NewQuestion'),
-          '#attributes' => array('id' => 'NewQuestion', 'style' => 'display:inline-block;margin-left:5px; margin-right:5px ', ),
+          '#value' => t('Save & New Question'),
+          '#attributes' => array('id' => 'NewQuestion', ),
+          '#prefix' => '<div class="w30px"></div>',
+          '#suffix' => '</div>',          
         );
  
+        $form['btSaveOnly'] = array(
+          '#type' => 'submit',
+          '#name' => 'btSaveOnly',
+          '#value' => t('Save This Question'),
+        );        
 
         $form['actions']['submit'] = array(
           '#type' => 'submit',
-          '#value' => t('Save'),
-          '#attributes' => array('style' => 'display:inline-block;margin-left:30px;', ),
-          '#suffix' => '</div>',
+          '#value' => t('Save & Complete'),
+         // '#attributes' => array('style' => 'display:inline-block;margin-left:30px;', ),
+          //'#suffix' => '</div>',
         );
 
         $jsOutput = '<script>showDiv(' . $resultQuestionarry['answerType'] . ');</script>';
@@ -416,8 +410,6 @@ class VoteAddPage2 extends FormBase {
             $$key = $value;
         }
 
-        $hiddenAddanother = 0;
-        $hiddenJump = 0;
         $button_clicked = $form_state->getTriggeringElement()['#name'];
 
         if (substr($button_clicked,0,10)=="btQuestion") {
@@ -431,12 +423,13 @@ class VoteAddPage2 extends FormBase {
         } 
 
         $hiddenJump = 0;
-        $hiddenAddanother = ($button_clicked == "btNewQhuestion")?1:0;
-        
+        $hiddenAddanother = ($button_clicked == "btNewQuestion")?1:0;
+        $btSaveOnly = ($button_clicked == "btSaveOnly")?1:0;
+
         $get_vote_id = (isset($_SESSION['vote_id']) && $_SESSION['vote_id'] != "") ? $_SESSION['vote_id'] : "";
         $questionInfo = VoteDatatable::getVoteQuestion($get_vote_id, $questionNo);
 
-        if ($deleteFile == 1) {
+        if (isset($deleteFile) && $deleteFile == 1) {
           $attach_deleted = VoteDatatable::DeleteVoteEntryAttachment($get_vote_id,$questionInfo->id );
           $query = \Drupal::database()->update('kicp_vote_question')->fields([
             'file_name' => '',
@@ -457,9 +450,8 @@ class VoteAddPage2 extends FormBase {
         $question_id = $questionId;
 
         $database = \Drupal::database();
+        $transaction =  $database->startTransaction();
         try {
-           
-//        if ($hiddenIsEdit == 0) {
           if (!isset($question_id) || $question_id == '') {
             $entry = array(
               'vote_id' => $get_vote_id,
@@ -468,45 +460,28 @@ class VoteAddPage2 extends FormBase {
               'position' => $questionNo,
               'has_Others' => $includeOption,
               'required' => $required,
-              'create_datetime' => date('Y-m-d H:i:s'),
-              'modify_datetime' => date('Y-m-d H:i:s'),
               'type_id' => $answerType,
               'modified_by' => $this->my_user_id,
               'file_name' => $this_filename,
-              //'show_scale' => $DisplayScale,
-              //'show_legend' => $DisplayLegend,
             );
 
-            
             $query = $database->insert('kicp_vote_question')->fields( $entry);
             $question_id = $query->execute();
-
-              if ($question_id) {
-
+            if ($question_id) {
                 // if file is selected-------------------------------------------------------------------------
                 if ($_FILES['files']['name']['filename'] != "") {
                   VoteDatatable::saveAttach( $_FILES['files']['name']['filename'], $this_filename, $get_vote_id, $question_id);
                 }
-                // write logs to common log table
-
-                \Drupal::logger('vote')->info('Created question id: %id, filename: %filename.',   
-                array(
-                    '%id' => $question_id,
-                    '%filename' => isset($this_filename)?$this_filename:'no file',
-                ));   
 
                 for ($i = 1; $i <= $hiddenExistingChoices; $i++) {
                     if (${'title' . $i} != '') {
                         $entry = array(
                           'question_id' => $question_id,
                           'choice' => ${'title' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
                           'modified_by' => $this->my_user_id,);
 
                         $query = $database->insert('kicp_vote_question_choice')->fields( $entry);
                         $titlereuturn = $query->execute();
-
                     }
                 }
 
@@ -520,8 +495,6 @@ class VoteAddPage2 extends FormBase {
                             $entry = array(
                               'question_id' => $question_id,
                               'choice' => trim(str_replace('"', '', $eachInput)),
-                              'create_datetime' => date('Y-m-d H:i:s'),
-                              'modify_datetime' => date('Y-m-d H:i:s'),
                               'modified_by' => $this->my_user_id,);
 
                               $query = $database->insert('kicp_vote_question_choice')->fields( $entry);
@@ -529,50 +502,6 @@ class VoteAddPage2 extends FormBase {
                         }
                     }
                 }
-                /*
-                for ($i = $hiddenExistingRates; $i > 0; $i--) {
-                    if (${'rateLegend' . $i} != '') {
-                        $entry = array(
-                          'question_id' => $question_id,
-                          'scale' => ${'rateScale' . $i},
-                          'legend' => ${'rateLegend' . $i},
-                          'position' => ${'ratePosition' . $i},
-                          'create_datetime' => date('Y-m-d H:i:s'),
-                          'modify_datetime' => date('Y-m-d H:i:s'),
-                          'modified_by' => $this->my_user_id,);
-
-                          $query = $database->insert('kicp_vote_question_rate')->fields( $entry);
-                          $ratereturn = $query->execute();
-
-                    }
-                }
-                $regBrackets = '/\{([^}]+)\}/';
-                $newRates = preg_match_all($regBrackets, $hiddenRates, $match);
-                if ($newRates > 0) {
-                    foreach ($match[1] as $eachInput) {
-                        $regQuotes = '/".*?"|\'.*?\'/';
-                        $newRate = preg_match_all($regQuotes, $eachInput, $match2);
-                        $tempscale = trim(str_replace('"', '', $match2[0][1]));
-                        $tempposition = trim(str_replace('"', '', $match2[0][5]));
-                        $scale_value = ctype_digit($tempscale) ? intval($tempscale) : null;
-                        $legend_value = trim(str_replace('"', '', $match2[0][3]));
-                        $position_value = ctype_digit($tempposition) ? intval($tempposition) : null;
-                        if ($legend_value != '') {
-                            $entry = array(
-                              'question_id' => $question_id,
-                              'scale' => $scale_value,
-                              'legend' => $legend_value,
-                              'position' => $position_value,
-                              'create_datetime' => date('Y-m-d H:i:s'),
-                              'modify_datetime' => date('Y-m-d H:i:s'),
-                              'modified_by' => $this->my_user_id,);
-
-                            $query = $database->insert('kicp_vote_question_rate')->fields( $entry);
-                            $ratereturn = $query->execute();
-                        }
-                    }
-                }
-                */
                 if ($hiddenAddanother == "1") {
                       $questionNo = $questionNo + 1;
                       $totalQuestionNo = $totalQuestionNo + 1;
@@ -581,19 +510,25 @@ class VoteAddPage2 extends FormBase {
                       $session->set('questionNo', $questionNo);
                       $session->set('totalQuestionNo', $totalQuestionNo); 
                       $url = new Url('vote.vote_add_page2');
-                } else {
+                }  elseif ($btSaveOnly == 1) {
+                  $url = new Url('vote.vote_add_page2');
+                }  else {
                     $url = new Url('vote.vote_add_page3');
                 }
+                \Drupal::logger('vote')->info('Created question id: %id.',   
+                array(
+                    '%id' => $question_id,
+                ));   
                 $form_state->setRedirectUrl($url);
             } else {
 
                 \Drupal::messenger()->addError(
                   t('New Vote question is not created. ' )
                   );
-                  \Drupal::logger('vote')->error('New Vote question is not created (3)');   
-                
+                \Drupal::logger('vote')->error('New Vote question is not created (3)');   
+                $transaction->rollBack();  
               }
-            } else {   // is Edit
+          } else {   // is Edit
                 $entry = array(
                   'name' => $name['value'],
                   'content' => $question['value'],
@@ -631,8 +566,6 @@ class VoteAddPage2 extends FormBase {
                           $entry = array(
                             'question_id' => $question_id,
                             'choice' => ${'title' . $i},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'modified_by' => $this->my_user_id,);
                             
                           $query = $database->insert('kicp_vote_question_choice')->fields( $entry);
@@ -650,9 +583,7 @@ class VoteAddPage2 extends FormBase {
                               $entry = array(
                                 'question_id' => $question_id,
                                 'choice' => trim(str_replace('"', '', $eachInput)),
-                                'create_datetime' => date('Y-m-d H:i:s'),
-                                'modify_datetime' => date('Y-m-d H:i:s'),
-                                'modified_by' => $my_user_id,);
+                                'modified_by' => $this->my_user_id,);
 
                               $query = $database->insert('kicp_vote_question_choice')->fields( $entry);
                               $titlereuturn = $query->execute();                              
@@ -660,57 +591,13 @@ class VoteAddPage2 extends FormBase {
                           }
                       }
                   }
-                  //update rate
-                  //$resetratereuturn = VoteDatatable::resetVoteRate($question_id);
-                  /*
-                  for ($i = $hiddenExistingRates; $i > 0; $i--) {
-                      if (${'rateLegend' . $i} != '') {
-                          $entry = array(
-                            'question_id' => $question_id,
-                            'scale' => ${'rateScale' . $i},
-                            'legend' => ${'rateLegend' . $i},
-                            'position' => ${'ratePosition' . $i},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
-                            'modified_by' => $this->my_user_id,);
 
-                          $query = $database->insert('kicp_vote_question_rate')->fields( $entry);
-                          $ratereturn = $query->execute();
+                  \Drupal::logger('vote')->info('Question updated id: %id.',   
+                  array(
+                      '%id' => $question_id,
+                  ));                   
 
-                      }
-                  }
-                  */
-                    $regBrackets = '/\{([^}]+)\}/';
-                    /*
-                    $newRates = preg_match_all($regBrackets, $hiddenRates, $match);
-                    if ($newRates > 0) {
-                        foreach ($match[1] as $eachInput) {
-                            $regQuotes = '/".*?"|\'.*?\'/';
-                            $newRate = preg_match_all($regQuotes, $eachInput, $match2);
-                            $tempscale = trim(str_replace('"', '', $match2[0][1]));
-                            $tempposition = trim(str_replace('"', '', $match2[0][5]));
-                            $scale_value = ctype_digit($tempscale) ? intval($tempscale) : null;
-                            $legend_value = trim(str_replace('"', '', $match2[0][3]));
-                            $position_value = ctype_digit($tempposition) ? intval($tempposition) : null;
-                            if ($legend_value != '') {
-                                $entry = array(
-                                  'question_id' => $question_id,
-                                  'scale' => $scale_value,
-                                  'legend' => $legend_value,
-                                  'position' => $position_value,
-                                  'create_datetime' => date('Y-m-d H:i:s'),
-                                  'modify_datetime' => date('Y-m-d H:i:s'),
-                                  'modified_by' => $this->my_user_id,);
-
-                                $query = $database->insert('kicp_vote_question_rate')->fields( $entry);
-                                $ratereturn = $query->execute();
-      
-                            }
-                        }
-                    }
-                      */
-
-                    if ($hiddenAddanother == "1") {
+                  if ($hiddenAddanother == "1") {
                       $questionNo = $totalQuestionNo + 1;
                       if ($questionNo > $totalQuestionNo) {
                         $totalQuestionNo = $totalQuestionNo + 1;
@@ -720,24 +607,29 @@ class VoteAddPage2 extends FormBase {
                       $session->set('questionNo', $questionNo);
                       $session->set('totalQuestionNo', $totalQuestionNo);                        
                       $url = new Url('vote.vote_add_page2');
-                    } else {
+                  }  elseif ($btSaveOnly == 1) {
+                    $url = new Url('vote.vote_add_page2');
+                  } else {
                         $url = new Url('vote.vote_add_page3');
-                    }
+                  }
                     $form_state->setRedirectUrl($url);
                 } else {
                   \Drupal::messenger()->addError(
                     t('update Vote : ( '.$get_vote_id.' ) question ( '.$questionNo.' )  is not sucesss. ' )
                     );
                     \Drupal::logger('vote')->error('question is not created (3) ');
+                    $transaction->rollback();
                 }
             }
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-              t('Squestion is not created. ' )
+              t('question is not created. ' )
               );            
             \Drupal::logger('vote')->error('question is not created: ' . $variables);
+            $transaction->rollback();
         }
+        unset($transaction);
     }
 
 }

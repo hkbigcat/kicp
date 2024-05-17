@@ -12,13 +12,14 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\common\AccessControl;
+use Drupal\Core\Utility\Error;
 
 class SurveyAddPage4 extends FormBase {
 
@@ -100,14 +101,30 @@ class SurveyAddPage4 extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
 
-        $query = \Drupal::database()->update('kicp_survey')->fields([
-          'is_completed' => 1,
-          'modify_datetime' => date('Y-m-d H:i:s'),
-          'modified_by' => $this->my_user_id,
-        ])
-        ->condition('survey_id', $survey_id);
-        $return = $query->execute();    
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
 
+        try {
+          $query = $database->update('kicp_survey')->fields([
+            'is_completed' => 1,
+            'modify_datetime' => date('Y-m-d H:i:s'),
+            'modified_by' => $this->my_user_id,
+          ])
+          ->condition('survey_id', $survey_id);
+          $return = $query->execute();    
+          \Drupal::logger('survey')->info('final updated ID: '.$survey_id);
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Survey is created.'));          
+        } 
+        catch (Exception $e) {
+          $variables = Error::decodeException($e);
+          \Drupal::messenger()->addError(
+            t('survey is not udpated. ' )
+            );  
+          \Drupal::logger('survey')->error('survey is not updated: ' . $variables);
+          $transaction->rollBack(); 
+        }
+        unset($transaction);
         $url = new Url('survey.survey_content');
         $form_state->setRedirectUrl($url);
     }

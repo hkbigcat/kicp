@@ -16,8 +16,10 @@
     
     <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
         <div style="float:right">
+            {% if (items['delegate']) %}        
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': items['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ items['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
+            {% endif %}              
          </div>
         <div class="entry_title">{{ items ['entry_title'] }} </div>
         <div class="entry_content" id="COp_entry_content">
@@ -27,7 +29,14 @@
             <a href="{{ path('common.download', {'module_name': 'blog', 'file_id': items ['entry_id'], 'fname': attachment | url_encode }) }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
         {% endfor %}
         {% include '@common/common-tags-list.html.twig' %}    
-        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span>{{ items ['entry_modify_datetime'] }}
+        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span>
+        {% if item['is_visible'] %}
+        {{item ['entry_modify_datetime'] }}
+        {% else %}
+        Not Yet Published
+        {% endif %}
+        </div>
+         <div class="text-right">
           {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  items['entry_id'], countLike: items['countlike'], 'liked': items['liked']  }  %}
         </div>
   </div>

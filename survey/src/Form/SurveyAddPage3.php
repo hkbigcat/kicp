@@ -19,7 +19,7 @@ use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\common\AccessControl;
-
+use Drupal\Core\Utility\Error;
 
 class SurveyAddPage3 extends FormBase {
 
@@ -152,11 +152,12 @@ class SurveyAddPage3 extends FormBase {
             $$key = $value;
         }
 
-
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
 
             $i = 1;
-
+            $order_changed = "";
             if ($hiddenremove == 0) {
                 foreach ($questionInfo as $record) {
 
@@ -169,13 +170,14 @@ class SurveyAddPage3 extends FormBase {
                       'modified_by' => $this->my_user_id,
                     );
 
-                    $database = \Drupal::database();
                     $query = $database->update('kicp_survey_question')->fields( $entry)
                     ->condition('id', $record['id']);
-                    $return = $query->execute();
-
+                    $affected_rows = $query->execute();
+                    if ($affected_rows) $order_changed .= $record['id'] . ", ";
                     $i++;
                 }
+                \Drupal::logger('survey')->info('question updated order: '.$order_changed);
+
                 $url = new Url('survey.survey_add_page4');
                 $form_state->setRedirectUrl($url);
             } else {
@@ -185,10 +187,9 @@ class SurveyAddPage3 extends FormBase {
                   'deleted'=> 'Y',
                    );
 
-                $database = \Drupal::database();
                 $query = $database->update('kicp_survey_question')->fields( $entry)
                 ->condition('id', $hiddenremove);
-                $return = $query->execute();
+                $affected_rows = $query->execute();
 
                  $url = new Url('survey.survey_add_page3');
                 $form_state->setRedirectUrl($url);
@@ -196,11 +197,12 @@ class SurveyAddPage3 extends FormBase {
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-              t('Squestion is not udpated. ' )
+              t('question is not udpated. ' )
               );  
             \Drupal::logger('survey')->error('question is not updated: ' . $variables);
-
+            $transaction->rollBack(); 
         }
+        unset($transaction);
     }
 
 }

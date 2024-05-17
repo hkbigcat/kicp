@@ -1,0 +1,17 @@
+album_key:
+  version: 1.x
+  css:
+    theme:
+      css/album.css: {}
+      css/galleriffic-basic.css: {}
+      css/galleriffic.css: {}
+  header: true
+  js:
+    js/album.js: {}
+    js/jquery.galleriffic.js: {}
+    js/jquery.opacityrollover.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+    - core/drupal.dialog

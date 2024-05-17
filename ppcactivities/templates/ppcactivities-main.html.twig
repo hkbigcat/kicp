@@ -1,6 +1,6 @@
 {% include '@ppcactivities/leftmenu.html.twig' %}
 <div id="right_content">
-    <div style="float:right;margin-top:-50px;text-align:right;">
+    <div class="text-right">
         <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
         {% if user.hasPermission('activities_admin') %}
@@ -10,16 +10,15 @@
             <div id="DivFollower">PPCIS.OGCIO <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'PPCIS.OGCIO'}  %}</span></div>
         </div>
     </div>
-
-    <div style="margin-top: 70px; clear:both; padding:10px;">
-    <p>{{items['description']}}</p>
-    {% for cop in categories %}
-        {% if cop['cop_id'] == cop_id  %}
-            <p>{{cop['cop_info']}}</p>
-        {% endif %}       
-    {% endfor %}    
+    <div class="spacer"></div>
+    <div>
+        <p>{{items['description']}}</p>
+        {% for cop in categories %}
+            {% if cop['cop_id'] == cop_id  %}
+                <p>{{cop['cop_info']}}</p>
+            {% endif %}       
+        {% endfor %}    
     </div>
-
     <div class="type_title">{{items['evt_type_name']}}</div>
 
     {% if events is not empty %}

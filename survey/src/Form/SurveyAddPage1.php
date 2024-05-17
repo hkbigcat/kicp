@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity;
+use Drupal\Core\Utility\Error;
 
 class SurveyAddPage1 extends FormBase {
 
@@ -311,26 +312,26 @@ class SurveyAddPage1 extends FormBase {
         //*************** File [End]
 
 
-        $database = \Drupal::database();
-        $transaction =  $database->startTransaction();
+        $entry = array(
+          'title' => $title,
+          'description' => $description['value'],
+          'start_date' => $startdate,
+          'expiry_date' => $expirydate . " 23:59:59",
+          'create_datetime' => date('Y-m-d H:i:s'),
+          'modify_datetime' => date('Y-m-d H:i:s'),
+          'is_visible' => $ReadyVote,
+          'allow_copy' => $Allowcopy,
+          'is_showDep' => $Department,
+          'is_showPost' => $PostUnit,
+          'is_showname' => $Votername,
+          'user_id' => $my_user_id,
+          'file_name' => $this_filename,
+        );
+        
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
-            $entry = array(
-              'title' => $title,
-              'description' => $description['value'],
-              'start_date' => $startdate,
-              'expiry_date' => $expirydate . " 23:59:59",
-              'create_datetime' => date('Y-m-d H:i:s'),
-              'modify_datetime' => date('Y-m-d H:i:s'),
-              'is_visible' => $ReadyVote,
-              'allow_copy' => $Allowcopy,
-              'is_showDep' => $Department,
-              'is_showPost' => $PostUnit,
-              'is_showname' => $Votername,
-              'user_id' => $my_user_id,
-              'file_name' => $this_filename,
-            );
-            
 
             $query = $database->insert('kicp_survey')->fields( $entry);
             $survey_id = $query->execute();
@@ -371,6 +372,7 @@ class SurveyAddPage1 extends FormBase {
                 t('Survey is not created. ' )
                 );
                 \Drupal::logger('survey')->error('Survey is not created ' .$survey_id);   
+                $transaction->rollBack();  
             }
         } catch (Exception $e) {
             $transaction->rollback();
@@ -379,6 +381,7 @@ class SurveyAddPage1 extends FormBase {
               t('Survey is not created. ' )
               );
             \Drupal::logger('survey')->error('Survey is not created '  . $variables);   
+            $transaction->rollBack();  
         }
         unset($transaction);
     }

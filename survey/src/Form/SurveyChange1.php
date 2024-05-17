@@ -12,14 +12,14 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\common\AccessControl;
-
+use Drupal\Core\Utility\Error;
 
 class SurveyChange1 extends FormBase {
 
@@ -378,6 +378,7 @@ class SurveyChange1 extends FormBase {
 
 
         $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
             //*************** File [Start]
 
@@ -423,6 +424,7 @@ class SurveyChange1 extends FormBase {
 
             $_SESSION['survey_id'] = $survey_id;
             if ($hiddenCount > 0) {
+               \Drupal::logger('survey')->info('survey update ID: '.$survey_id);
                 $url = new Url('survey.survey_content');
                 $form_state->setRedirectUrl($url);
 
@@ -436,10 +438,13 @@ class SurveyChange1 extends FormBase {
             $form_state->setRedirectUrl($url);
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
+            \Drupal::logger('survey')->error('survey is not updated: ' . $variables);
             \Drupal::messenger()->addError(
-              t('Unable to update survey at this time due to datbase error. Please try again. '.$variables)
+              t('Unable to update survey at this time due to datbase error. Please try again. ')
             ); 
+            $transaction->rollBack(); 
         }
+        unset($transaction);
     }
 
 }

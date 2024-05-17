@@ -1,13 +1,9 @@
-<div style="width: 35%; text-align: right; margin-top: -50px; float: right;">
+<div class="text-right">
     <button class="kicp_button size-2" onClick="self.location.href='{{ path('ppcactivities.deliverable_add', {'evt_id': evt_id }) }}'"><i class="fa-solid fa-circle-plus"></i> Add Deliveriable</button>
     <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'" style="cursor:pointer;">Event List</button> 
 </div>
 <div id="DivContentTable">
-    <form id="search_form" name="search_form" method="get">
-        <div style="width:100%;text-align:right;float:right;margin:5px;">
-        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Deliverable Name / Description"></div>
-    </form>
-
+ {% include '@common/common-search-form.html.twig'  with {placeholder: 'Deliverable Name / Description'}  %}  
     <div class="common_table_header">
         <div style="width:31%;text-align:left;margin-left:51px;">Deliverable Name</div>
         <div style="width:50%;text-align:left;">Description</div>

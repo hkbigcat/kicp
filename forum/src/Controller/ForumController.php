@@ -9,7 +9,7 @@ namespace Drupal\forum\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\forum\Common\ForumDatatable;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\RedirectResponse;

@@ -1,0 +1,24 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function album_page_attachments_alter(&$page) {
+
+    $routeName = \Drupal::routeMatch()->getRouteName();   
+
+    if (explode(".", $routeName)[0] === 'album') {
+        $page['#attached']['library'][] = 'album/album_key';
+    }
+
+}
+
+/**
+ * Implements hook_help().
+ */
+function album_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.album':
+        return '<p>' . t('Album module that provides album.') . '</p>';
+        break;
+    }
+  }  

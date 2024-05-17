@@ -5,16 +5,11 @@
     </div>
     <div id="RightContainer">
         <div class="ProfileName">{{ items['type']=='P'?'Personal Public Group':'Personal Group' }} </div>
-        <div style="width: 55%; text-align: right; margin-top: -30px; float: right;">
+         <div class="text-right">
             <button class="kicp_button size-2" onClick="self.location.href='{{ path('profile.profile_group_add') }}?type={{  items['type']=="P"?'P':'B' }}'"><i class="fa-solid fa-user-plus"></i> Add {{ items['type']=='P'?'Personal Public Group':'Personal Group' }}</button>
         </div>
         <div id="DivContentTable">
-            <form id="search_form" name="search_form" method="get">
-                <div style="width:100%;text-align:right;float:right;margin:5px;">
-                    <input type="hidden"  name="type" value="{{ items['type']=='P'?'P':'B' }}">
-                    <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Group Name">
-                </div>
-            </form>
+           {% include '@common/common-search-form.html.twig'  with {placeholder: 'Group Name'}  %}    
             <div class="common_table_header">
                 <div style="width:60%;text-align:left;margin-left:5px;">Group Name</div>
                 <div style="width:35%;">&nbsp;</div>

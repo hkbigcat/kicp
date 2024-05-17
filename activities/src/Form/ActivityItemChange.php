@@ -10,8 +10,8 @@ namespace Drupal\activities\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;

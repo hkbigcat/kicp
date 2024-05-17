@@ -28,14 +28,9 @@
             {% endif %} 
             {% endfor %} 
         </div>
-
-        <div style="width:100%;float:right;margin-top:10px;">
-        <form id="search_form" name="search_form" method="get">
-            <div style="width:100%;text-align:right;float:right;margin:5px;">
-                <strong>Search User to add: </strong><input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="User Name">
-            </div>
-        </form>
-
+        <div class="spacer"></div>
+        <div>
+         {% include '@common/common-search-form.html.twig'  with {placeholder: 'User Name'}  %}   
         {% if search_users is not empty %}
 
         <fieldset>

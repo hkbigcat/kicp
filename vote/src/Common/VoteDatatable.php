@@ -10,7 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\common\Follow;
 
@@ -51,7 +51,7 @@ class VoteDatatable {
             $query-> leftjoin('kicp_buddy_group', 'h', 'ac.group_id = h.buddy_group_id AND ac.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id', [':is_deleted' => '0', ':typeP' => 'P', ':user_id' => $my_user_id]);
           }
         
-        $query-> fields('a', ['vote_id', 'title', 'description', 'user_id', 'start_date', 'expiry_date', 'allow_copy', 'is_completed']);
+        $query-> fields('a', ['vote_id', 'title', 'description', 'user_id', 'start_date', 'expiry_date', 'allow_copy', 'show_response', 'is_completed']);
         $query-> fields('x', ['user_displayname']);
         $query-> addExpression('count(b.vote_id)', 'response');
         $query-> addExpression('count(ac.id)', 'vote_access');

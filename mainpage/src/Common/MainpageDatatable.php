@@ -2,7 +2,7 @@
 
 namespace Drupal\mainpage\Common;
 
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\LikeItem;
 use Drupal\common\Follow;
 use Drupal\Core\Pager\PagerManagerInterface;
@@ -47,28 +47,29 @@ class MainpageDatatable {
         $database = \Drupal::database();
 
         /***********    Bookmark    ************/
-        $query = $database-> select('kicp_bookmark', 'a');
-        $query -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
-        $query ->addField('a', 'bTitle','Title');
-        $query ->addField('a', 'bid','record_id');
-        $query ->addField('a', 'bAddress','link');
-        $query ->addField('a', 'user_id');
-        $query ->addField('u', 'user_displayname');
-        $query ->addField('a', 'bModified','record_time');
-        $query ->addExpression('null', 'image_name');
-        $query ->addExpression(":module", 'module', array(":module"=>"bookmark" ));
-        $query ->condition('a.is_deleted', '0');
+        $query_bookmark = $database-> select('kicp_bookmark', 'a');
+        $query_bookmark -> leftjoin('xoops_users', 'u', 'a.user_id = u.user_id');
+        $query_bookmark ->addField('a', 'bTitle','Title');
+        $query_bookmark ->addField('a', 'bid','record_id');
+        $query_bookmark ->addField('a', 'bAddress','link');
+        $query_bookmark ->addField('a', 'user_id');
+        $query_bookmark ->addField('u', 'user_displayname');
+        $query_bookmark ->addField('a', 'bModified','record_time');
+        $query_bookmark ->addField('a', 'bDescription','summary');
+        $query_bookmark ->addExpression('null', 'image_name');
+        $query_bookmark ->addExpression(":module", 'module', array(":module"=>"bookmark" ));
+        $query_bookmark ->condition('a.is_deleted', '0');
         
         if ($myRecordOnly) {
-            $query->condition('a.user_id', $my_user_id);
+            $query_bookmark->condition('a.user_id', $my_user_id);
         } else if ($myfollowed && $following != null) {
-            $query-> condition('a.user_id', $following, 'IN');
+            $query_bookmark-> condition('a.user_id', $following, 'IN');
         } else {        
             if (!$isSiteAdmin) {
-                $orGroup1 = $query->orConditionGroup()
+                $orGroup1 = $query_bookmark->orConditionGroup()
                 ->condition('a.user_id', $my_user_id)
                 ->condition('a.bStatus', 0);
-                $query->condition($orGroup1);
+                $query_bookmark->condition($orGroup1);
             }        
         }
 
@@ -82,9 +83,20 @@ class MainpageDatatable {
         $query_blog ->addField('b1', 'user_id');
         $query_blog ->addField('u1', 'user_displayname');
         $query_blog ->addField('a1', 'entry_modify_datetime','record_time');
+        $query_blog ->addField('a1', 'entry_content','summary');
         $query_blog ->addExpression("IF(b1.image_name = 'shadow.gif', 'shadow.gif' , CONCAT(LPAD(u1.uid, 6, '0'),  '/', b1.image_name))", 'image_name');
         $query_blog ->addExpression(":module2", 'module', array(":module2"=>"blog" ));
         $query_blog ->condition('a1.is_deleted', '0');
+
+        $delegate = $database-> select('kicp_blog_delegated', 'dele');
+        $delegate-> condition('user_id', $my_user_id);
+        $delegate-> addField('dele', 'blog_id');
+
+        $orGroup = $query_blog->orConditionGroup();
+        $orGroup->condition('b1.user_id', $my_user_id);
+        $orGroup->condition('a1.is_visible', 1);
+        $orGroup->condition('b1.blog_id',  $delegate, 'IN');        
+        $query_blog->condition($orGroup);        
 
         if ($myRecordOnly) {
             $query_blog->condition('b1.user_id', $my_user_id);
@@ -96,7 +108,6 @@ class MainpageDatatable {
                 $query_blog ->condition('b1.blog_id', $blog_unaccess, 'NOT IN');
             }
         }
-
 
         /***********    Fileshare    ************/
         $query_file = $database-> select('kicp_file_share', 'a2');
@@ -130,6 +141,7 @@ class MainpageDatatable {
         $query_file ->addField('a2', 'user_id');
         $query_file ->addField('u2', 'user_displayname');
         $query_file ->addField('a2', 'modify_datetime','record_time');
+        $query_file ->addField('a2', 'description','summary');
         $query_file ->addExpression("CONCAT(LPAD(a2.file_id, 6, '0'),  '/', a2.image_name)", 'image_name');
         $query_file ->addExpression(":module3", 'module', array(":module3"=>"fileshare" ));
         $query_file ->condition('a2.is_deleted', '0');
@@ -164,6 +176,7 @@ class MainpageDatatable {
         $query_forum ->addField('a3', 'user_id');
         $query_forum ->addField('u3', 'user_displayname');
         $query_forum ->addField('a3', 'create_datetime','record_time');
+        $query_forum ->addField('a3', 'content','summary');
         $query_forum ->addExpression('null', 'image_name');
         $query_forum ->addExpression(":module4", 'module', array(":module4"=>"forum" ));
         $query_forum ->condition('a3.is_deleted', '0');
@@ -177,6 +190,7 @@ class MainpageDatatable {
         $query_wiki ->addExpression('null', 'user_id');
         $query_wiki ->addExpression('null', 'user_displayname');
         $query_wiki ->addExpression("CONVERT_TZ(DATE_FORMAT(a4.page_touched,'%Y-%m-%d %H:%i:%s'),'+00:00','+08:00')", 'record_time');
+        $query_wiki ->addExpression('null', 'summary');
         $query_wiki ->addExpression('null', 'image_name');
         $query_wiki ->addExpression(":module5", 'module', array(":module5"=>"wiki" ));
         $query_wiki ->condition('a4.page_namespace', '0');
@@ -205,6 +219,55 @@ class MainpageDatatable {
             }             
         }        
 
+        /***********    Activities    ************/
+        $query_activities = $database-> select('kicp_km_event', 'a6');
+        $query_activities -> leftjoin('xoops_users', 'u6', 'a6.user_id = u6.user_id');
+        $query_activities ->addField('a6', 'evt_name','Title');
+        $query_activities ->addField('a6', 'evt_id','record_id');
+        $query_activities ->addField('a6', 'evt_id','link');
+        $query_activities ->addField('a6', 'user_id');
+        $query_activities ->addField('u6', 'user_displayname');
+        $query_activities ->addField('a6', 'modify_datetime','record_time');
+        $query_activities ->addField('a6', 'evt_description','summary');
+        $query_activities ->addField('a6', 'evt_logo_url','image_name');
+        $query_activities ->addExpression(":module6", 'module', array(":module6"=>"activities" ));
+        $query_activities ->condition('a6.is_deleted', '0');
+
+        if ($myRecordOnly) {
+            $query_activities->condition('a6.user_id', $my_user_id);
+        } else if ($myfollowed  && $following != null) {
+            $query_activities-> condition('a6.user_id', $following, 'IN');
+        } else {            
+            if (!$isSiteAdmin) {
+                $query_activities ->condition('a6.is_visible', '1');
+            }
+        }        
+
+        /***********    PPC Activities    ************/
+        $query_ppcactivities = $database-> select('kicp_ppc_event', 'a7');
+        $query_ppcactivities -> leftjoin('xoops_users', 'u7', 'a7.user_id = u7.user_id');
+        $query_ppcactivities ->addField('a7', 'evt_name','Title');
+        $query_ppcactivities ->addField('a7', 'evt_id','record_id');
+        $query_ppcactivities ->addField('a7', 'evt_id','link');
+        $query_ppcactivities ->addField('a7', 'user_id');
+        $query_ppcactivities ->addField('u7', 'user_displayname');
+        $query_ppcactivities ->addField('a7', 'modify_datetime','record_time');
+        $query_ppcactivities ->addField('a7', 'evt_description','summary');
+        $query_ppcactivities ->addField('a7', 'evt_logo_url','image_name');
+        $query_ppcactivities ->addExpression(":module7", 'module', array(":module7"=>"ppcactivities" ));
+        $query_ppcactivities ->condition('a7.is_deleted', '0');
+
+        if ($myRecordOnly) {
+            $query_ppcactivities->condition('a7.user_id', $my_user_id);
+        } else if ($myfollowed  && $following != null) {
+            $query_ppcactivities-> condition('a7.user_id', $following, 'IN');
+        } else {            
+            if (!$isSiteAdmin) {
+                $query_ppcactivities ->condition('a7.is_visible', '1');
+            }
+        }  
+
+
         /***********   Tags   ************/
         if ($tags && count($tags) > 0 ) {    
 
@@ -217,7 +280,7 @@ class MainpageDatatable {
             $tags1-> addField('t1', 'fid');
             $tags1-> groupBy('t1.fid');
             $tags1-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
-            $query-> condition('bid', $tags1, 'IN');
+            $query_bookmark-> condition('bid', $tags1, 'IN');
 
             $tags2 = $database-> select('kicp_tags', 't2');
             $tags2-> condition('tag', $tags, 'IN');
@@ -255,13 +318,27 @@ class MainpageDatatable {
             $tags5-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
             $query_wiki-> condition('page_id', $tags5, 'IN');
 
+            $tags6 = $database-> select('kicp_tags', 't6');
+            $tags6-> condition('tag', $tags, 'IN');
+            $tags6-> condition('t6.is_deleted', '0');
+            $tags6-> condition('t6.module', 'activities');
+            $tags6-> addField('t6', 'fid');
+            $tags6-> groupBy('t6.fid');
+            $tags6-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
+            $query_activities-> condition('evt_id', $tags6, 'IN');
+
+            $tags7 = $database-> select('kicp_tags', 't7');
+            $tags7-> condition('tag', $tags, 'IN');
+            $tags7-> condition('t7.is_deleted', '0');
+            $tags7-> condition('t7.module', 'ppcactivities');
+            $tags7-> addField('t7', 'fid');
+            $tags7-> groupBy('t7.fid');
+            $tags7-> having('COUNT(fid) >= :matches', [':matches' => $tagscount]);        
+            $query_ppcactivities-> condition('evt_id', $tags7, 'IN');            
         }        
 
-        $query->union($query_blog);
-        $query->union($query_forum);
-        $query->union($query_file);
-        $query->union($query_wiki);
-        
+        $query = $database-> select($query_bookmark->union($query_blog)->union($query_forum)->union($query_file)->union($query_wiki)->union($query_activities)->union($query_ppcactivities))
+        ->fields(NULL, ['Title','record_id', 'link', 'user_id', 'user_displayname', 'record_time', 'summary' , 'image_name', 'module']);
         $query-> orderBy('record_time', 'DESC');
         
         if ($tags && count($tags) > 0 ) {
@@ -284,6 +361,9 @@ class MainpageDatatable {
                 switch($record["module"]) {
                     case 'bookmark':
                         $record["img_path"] = "sites/default/files/public/default/img_no_image_".$img_no_image_num++.".png";
+                        $record["rating"] = $RatingData->getList('bookmark', $record["record_id"]);
+                        $rsHadRate = $RatingData->checkUserHadRate('bookmark', $record["record_id"], $my_user_id);
+                        $record["rating"]['rsHadRate'] = $rsHadRate;
                     break;
 
                     case 'blog':
@@ -315,6 +395,28 @@ class MainpageDatatable {
                         $record["countlike"] = LikeItem::countLike($record["module"], $record["record_id"]);
                         $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);    
                         $record["link"] = "mediawiki/index.php/".$record["link"];
+                    break;
+
+                    case 'activities':
+                        if (!$record["image_name"] || $record["image_name"] == "") {
+                            $record["img_path"] = "sites/default/files/public/default/img_no_image_km_activities_".$img_no_image_num++.".gif";    
+                        } else { 
+                            $record["img_path"] = "system/files/activities/item/".$record["image_name"];
+                        }
+                        $record["countlike"] = LikeItem::countLike($record["module"], $record["record_id"]);
+                        $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);    
+                        $record["link"] = "activities_detail/".$record["link"];
+                    break;
+
+                    case 'ppcactivities':
+                        if (!$record["image_name"] || $record["image_name"] == "") {
+                            $record["img_path"] = "sites/default/files/public/default/img_no_image_ppc_activities_".$img_no_image_num++.".gif";    
+                        } else { 
+                            $record["img_path"] = "system/files/ppcactivities/item/".$record["image_name"];
+                        }
+                        $record["countlike"] = LikeItem::countLike($record["module"], $record["record_id"]);
+                        $record["liked"] = LikeItem::countLike($record["module"], $record["record_id"],$my_user_id);    
+                        $record["link"] = "ppcactivities_detail/".$record["link"];
                     break;
 
 

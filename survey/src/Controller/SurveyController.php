@@ -10,8 +10,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\common\AccessControl;
 use Drupal\survey\Common\SurveyDatatable;
@@ -75,7 +75,7 @@ class SurveyController extends ControllerBase {
         }
 
         $database = \Drupal::database();
-
+        $transaction = $database->startTransaction();   
         try {
             
             $query = \Drupal::database()->update('kicp_survey')->fields([
@@ -130,23 +130,22 @@ class SurveyController extends ControllerBase {
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Survey has been deleted.'));    
             } else {
-
                 \Drupal::messenger()->addError(
                     t('Unable to delete survey at this time due to datbase error. Please try again. ' )
                     );
-                \Drupal::logger('survey')->error('Survey is not deleted: '.$survey_id);   
-                    
-
+                \Drupal::logger('survey')->error('Survey is not deleted: '.$survey_id);  
+                $transaction->rollBack(); 
             }
         }
         catch (\Exception $e) {
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
-                t('Unable to delete survey: '.$survey_id )
+                t('Unable to delete survey: ' )
                 );
-            \Drupal::logger('survey')->error('Survey is not deleted: '.$survey_id);   
-            
+            \Drupal::logger('survey')->error('Survey is not deleted: '.$variables);  
+            $transaction->rollBack();     
         }
-
+        unset($transaction); 
         $response = array('result' => $actual_files);
         return new JsonResponse($response);
 

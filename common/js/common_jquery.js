@@ -114,7 +114,7 @@ function displayGroupMember(elmt, group_type, group_id) {
     jQuery.ajax({
         contentType: "application/json; charset=utf-8",
         type: "POST",
-        url: 'get_group_member_div',
+        url: app_path + 'get_group_member_div',
         data: JSON.stringify({"elmt_name": elmt, "group_type": group_type, "group_id": group_id}),
         cache: false,
         success: function (data)
@@ -123,7 +123,7 @@ function displayGroupMember(elmt, group_type, group_id) {
             var group_member = data['group_member'];
             
             // display the specific element
-            jQuery( "<div id='div_member_"+ elmt +"' style='position:relative;' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'><div class='group_member_list'><span class='group_close' title='Close' alt='Close'>x</span><div class='group_name' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'>"+ group_name +"</div><div class='group_member'> "+ group_member + "</div></div></div>" ).insertAfter( jQuery('#'+elmt).closest('#group_member_link') );
+            jQuery( "<div id='div_member_"+ elmt +"' style='position:relative;' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'><div class='group_member_list'><span class='group_close' title='Close' alt='Close'><i class='fa-solid fa-rectangle-xmark'></i></span><div class='group_name' onClick='ShowHideDiv(\"div_member_"+elmt+"\")'>"+ group_name +"</div><div class='group_member'> "+ group_member + "</div></div></div>" ).insertAfter( jQuery('#'+elmt).closest('#group_member_link') );
         }
     });
         

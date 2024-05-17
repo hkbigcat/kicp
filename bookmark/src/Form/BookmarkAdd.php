@@ -10,14 +10,14 @@ namespace Drupal\bookmark\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal;
-
+use Drupal\Core\Utility\Error;
 
 class BookmarkAdd extends FormBase  {
 
@@ -97,6 +97,7 @@ class BookmarkAdd extends FormBase  {
         $form['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style'=>'margin-bottom: 20px;'),
         );
         
         $form['actions']['cancel'] = array(
@@ -147,12 +148,6 @@ class BookmarkAdd extends FormBase  {
             $$key = $value;
         }
 
-        if (!isset($bTitle) or $bTitle == '') {
-            $form_state->setErrorByName(
-                'bTitle', $this->t("Title is blank")
-            );
-        }
-
         if (isset($bDescription) and $bDescription != '' &&  strlen(trim($bDescription)) > 30000) {
             $form_state->setErrorByName(
                 'bDescription', $this->t("Description exceeds 30,000 characters")
@@ -160,28 +155,23 @@ class BookmarkAdd extends FormBase  {
         }
 
         // web address
-        if (!isset($bAddress) or $bAddress == '') {
+
+        if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $bAddress)) {
             $form_state->setErrorByName(
-                'bAddress', $this->t("Web Address is blank")
+                'bAddress', $this->t(
+                    "The web address '%1' is invalid", array('%1' => $form_state->getValue('bAddress'))
+                )
             );
         }
         else {
-            if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i", $bAddress)) {
+            $url1 = filter_var($bAddress, FILTER_SANITIZE_URL); //// Remove all illegal characters
+            if (filter_var($url1, FILTER_VALIDATE_URL) === false) {
                 $form_state->setErrorByName(
-                    'bAddress', $this->t(
-                        "The web address '%1' is invalid", array('%1' => $form_state->getValue('bAddress'))
-                    )
+                    'bAddress', $this->t("The web address '%1' is invalid.", array('%1' => $form_state->getValue('bAddress')))
                 );
             }
-            else {
-                $url1 = filter_var($bAddress, FILTER_SANITIZE_URL); //// Remove all illegal characters
-                if (filter_var($url1, FILTER_VALIDATE_URL) === false) {
-                    $form_state->setErrorByName(
-                        'bAddress', $this->t("The web address '%1' is invalid.", array('%1' => $form_state->getValue('bAddress')))
-                    );
-                }
-            }
         }
+
 
         // tags
         if (isset($tags) and $tags != '') {

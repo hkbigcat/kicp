@@ -10,7 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\Follow;
 
 

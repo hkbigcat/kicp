@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\activities\Common\ActivitiesDatatable;
+use Drupal\Core\Utility\Error;
 
 class ActivityTypeChange extends FormBase {
 

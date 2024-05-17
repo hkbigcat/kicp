@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * Install, update, uninstall function for the module
+ */
+
+
+function testform_schema() {
+  // Create a database table called testform
+  // 1) id 2) uid 3)nid 4) mail 6) created
+  $schema['testform'] = [
+   'description' => 'Store email, testtime, nid and uid for testform.',
+   'fields' => [
+     'id'=> [
+        'description' => 'The primary identifier for the record',
+        'type' => 'serial',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+     ],
+     'uid'=> [
+        'description' => 'The {user}.uid that added this RSVP',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+     ],
+     'nid'=> [
+        'description' => 'The {node}.uid for this RSVP',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+     ],
+     'mail'=> [
+        'description' => 'Users\'s email address',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        'default' => '',
+     ],
+     'created'=> [
+        'description' => 'Timestamp for when RSVP was created',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+     ],
+   ],
+   'primary key' => ['id'],
+   'indexes' => [
+     'node' => ['nid'],
+     'node_user' => ['nid', 'uid'],
+    ],
+
+   ];
+
+
+  // Create a database table anme list_enalable
+  // 1) nid[int]
+   $schema['testform_enabled'] = [
+   'description' => 'Track whether RSVP is enalbed or not for a node.',
+   'fields' => [
+     'nid'=> [
+        'description' => 'The {node}.uid that has enabled',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+     ],
+    ],
+    'primary key' => ['nid'],
+   ];
+   
+   return $schema;
+}
+

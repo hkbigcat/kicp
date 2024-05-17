@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\profile\Common\ProfileDatatable;
+use Drupal\Core\Utility\Error;
 
 class ProfileChangeMember extends FormBase {
 
@@ -114,13 +115,15 @@ class ProfileChangeMember extends FormBase {
         );
         $form_state->setRedirectUrl($url);
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
         try {
             
             if($type == "B") {
                 $entry = array(
                     'buddy_user_name' => $user_name,
                   );
-                $query = \Drupal::database()->update('kicp_buddy_user_list')
+                $query = $database->update('kicp_buddy_user_list')
                 ->fields($entry)
                 ->condition('buddy_group_id', $group_id)
                 ->condition('buddy_user_id', $user_id);
@@ -128,22 +131,31 @@ class ProfileChangeMember extends FormBase {
                 $entry = array(
                     'pub_user_name' => $user_name,
                   );
-                  $query = \Drupal::database()->update('kicp_public_user_list')
+                  $query = $database->update('kicp_public_user_list')
                   ->fields($entry)
                   ->condition('pub_group_id', $group_id)
                   ->condition('pub_user_id', $user_id);                  
             }
             $return = $query->execute();
+            \Drupal::logger('profile')->info('updated member id: %id, type: %type, user_id: %user_id',   
+            array(
+                '%id' => $group_id,
+                '%type' => $type=='B'?'Buddy':'Public',
+                '%user_id' => $user_id,
+            ));               
 
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Member name has been udpated.'));
             
         } catch (Exception $e) {
-            
+            $variables = Error::decodeException($e);
+            \Drupal::logger('profile')->error('gorup member is not updated '  . $variables);   
             \Drupal::messenger()->addError(
                 t('Unable to update member name at this time due to datbase error. Please try again.')
-              );             
+              );
+            $transaction->rollback();           
         }
+        unset($transaction);
     }
 
 }

@@ -16,8 +16,9 @@
         <button  class="kicp_button" onClick="self.location.href='{{ path('fileshare.fileshare_folder') }}'"><i class="fa-solid fa-folder-open"></i> Folder</button>
      </div>
 
+{% if (tags) %}
 {% include '@common/common-tags.html.twig' %}
-
+{% endif %}  
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_content') }}">
 
  {% if items is empty %}

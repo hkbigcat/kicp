@@ -1,0 +1,4 @@
+services:
+  testform.enabler:
+    class: Drupal\testform\EnablerService
+    arguments: ['@database']

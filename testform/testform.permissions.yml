@@ -1,0 +1,10 @@
+view testform:
+  title: 'View Test Form'
+  description: 'View and Submit the Form.'
+access testform rerpot:
+  title:  'Access List of Form'
+  description: 'View the report Listing of Form submitted.'
+administer testform:
+  title: 'Administer Form Settings'
+  description: 'Access the Form administrative settings page.'
+  restrict access: true

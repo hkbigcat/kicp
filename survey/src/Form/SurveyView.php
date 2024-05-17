@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\survey\Common\SurveyDatatable;
+use Drupal\Core\Utility\Error;
 
 class SurveyView extends FormBase {
 
@@ -149,11 +150,12 @@ class SurveyView extends FormBase {
                 $k = 1;
 
                 $counter = 0;
+                $tmp = "";
                 foreach ($surveyInfoRate as $rateresult) {
 
                     $rateScalearry[$counter] = $rateresult['scale'];
                     if ($show_scale == 1) {
-                        $rateLegendarry[$rateresult['id']] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
+                        $rateLegendarry[$counter] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
                     }
                     else {
                         $rateLegendarry[$rateresult['id']] = $rateresult['legend'];
@@ -186,8 +188,7 @@ class SurveyView extends FormBase {
                     '#markup' => '<p><a href="' . $file_question_path . '" target="_blank"><i class="fa-solid fa-paperclip"></i><span class="w20px"></span>' . $record['file_name'] . '</a></p><div class="spacer"></div>',
                     );
                 }
-
-                        
+                       
                 switch ($type_id) {
                     case 1: {
                             $yesno = array();
@@ -263,7 +264,7 @@ class SurveyView extends FormBase {
 
                             foreach ($surveyInfoChoice as $recordcoice) {
                                 $form['answer' . $i . '_' . $k] = array(
-                                '#title' => $recordcoice->choice,
+                                '#title' => $recordcoice['choice'],
                                 '#type' => 'checkbox',
                                 '#default_value' => '0',
                                 '#attributes' => array('id' => ('answer' . $i . $k)),
@@ -285,7 +286,6 @@ class SurveyView extends FormBase {
                     case 6: {
                             $k = 1;
 
-
                             $form['rateTitle' . $i] = array(
                             '#markup' => $questionTitle, 
                             );
@@ -293,7 +293,6 @@ class SurveyView extends FormBase {
                             $rateTable = '<table class="tb_rate">';
                             $rateTableHeader = "<tr>";
                             $rateColHeader = "<th></th>";
-
                             for ($x = 0; $x < $counter; $x++) {
                                 $rateColHeader .= "<th>";
                                 if ($show_legend == 1) {
@@ -317,7 +316,7 @@ class SurveyView extends FormBase {
                             foreach ($surveyInfoChoice as $recordchoice) {
                                 $form['hiddenchoice' . $i . '_' . $k] = array(
                                 '#type' => 'hidden',
-                                '#value' => $recordchoice->id,
+                                '#value' => $recordchoice['id'],
                                 '#attributes' => array('id' => 'hiddenchoice'),
                                 );
 
@@ -453,7 +452,7 @@ class SurveyView extends FormBase {
                     $k = 1;
                     $hasError = true;
                     foreach ($surveyInfoChoice as $result) {
-                        $choicearry[$result->choice] = $result->choice;
+                        $choicearry[$result['choice']] = $result['choice'];
                         $k++;
                     }
                     foreach ($choicearry as $recordcoice) {
@@ -507,9 +506,6 @@ class SurveyView extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
@@ -517,14 +513,13 @@ class SurveyView extends FormBase {
         $RespondentEntry = array(
             'submitted' => 'Y',
             'username' => $this->my_user_id,
-            'create_datetime' => date('Y-m-d H:i:s'),
-            'modify_datetime' => date('Y-m-d H:i:s'),
             'survey_id' => $survey_id,
         );
 
-
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
-            $query = \Drupal::database()->insert('kicp_survey_respondent')
+            $query = $database->insert('kicp_survey_respondent')
             ->fields($RespondentEntry);
             $Respondent_id = $query->execute();
 
@@ -541,8 +536,6 @@ class SurveyView extends FormBase {
                     $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'answer' . $i},
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                       );
@@ -552,8 +545,6 @@ class SurveyView extends FormBase {
                     $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'answer' . $i},
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                     );
@@ -563,8 +554,6 @@ class SurveyView extends FormBase {
                     $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'answer' . $i}['value'],
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                     );
@@ -574,8 +563,6 @@ class SurveyView extends FormBase {
                         $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'answer' . $i},
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                         );
@@ -584,8 +571,6 @@ class SurveyView extends FormBase {
                         $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'other' . $i},
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                         );
@@ -593,15 +578,13 @@ class SurveyView extends FormBase {
                     $return = SurveyDatatable::insertResponse($QuestionEntry);
 
                 } elseif ($type_id == 5) {
-
+                    $j = 1;
                     $surveyInfoChoice = SurveyDatatable::getSurveyChoice($record['id']);
                     foreach ($surveyInfoChoice as $recordcoice) {
                         if (${'answer' . $i . '_' . $j} == 1) {
                             $QuestionEntry = array(
                             'question_id' => $record['id'],
                             'response' => $recordcoice['id'],
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'survey_id' => $survey_id,
                             'respondent_id' => $Respondent_id,
                             );
@@ -613,8 +596,6 @@ class SurveyView extends FormBase {
                         $QuestionEntry = array(
                         'question_id' => $record['id'],
                         'response' => ${'other' . $i},
-                        'create_datetime' => date('Y-m-d H:i:s'),
-                        'modify_datetime' => date('Y-m-d H:i:s'),
                         'survey_id' => $survey_id,
                         'respondent_id' => $Respondent_id,
                         );
@@ -629,20 +610,16 @@ class SurveyView extends FormBase {
                             'question_id' => $record['id'],
                             'response' => ${'hiddenchoice' . $i . '_' . $j},
                             'rank' => ${'answer' . $i . '_' . $j},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'survey_id' => $survey_id,
                             'respondent_id' => $Respondent_id,
                         );
                         $return = SurveyDatatable::insertResponseRank($QuestionEntry);
                         $j++;
-                        if (${'other' . $i} != '') {
+                        if (isset(${'other' . $i}) && ${'other' . $i} != '') {
                             $QuestionEntry = array(
                             'question_id' => $record['id'],
                             'response' => ${'other' . $i},
                             'rank' => ${'other' . $i},
-                            'create_datetime' => date('Y-m-d H:i:s'),
-                            'modify_datetime' => date('Y-m-d H:i:s'),
                             'survey_id' => $survey_id,
                             'respondent_id' => $Respondent_id,
                             );
@@ -655,6 +632,12 @@ class SurveyView extends FormBase {
                 $i++;
             }
 
+            \Drupal::logger('survey')->info('sumitted survey id: %survey_id. Respondent id: %respondent_id.',   
+            array(
+                '%survey_id' =>  $survey_id,
+                '%respondent_id' =>  $Respondent_id
+            ));              
+
             $url = new Url('survey.survey_content');
             $form_state->setRedirectUrl($url);
 
@@ -666,8 +649,10 @@ class SurveyView extends FormBase {
             \Drupal::messenger()->addError(
               t('Survey is not submitted' )
               );
-            \Drupal::logger('error')->notice('Survey is not submitted: ' . $variables);            
+            \Drupal::logger('error')->notice('Survey is not submitted: ' . $variables);  
+            $transaction->rollBack();  
         }
+        unset($transaction); 
 
     }
     

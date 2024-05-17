@@ -7,13 +7,3 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("click");
 };      
 });
-
-/*
-document.getElementById("star_1").onmouseover = function()  {
-        console.log("hover");
-};
-
-document.getElementById("star_1").onclick = function() {
-        console.log("click");
-};      
-*/

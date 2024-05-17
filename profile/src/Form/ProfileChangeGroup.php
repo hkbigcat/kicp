@@ -13,6 +13,7 @@ use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\profile\Common\ProfileDatatable;
+use Drupal\Core\Utility\Error;
 
 class ProfileChangeGroup extends FormBase {
 
@@ -115,6 +116,8 @@ class ProfileChangeGroup extends FormBase {
         );
         $form_state->setRedirectUrl($url);
 
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
         try {
             
             if($type == "B") {
@@ -133,19 +136,24 @@ class ProfileChangeGroup extends FormBase {
                   ->fields($entry)
                   ->condition('pub_group_id', $group_id);
             }
-            
-
             $return = $query->execute();
-
+            \Drupal::logger('profile')->info('updated group id: %id, type: %type',   
+            array(
+                '%id' => $group_id,
+                '%type' => $type=='B'?'Buddy':'Public',
+            ));   
             $messenger = \Drupal::messenger(); 
             $messenger->addMessage( t('Group has been udpated.'));
 
         } catch (Exception $e) {
-            
+            $variables = Error::decodeException($e);
+            \Drupal::logger('profile')->error('gorup is not updated '  . $variables);   
             \Drupal::messenger()->addError(
                 t('Unable to update group at this time due to datbase error. Please try again.')
               );             
+            $transaction->rollback();              
         }
+        unset($transaction);
     }
 
 }

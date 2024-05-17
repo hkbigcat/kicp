@@ -5,7 +5,7 @@
                 <span class="activities_title"><a href="{{ path('ppcactivities.activities_detail',  {'evt_id': event['evt_id']}) }}">{{ event['evt_name'] }}</a></span>
                 <div class="item_date">(on {{ event['evt_start_date'] | date('d.m.Y')  }})</div>
             </div>
-         {% include '@common/common-like.html.twig'  with {module: 'ppcactivities', 'record_id': event['evt_id'], countLike:event['countlike'], 'liked': event['liked']  }  %}
+         <span class="text-right">{% include '@common/common-like.html.twig'  with {module: 'ppcactivities', 'record_id': event['evt_id'], countLike:event['countlike'], 'liked': event['liked']  }  %}</span>
         </div>
     {% endfor %}    
 </div>

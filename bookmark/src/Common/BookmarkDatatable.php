@@ -11,7 +11,7 @@ namespace Drupal\Bookmark\Common;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Database;
 use \Drupal\Core\Routing;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\RatingData;
 
 
@@ -46,7 +46,7 @@ class BookmarkDatatable extends ControllerBase {
           $query->havingCondition('occ', 1);
         }
 
-        $query->fields('a', ['bid', 'user_id', 'bTitle', 'bAddress', 'bDescription', 'bModified']);
+        $query->fields('a', ['bid', 'user_id', 'bTitle', 'bAddress', 'bDescription', 'bStatus', 'bModified']);
         $query->fields('b', ['user_name']);
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 

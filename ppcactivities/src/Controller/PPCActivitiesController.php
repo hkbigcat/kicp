@@ -9,8 +9,8 @@ namespace Drupal\ppcactivities\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal;
 use Drupal\common\CommonUtil;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\Follow;
 use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
 use Drupal\Core\Database\Database;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-
+use Drupal\Core\Utility\Error;
 
 class PPCActivitiesController extends ControllerBase {
     
@@ -612,5 +612,86 @@ class PPCActivitiesController extends ControllerBase {
         return $response;
 
     }
+
+    public function EventRegistration($action="", $evt_id="") {
+        if($action === 'enroll') {
+            $userInfo = PPCActivitiesDatatable::getUserInfoForRegistration($this->my_user_id);
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'user_dept' => $userInfo->user_dept,
+                'user_rank' => $userInfo->user_rank,
+                'user_post_unit' => $userInfo->user_post_unit,
+              );
+              $register_member_id = PPCActivitiesDatatable::insertRegistration($eventEntry);
+              if ($register_member_id) {
+                \Drupal::logger('ppcactivities')->info('PPC Event enroll id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your enrollment.'));
+              } 
+        } else if($action === 'cancel_enroll') {
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'cancel_enrol_datetime' => date('Y-m-d H:i:s'),
+              );
+              $register_member_id = PPCActivitiesDatatable::changeRegistration($eventEntry); 
+              if ($register_member_id) {
+                \Drupal::logger('ppcactivities')->info('PPC Event cancel enroll id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your cancellation of enrollment.'));
+              }              
+        } else if($action === 'reenroll') {
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'is_reenrol' => 1,
+            );
+            $register_member_id = PPCActivitiesDatatable::changeRegistration($eventEntry); 
+            if ($register_member_id) {
+              \Drupal::logger('ppcactivities')->info('PPC Activities Enrollment (Re-enrollment) id: %id , user_id: %user_id',   
+              array(
+                  '%id' =>  $evt_id,
+                  '%user_id' =>  $this->my_user_id,
+              ));
+              $messenger = \Drupal::messenger(); 
+              $messenger->addMessage( t('We have received your re-enrollment.'));
+            }              
+        }  else if($action === 'cancel_reenrol') {
+           
+            $eventEntry = array(
+                'evt_id' => $evt_id,
+                'user_id' => $this->my_user_id,
+                'cancel_reenrol_datetime' => date('Y-m-d H:i:s'),
+              );
+
+              $register_member_id = PPCActivitiesDatatable::changeRegistration($eventEntry); 
+              if ($register_member_id) {
+                \Drupal::logger('ppcactivities')->info('PPC Activities Cancel Re-enrollment id: %id , user_id: %user_id',   
+                array(
+                    '%id' =>  $evt_id,
+                    '%user_id' =>  $this->my_user_id,
+                ));
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('We have received your cancellation of re-enrollment.'));
+              }              
+        }
+
+
+        return [
+            '#type' => 'markup',
+            '#markup' => $this->t('<p>Go Back to <a href="../../ppcactivities_detail/'.$evt_id.'">Event Page</a></p>'),
+          ];
+
+
+    }    
 
 }

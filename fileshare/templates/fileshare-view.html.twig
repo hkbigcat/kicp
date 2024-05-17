@@ -28,7 +28,7 @@
                {% for slide in slides %}
 
                     <div class="mySlides fade">
-                         <img src="{{ url('<front>') }}/system/files/fileshare/image/{{ "%06d" | format(items['file_id']) }}/{{slide}}" style="width:85%; margin-left:7%; border: 1px solid #ccc;">
+                         <img src="{{ url('<front>') }}system/files/fileshare/image/{{ "%06d" | format(items['file_id']) }}/{{slide}}" style="width:85%; margin-left:7%; border: 1px solid #ccc;">
                     </div>   
 
                {% endfor %}
@@ -46,8 +46,7 @@
           </div>
 
         {% endif %}
-          <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_tag') }}">
-          <input type="hidden" name="notag_page" id="notag_page" value="{{ path('fileshare.fileshare_content') }}">   
+          <input type="hidden" name="tag_page" id="tag_page" value="{{ path('fileshare.fileshare_content') }}">
           <input type="hidden" name="selected_tag" id="selected_tag" value="">
     {% endif %}    
 

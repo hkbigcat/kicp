@@ -12,14 +12,14 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\common\AccessControl;
-
+use Drupal\Core\Utility\Error;
 
 class VoteChange1 extends FormBase {
 
@@ -171,7 +171,12 @@ class VoteChange1 extends FormBase {
           '#default_value' => $vote->allow_copy,
           );
 
-         
+        $form['ShowResponse'] = array(
+          '#title' => t('Show no. of response?'),
+          '#type' => 'checkbox',
+          '#default_value' => $vote->show_response,
+        );
+           
         $form['lable'] = array(
           '#markup' => t('Select the information to be included into the report (CSV file) :'),
         );
@@ -368,6 +373,7 @@ class VoteChange1 extends FormBase {
           'modify_datetime' => date('Y-m-d H:i:s'),
           'is_visible' => $ReadyVote,
           'allow_copy' => $Allowcopy,
+          'show_response' => $ShowResponse,
           'is_showDep' => $Department,
           'is_showPost' => $PostUnit,
           'is_showname' => $Votername,
@@ -377,6 +383,7 @@ class VoteChange1 extends FormBase {
 
 
         $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
         try {
             //*************** File [Start]
 
@@ -422,6 +429,7 @@ class VoteChange1 extends FormBase {
 
             $_SESSION['vote_id'] = $vote_id;
             if ($hiddenCount > 0) {
+               \Drupal::logger('vote')->info('vote update ID: '.$vote_id);
                 $url = new Url('vote.vote_content');
                 $form_state->setRedirectUrl($url);
 
@@ -435,10 +443,13 @@ class VoteChange1 extends FormBase {
             $form_state->setRedirectUrl($url);
         } catch (Exception $e) {
             $variables = Error::decodeException($e);
+            \Drupal::logger('vote')->error('vote is not updated: ' . $variables);
             \Drupal::messenger()->addError(
-              t('Unable to update vote at this time due to datbase error. Please try again. '.$variables)
+              t('Unable to update vote at this time due to datbase error. Please try again. ')
             ); 
+            $transaction->rollBack(); 
         }
+        unset($transaction);
     }
 
 }

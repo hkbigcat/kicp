@@ -11,12 +11,12 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\video\Common\VideoDatatable;
 use Drupal\video\Controller\VideoController;
-
+use Drupal\Core\Utility\Error;
 
 class VideoChange extends FormBase {
 
@@ -277,35 +277,37 @@ class VideoChange extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
-        try {
 
-            $newDateFormat = str_replace(':', '-', $vDate);
-            $newDateFormat = date('Y-m-d', strtotime($newDateFormat));
+        $newDateFormat = str_replace(':', '-', $vDate);
+        $newDateFormat = date('Y-m-d', strtotime($newDateFormat));
+        
+        $entry = array(
+          'media_title' => $vTitle,
+          'media_description' => $vDescription,
+          'media_duration' => $vDuration,
+          'media_postdate' => $newDateFormat,
+          //'counter' => 0,
+          'media_file_path' => $vFilePath,
+          'is_banned' => $vBan,
+          'is_visible' => $vVisible,
+          'sort_field' => $vSortOrder,
+          'media_event_id' => $media_event_id,
+          //'modify_datetime' => date('Y-m-d H:i:s'),
+        );
+
+        // if any changes in content, update the timestamp
+        if($vTitle != $vTitle_prev || $vDescription != $vDescription_prev || $vDuration != $vDuration_prev || $vDate != $vDate_prev || $vFilePath != $vFilePath_prev || $vSortOrder != $vSortOrder_prev || $vVisible != $vVisible_prev || $vBan != $vBan_prev || (isset($_FILES['files']['name']['vImage']) && $_FILES['files']['name']['vImage'] != "")) {
+            $entry['modify_datetime'] = date('Y-m-d H:i:s');
+        }
+
+        // update image only if there is another image is selected
+        if (isset($_FILES['files']['name']['vImage']) && $_FILES['files']['name']['vImage'] != "") {
+            $entry['media_img'] = $_FILES['files']['name']['vImage'];
+        }
             
-            $entry = array(
-              'media_title' => $vTitle,
-              'media_description' => $vDescription,
-              'media_duration' => $vDuration,
-              'media_postdate' => $newDateFormat,
-              //'counter' => 0,
-              'media_file_path' => $vFilePath,
-              'is_banned' => $vBan,
-              'is_visible' => $vVisible,
-              'sort_field' => $vSortOrder,
-              'media_event_id' => $media_event_id,
-              //'modify_datetime' => date('Y-m-d H:i:s'),
-            );
-
-            // if any changes in content, update the timestamp
-            if($vTitle != $vTitle_prev || $vDescription != $vDescription_prev || $vDuration != $vDuration_prev || $vDate != $vDate_prev || $vFilePath != $vFilePath_prev || $vSortOrder != $vSortOrder_prev || $vVisible != $vVisible_prev || $vBan != $vBan_prev || (isset($_FILES['files']['name']['vImage']) && $_FILES['files']['name']['vImage'] != "")) {
-                $entry['modify_datetime'] = date('Y-m-d H:i:s');
-            }
-
-            // update image only if there is another image is selected
-            if (isset($_FILES['files']['name']['vImage']) && $_FILES['files']['name']['vImage'] != "") {
-                $entry['media_img'] = $_FILES['files']['name']['vImage'];
-            }
-            
+        $database = \Drupal::database();
+        $transaction =  $database->startTransaction();         
+        try {            
             $query = \Drupal::database()->update('kicp_media_info')
             ->fields( $entry)
             ->condition('media_id', $media_id);
@@ -381,6 +383,7 @@ class VideoChange extends FormBase {
                     t('Video is not updated. ' )
                     );
                     \Drupal::logger('video')->error('Video is not udpated (3)');
+                    $transaction->rollback();
             }
         }
         catch (Exception $e) {
@@ -388,8 +391,10 @@ class VideoChange extends FormBase {
             \Drupal::messenger()->addError(
                 t('Video is not updated. ' )
                 );
-              \Drupal::logger('video')->error('Video is not updated '  . $variables);   
+              \Drupal::logger('video')->error('Video is not updated '  . $variables);
+              $transaction->rollback(); 
         }
+        unset($transaction);
     }
 
 }

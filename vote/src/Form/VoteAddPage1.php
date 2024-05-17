@@ -12,14 +12,15 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\RatingData;
-use Drupal\common\Controller\TagList;
-use Drupal\common\Controller\TagStorage;
+use Drupal\common\TagList;
+use Drupal\common\TagStorage;
 use Drupal\common\CommonUtil;
 use Drupal\vote\Common\VoteDatatable;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity;
+use Drupal\Core\Utility\Error;
 
 class VoteAddPage1 extends FormBase {
 
@@ -115,7 +116,6 @@ class VoteAddPage1 extends FormBase {
           '#required' => false,
         );
 
-
         $form['ReadyVote'] = array(
           '#title' => t('Ready for voting'),
           '#description' => t('If disabled, the vote can be accessed but cannot be submitted.'),
@@ -124,11 +124,16 @@ class VoteAddPage1 extends FormBase {
         );
 
         $form['Allowcopy'] = array(
-          '#title' => t('Allow copy:'),
+          '#title' => t('Allow copy'),
           '#type' => 'checkbox',
           '#default_value' => 1,
         );
 
+        $form['ShowResponse'] = array(
+          '#title' => t('Show no. of response?'),
+          '#type' => 'checkbox',
+          '#default_value' => 1,
+        );
 
         $form['lable'] = array(
           '#markup' => t('Select the information to be included into the report (CSV file) :'),
@@ -313,7 +318,6 @@ class VoteAddPage1 extends FormBase {
 
         $database = \Drupal::database();
         $transaction =  $database->startTransaction();
-
         try {
             $entry = array(
               'title' => $title,
@@ -324,6 +328,7 @@ class VoteAddPage1 extends FormBase {
               'modify_datetime' => date('Y-m-d H:i:s'),
               'is_visible' => $ReadyVote,
               'allow_copy' => $Allowcopy,
+              'show_response' => $ShowResponse,
               'is_showDep' => $Department,
               'is_showPost' => $PostUnit,
               'is_showname' => $Votername,
@@ -373,12 +378,12 @@ class VoteAddPage1 extends FormBase {
                 \Drupal::logger('vote')->error('Vote is not created ' .$vote_id);   
             }
         } catch (Exception $e) {
-            $transaction->rollback();
             $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
               t('Vote is not created. ' )
               );
             \Drupal::logger('vote')->error('Vote is not created '  . $variables);   
+            $transaction->rollback();
         }
         unset($transaction);
     }

@@ -1,13 +1,8 @@
-<div style="width: 15%; float:right; text-align:right;margin-top:-50px;">
+<div class="text-right">
      <button class="kicp_button size-2" onClick="self.location.href='{{ path('video.add_event_data') }}'"><i class="fa-solid fa-circle-plus"></i> Add Event</button>
 </div>
-
 <div id="DivContentTable">
-    <form id="search_form" name="search_form" method="get">
-    <div style="width:100%;text-align:right;float:right;margin:5px;">
-        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Event Name">
-    </div>
-    </form>
+   {% include '@common/common-search-form.html.twig'  with {placeholder: 'Event Name'}  %}  
     <div class="common_table_header">
 		<div style="width:26%;text-align:left;margin-left:5px;">Event Name</div>
 		<div style="width:9%;">Sort Order</div>

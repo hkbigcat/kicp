@@ -1,7 +1,7 @@
 <div class="content">
     {% set evt_id = event['evt_id'] | number_format %}
     
-    <div style="text-align:right; width:95%;">
+    <div class="text-right">
         <button class="kicp_button size-2" onclick="window.open('{{ path('ppcactivities.enroll_status_export', {'evt_id': evt_id}) }}')" style="cursor:pointer;">Export to Excel</button> 
         <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'" style="cursor:pointer;">Event List</button> 
     </div>

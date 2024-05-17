@@ -20,7 +20,7 @@ use Drupal\common\CommonUtil;
 use Drupal\common\AccessControl;
 use \Drupal\Core\Routing;
 use Drupal\common\LikeItem;
-use Drupal\common\Controller\TagList;
+use Drupal\common\TagList;
 use Drupal\common\RatingData;
 use Drupal\common\Common\CommonDatatable;
 use Drupal\common\Follow;
@@ -335,24 +335,27 @@ class CommonController extends ControllerBase {
             $$key = $value;
         }
 
-        
+        $groupInfo = array();
         if($group_type == "P") {
             $groupInfo = CommonDatatable::getPublicGroupByGroupId($group_id);
         } else if($group_type == "B") {
             $groupInfo = CommonDatatable::getBuddyGroupByGroupId($group_id);
         }
         
-
+        $group_member = "";
         $groupMembers = CommonDatatable::getUserListByGroupId($group_type, $group_id, $group_user_id="");
-        
         $i = 0;
-        foreach($groupMembers as $groupMember) {                 
-                $group_member .= '<div>'.$groupMember['user_name'].'</div>';
-                $i++;
+        if ($groupMembers) {
+            foreach($groupMembers as $groupMember) {                 
+                    $group_member .= '<div>'.$groupMember['user_name'].'</div>';
+                    $i++;
+            }
         }
         
-        $group_name = $groupInfo->group_name;
-        
+        $group_name = "";
+        if ($groupInfo)
+          $group_name = $groupInfo->group_name;
+                
         if ($groupMembers) {
             $response = array('group_name' => $group_name, 'group_member' => $group_member);
         } else {

@@ -1,15 +1,12 @@
 <div id="right_content" style="width:100%;">
     <div class="type_title">Event Type Management</div>
-    <div style="width: 70%; text-align: right; margin-top: -50px; float: right; margin-bottom:20px;">
+    <div class="text-right">
         <button class="kicp_button size-2" onClick="self.location.href='{{ path('activities.admin_list_add') }}'"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> Add Event Type</button>
         <button class="kicp_button size-2" onClick="self.location.href='{{ path('activities.admin_category') }}'"><i class="fa fa-calendar" aria-hidden="true"></i> COP Management</button>
         <!--button class="kicp_button size-2" onClick="self.location.href=''"><i class="fa fa-users" aria-hidden="true"></i> Non-Portal ID Management</button-->
         <!--button class="kicp_button size-2" onClick="self.location.href=''"><i class="fa fa-cogs" aria-hidden="true"></i> Reports &amp; Settings</button-->
     </div>
-    <form id="search_form" name="search_form" method="get">
-        <div style="width:100%;text-align:right;float:right;margin:5px;  margin-bottom:20px;">
-        <input type="text" id="search_str" name="search_str" size="40" value="{{  items['search_str'] }}" placeholder="Type Name"></div>
-    </form>
+    {% include '@common/common-search-form.html.twig'  with {placeholder: 'Type Name'}  %}      
     <div id="DivContentTable">
         <div class="common_table_header">
             <div style="width:5%;">&nbsp;</div>
