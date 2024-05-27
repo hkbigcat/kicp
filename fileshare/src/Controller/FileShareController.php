@@ -33,6 +33,7 @@ class FileShareController extends ControllerBase {
   public function __construct() {
     $AuthClass = "\Drupal\common\Authentication";
     $authen = new $AuthClass();
+    $this->is_authen = $authen->isAuthenticated;
     $this->my_user_id = $authen->getUserId();
     $file_system = \Drupal::service('file_system');
     $this->module = 'fileshare';
@@ -54,6 +55,11 @@ class FileShareController extends ControllerBase {
    * Render array fro the Test Form list
    */
   public function myShareFolder() {
+
+    $url = Url::fromRoute('<front>')->toString();
+    if (! $this->is_authen) {
+        return new RedirectResponse($url.'no_access');
+    }
 
    $table_rows = FileShareDatatable::load_folder($this->my_user_id);
    $table_rows['type'] = 'folders';
@@ -78,6 +84,11 @@ class FileShareController extends ControllerBase {
    * Render array fro the Test Form list
    */
   public function getShareFile() {
+
+    $url = Url::fromUri('base:/no_access');
+    if (! $this->is_authen) {
+        return new RedirectResponse($url->toString());
+    }
 
     $tags = array();
     $tmp = "";
@@ -113,6 +124,11 @@ class FileShareController extends ControllerBase {
    * Render array fro the Test Form list
    */
   public function viewShareFile($file_id) {
+
+    $url = Url::fromRoute('<front>')->toString();
+    if (! $this->is_authen) {
+        return new RedirectResponse($url.'no_access');
+    }
 
     $table_rows_file = FileShareDatatable::getSharedFile($file_id, $this->my_user_id);
     if ($table_rows_file == null ) {
@@ -177,17 +193,9 @@ class FileShareController extends ControllerBase {
 
   public function deleteShareFile($file_id = NULL) {
 
-    $delFile = FileShareDatatable::getSharedFile($file_id, $this->my_user_id);
-    if ( !$delFile) {
 
-      \Drupal::messenger()->addError(
-        t('Unable to delete this File ')
-        );
+    $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
-      $url = Url::fromRoute('fileshare.fileshare_content');
-      return new RedirectResponse($url->toString());
-
-    }
     // delete record
       $database = \Drupal::database();
       $transaction =  $database->startTransaction();
@@ -197,10 +205,14 @@ class FileShareController extends ControllerBase {
           'is_deleted'=>1 , 
           'modify_datetime' => date('Y-m-d H:i:s'),
         ])
-        ->condition('file_id', $file_id);
-        $affected_rows = $query->execute();
+        ->condition('file_id', $file_id)
+        ->condition('is_deleted', 0);
+        if (!$isSiteAdmin) {
+          $query->condition('user_id', $this->my_user_id);
+        }        
+        $row_affected = $query->execute();
 
-        if ($affected_rows) {
+        if ($row_affected) {
 
           // delete files
           $file_deleted = FileShareDatatable::deleteFiles($file_id);
@@ -217,22 +229,27 @@ class FileShareController extends ControllerBase {
           // delete rating
           $rating = RatingStorage::markDelete($this->module, $file_id);
 
+          \Drupal::logger('fileshare')->info('Deleted id: %id, row_affected: %row_affected', 
+          array(
+              '%id' => $file_id,
+              '%row_affected' => $row_affected,
+          ));       
+
           $messenger = \Drupal::messenger(); 
           $messenger->addMessage( t('File has been deleted'));
         } else {
           \Drupal::messenger()->addError(
-            t('Unable to delete file at this time due to datbase error. Please try again.')
+            t('Unable to delete file. Please try again.')
           );   
         }
       }
       catch (\Exception $e ) {
         \Drupal::messenger()->addError(
-          t('Unable to delete file: '.$imagename.' or '.$filename.' Please try again.')
+          t('Unable to delete file id: '.$file_id.' Please try again.')
         ); 
         $transaction->rollBack();
      }
      unset($transaction);   
-
      $response = array('result' => 1);
      return new JsonResponse($response);
 
@@ -265,6 +282,7 @@ class FileShareController extends ControllerBase {
           'modify_datetime' => date('Y-m-d H:i:s'),
         ])
         ->condition('folder_id', $folder_id)
+        ->condition('is_deleted', 0)
         ->execute();
 
 
@@ -341,6 +359,10 @@ class FileShareController extends ControllerBase {
 
   public function getShareFileTag() {
 
+    $url = Url::fromRoute('<front>')->toString();
+    if (! $this->is_authen) {
+        return new RedirectResponse($url.'no_access');
+    }
 
     $tags = array();
     
@@ -391,5 +413,64 @@ class FileShareController extends ControllerBase {
   }
 
 
+  public static function Breadcrumb() {
+
+    $base_url = Url::fromRoute('fileshare.fileshare_content');
+    $folder_url = Url::fromRoute('fileshare.fileshare_folder');
+    $base_path = [
+        'name' => 'Fileshare', 
+        'url' => $base_url,
+    ];
+    $folder_path = [
+      'name' => 'Folder Access Control', 
+      'url' =>  $folder_url,
+   ];
+    $breads = array();
+    $route_match = \Drupal::routeMatch();
+    $routeName = $route_match->getRouteName();
+
+    if ($routeName=="fileshare.fileshare_content") {
+      $breads[] = [
+          'name' => 'Fileshare',
+      ];
+    } else if ($routeName=="fileshare.fileshare_view") {
+      $file_id = $route_match->getParameter('file_id');
+      $file_title = FileShareDatatable::getTitle($file_id);
+      $breads[] = $base_path;
+      $breads[] = [
+        'name' => $file_title??'No File',
+      ];
+    } else if ($routeName=="fileshare.fileshare_folder_add") {
+      $breads[] = $base_path;
+      $breads[] = $folder_path;
+      $breads[] = [
+        'name' => 'Add' ,
+      ];
+    } else if ($routeName=="fileshare.fileshare_folder_change") {
+      $breads[] = $base_path;
+      $breads[] = $folder_path;
+      $breads[] = [
+        'name' => 'Edit' ,
+      ];
+    } else if ($routeName=="fileshare.fileshare_folder") {
+      $breads[] = $base_path;
+      $breads[] = [
+        'name' => 'Folder Access Control' ,
+      ];
+    }  else if ($routeName=="fileshare.fileshare_add") {
+      $breads[] = $base_path;
+      $breads[] = [
+        'name' => 'Add' ,
+      ];
+    }  else if ($routeName=="fileshare.fileshare_change") {
+      $breads[] = $base_path;
+      $breads[] = [
+        'name' => 'Edit' ,
+      ];
+    }
+
+    return $breads;
+
+  }
 
 }

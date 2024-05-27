@@ -10,7 +10,7 @@ vote.vote_content:
     no_cache: TRUE
 
 vote.vote_view:
-  path: '/vote_view'
+  path: '/vote_view/{vote_id}'
   defaults:
     _form: '\Drupal\vote\Form\VoteView'
     _title: 'Vote'
@@ -43,7 +43,7 @@ vote.vote_add_page1:
   path: '/vote_add_page1'
   defaults:
     _form: '\Drupal\vote\Form\VoteAddPage1'
-    _title: 'Add Sruvey'
+    _title: 'Add Vote'
   requirements:
     _permission: 'access content'
   options:

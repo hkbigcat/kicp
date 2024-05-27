@@ -73,6 +73,7 @@ class BookmarkDatatable extends ControllerBase {
           $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);  
         }
         
+        if (!$result) return null;
         $TagList = new TagList();
         $RatingData = new RatingData();
         foreach ($result as $record) {

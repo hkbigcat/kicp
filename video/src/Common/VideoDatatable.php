@@ -330,4 +330,14 @@ class VideoDatatable {
         return $sort_order;
     }
 
+    public static function getEventName($media_event_id="") {
+
+        $sql = "SELECT media_event_name FROM kicp_media_event_name WHERE media_event_id = '$media_event_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result)
+            return $result->media_event_name;
+        else return null;
+    }
+
 }

@@ -33,6 +33,19 @@ class ActivitiesDatatable {
         return $result;
     }
 
+    public static function getTypeName($type_id) {
+
+        if (!is_numeric($type_id))
+        return null;
+
+        $sql = "SELECT evt_type_name FROM kicp_km_event_type WHERE evt_type_id = '$type_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result)
+            return $result->evt_type_name;
+        else return null;
+    }
+
     public static function getCOPGroupInfo($group_id="") {
 
         $search_str = \Drupal::request()->query->get('search_str');       
@@ -61,7 +74,20 @@ class ActivitiesDatatable {
 
     }    
 
+    public static function getCOPGroupName($cop_group_id) {
+        $sql = "SELECT group_name FROM kicp_km_cop_group WHERE group_id = '$cop_group_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result)
+            return $result->group_name;
+        else return null;
+    }    
+
     public static function getActivityTypeInfo($type_id=1) {
+
+        if (!is_numeric($type_id))
+            return null;
+
         $sql = "SELECT evt_type_name, description, display_order FROM kicp_km_event_type WHERE is_deleted = 0 AND evt_type_id=" . $type_id;
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
@@ -71,6 +97,10 @@ class ActivitiesDatatable {
     }
 
     public static function getCOPbyGroupID($group_id="") {
+
+        if (!is_numeric($group_id))
+          return null;
+
         $search_str = \Drupal::request()->query->get('search_str');
         $database = \Drupal::database();
         $query = $database-> select('kicp_km_cop', 'a'); 
@@ -178,6 +208,28 @@ class ActivitiesDatatable {
         return $result;
     }
 
+
+    public static function getEventInfo($evt_id) {
+
+        $sql = "SELECT evt_name, evt_type_id, cop_id FROM  kicp_km_event wHERE evt_id = '$evt_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        if ($result) {
+            if ($result->evt_type_id == 1) {
+                $sql = "SELECT a.cop_name, b.group_id, b.group_name FROM  kicp_km_cop a left join kicp_km_cop_group b on a.cop_group_id = b.group_id wHERE a.cop_id = '$result->cop_id'";
+                $group = $database-> query($sql)->fetchObject();        
+                if ($group) {
+                    $result->cop_name =  $group->cop_name;
+                    $result->group_id =  $group->group_id;
+                    $result->group_name =  $group->group_name;
+                }
+            }
+        }
+
+
+        return $result;        
+    }
 
     public static function getEventDetail($evt_id) {
 

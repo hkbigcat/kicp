@@ -7,6 +7,8 @@ use Drupal;
 use Drupal\common\AutoLogin;
 use Drupal\common\CommonUtil;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class Authentication {
 
@@ -19,31 +21,27 @@ class Authentication {
 	
     public function __construct() {
 
-        // check whether 
         $login_bypass_flag = CommonUtil::getSysValue('login_bypass');
-        $this->domain_name = CommonUtil::getSysValue('domain_name');
 
         if ($login_bypass_flag) {
+                // assign default values to object (preset as "KICPA Administrator" acount)
+                $this->user_id = 'KICPA.OGCIO';
+                $this->isAuthenticated = true;
+                $this->uid = 2056;
+                $this->user_name = "KICPA ADMINISTRATOR";
+                $this->user_email = 'kicpadm@ogcio.gov.hk';
 
-            // assign default values to object (preset as "KICPA Administrator" acount)
-            $this->user_id = 'KICPA.OGCIO';
-            $this->isAuthenticated = true;
-            $this->uid = 2056;
-            $this->user_name = "KICPA ADMINISTRATOR";
-	        $this->user_email = 'kicpadm@ogcio.gov.hk';
+                self::loginDrupal($this->user_id);
+                
+        } else {
 
-            self::loginDrupal($this->user_id);
-        }
-        else {
-
-            ///    define("DOMAIN_NAME", $this->domain_name);
-            ///    define("APP_PATH", $config->get('app_path'));
-            //Get openam userid from header
             $this->user_id = self::getUserIdFromRequestHeader();
             
             //IF openam userid not found or is not valid client IP and is not Active KICP user in Drupal then set isAuthenticated to false
-            if (empty($this->user_id) || !self::isValidIP() || !self::isActiveKICPUser($this->user_id))
+            if (empty($this->user_id) || !self::isValidIP() || !self::isActiveKICPUser($this->user_id)) {
                 $this->isAuthenticated = false;
+                
+            }
             else {
                 //Get User Info from table xoops_users and kicp_buddy_user_list using openam userid and save to instance variables
                 //Also Login Drupal
@@ -60,8 +58,9 @@ class Authentication {
             }
         }
 
-	ini_set('display_errors', 0);
-	ini_set('display_startup_errors', 0);
+
+	    ini_set('display_errors', 0);
+    	ini_set('display_startup_errors', 0);
 
     }
 
@@ -142,59 +141,53 @@ class Authentication {
         $ip = Drupal::request()->getClientIp();
 
         $sql = " SELECT 1 FROM kicp_login_ip WHERE ip = '" . $ip . "' ";
-        //$result = db_query($sql);
-        $result = \Drupal::database() -> query($sql);
-
-        foreach ($result as $record) {
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result) 
             return true;
-        }
 
-        //drupal_set_message(t('Invalid IP "' . $ip . '" is missing in database'), 'error');
-        \Drupal::messenger()->addError(t('Invalid IP "' . $ip . '" is missing in database'));
-
+        \Drupal::messenger()->addError(t('Invalid IP "' . $ip . '" is not in allowed list.'));
         return false;
     }
 
     static function isActiveKICPUser($UserId) {
 
-        $sql = "select 1 from xoops_users where user_is_inactive = 0 and user_id = '" . $UserId . "' ";
-        //$result = db_query($sql);
-        $result = \Drupal::database() -> query($sql);
-
-        foreach ($result as $record) {
-            return true;
+        $sql = "select user_is_inactive from xoops_users where user_id = '" . $UserId . "' ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if (!$result) {
+            \Drupal::messenger()->addError(t('User "' . $UserId . '" is not an OGCIO Portal user.'));
+            return false;
+        }
+        if ($result->user_is_inactive==1) {
+            \Drupal::messenger()->addError(t('User "' . $UserId . '" is inactive'));
+            return false;
         }
 
-        //drupal_set_message(t('User "' . $UserId . '" is inactive'), 'error');
-        \Drupal::messenger()->addError(t('User "' . $UserId . '" is inactive'));
-
-
-        return false;
+        return true;
     }
 
     static function loginDrupal($UserId) {
         
         global $skipDisclaimerCheck;
-        
+       
         // skip checking on current page
-        if($skipDisclaimerCheck) {
-            // do nothing
-            //echo "Skip check.<br>";
-        } else {
-            
+        if(!$skipDisclaimerCheck) {
             // go check 
             $acceptedDisclaimer = self::isUserAcceptedDisclaimer($UserId);
+
             //echo "Disclaimer accepted? ".$acceptedDisclaimer;
-            if($acceptedDisclaimer) {
-                //$_SESSION[$UserId]['accepted_disclaimer'] = true;
-            } else {
-
+            $routeName = \Drupal::routeMatch()->getRouteName();
+            $node = \Drupal::routeMatch()->getParameter('node');
+            if(!$acceptedDisclaimer && $routeName!="mainpage.mainpage_ask_disclaimer" && $routeName!='mainpage.mainpage_go_accept_disclaimer' && $routeName!='mainpage.mainpage_ask_disclaimer' && $node!=1) {
                 $goto = urlencode($_SERVER['REQUEST_URI']);
-
-                CommonUtil::goToUrl('ask_disclaimer?a=1&target='.$goto);
+                $url = 'ask_disclaimer?a=1&target='.$goto;
+                $response = new RedirectResponse($url);
+                $response->send();
+                //CommonUtil::goToUrl('ask_disclaimer?a=1&target='.$goto);
                 exit;
             }
-        }
+        } 
 		
         if ($UserId != \Drupal::currentUser()->getAccountName()) {
 
@@ -213,7 +206,7 @@ class Authentication {
                 //drupal_set_message(t('Cannot login Drupal'), 'error');
                 \Drupal::messenger()->addError(t('Cannot login Drupal'));
 
-        }
+        } 
     }
 
     public function getName() {
@@ -249,6 +242,15 @@ class Authentication {
         
         return $record->user_is_disclaimer;
     }
-    
+
+
+    function checkAccessRight() {
+
+        $url = Url::fromRoute('<front>')->toString();
+        if (!$this->isAuthenticated) {
+            return new RedirectResponse($url.'no_access');
+        }
+
+    }
 
 }

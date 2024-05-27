@@ -14,7 +14,7 @@ class ProfileDatatable {
             $authen = new $AuthClass();
             $user_id = $authen->getUserId();
                     
-            $sql = " SELECT a.cop_id, a.cop_name, b.cop_id AS joined_cop FROM kicp_km_cop a LEFT JOIN kicp_km_cop_membership b ON (a.cop_id=b.cop_id AND b.user_id='".$user_id."') WHERE a.cop_group_id != 4 ORDER BY cop_name ";
+            $sql = " SELECT a.cop_id, a.cop_name, b.cop_id AS joined_cop FROM kicp_km_cop a LEFT JOIN kicp_km_cop_membership b ON (a.cop_id=b.cop_id AND b.user_id='".$user_id."') WHERE a.is_deleted = 0 AND a.cop_group_id != 4 ORDER BY cop_name ";
             $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

@@ -5,7 +5,7 @@
         <div id="BlogListDiv" class="BlogName">Blog List</div>
         <div id="DivContentTable">
 
-            <div class="common_table_header2 columns">
+            <div class="common_table_header2 columns space-between">
                 <div class="w10 ">&nbsp;</div>
                 <div class="w20 text-left">User Name</div>
                 <div class="w10">&nbsp;</div>
@@ -17,8 +17,8 @@
             {% if  item['user_name'] %}
             <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item columns {{ loop.index0 is odd ? 'odd' : 'even' }}">
                 <div class="w10">{{ loop.index0 + 1 }}</div>
-                <div class="w20">{{  item['user_name'] }}</div>
-                <div class="w10">{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</div>
+                <div class="w20 text-left">{{  item['user_name'] }}</div>
+                <div class="w10 text-left">{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</div>
                 <div class="w40"><a href="{{ path('blog.blog_view' , {'blog_id': item['blog_id']}) }}">Blog of {{  item['user_name'] }}</a></div>
                 <div class="w20">{% if item['blog_type'] == "P"  %}Personal{% else %}Thematic{% endif%}</div>
             </div>

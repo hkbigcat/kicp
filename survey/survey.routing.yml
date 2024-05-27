@@ -10,7 +10,7 @@ survey.survey_content:
     no_cache: TRUE
   
 survey.survey_view:
-  path: '/survey_view'
+  path: '/survey_view/{survey_id}'
   defaults:
     _form: '\Drupal\survey\Form\SurveyView'
     _title: ''

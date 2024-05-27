@@ -2,16 +2,10 @@
 <script>
     jQuery('a[href="#add-record"]').click(function(event) {
         event.preventDefault();
-        if (jQuery(this).modal) {
             jQuery(this).modal({
                 escapeClose: false,
                 clickClose: false,
                 showClose: false
             });
-
-        } else {
-            console.log("cannot open modal");
-        }
-
     });
 </script>

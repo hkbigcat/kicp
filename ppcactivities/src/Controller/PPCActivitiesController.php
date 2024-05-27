@@ -29,11 +29,18 @@ class PPCActivitiesController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $checkAuth = $authen -> checkAccessRight();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();    
     }
     
     public function content( $cop_id="1", $type_id="") {
         
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
         $activitiesType = PPCActivitiesDatatable::getAllActivityType();
         $activityInfo = PPCActivitiesDatatable::getActivityTypeInfo($type_id);
         $activityInfo['type_id'] = $type_id;
@@ -57,6 +64,12 @@ class PPCActivitiesController extends ControllerBase {
 
 
     public function ActivityDetail($evt_id="") {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
 
         $EventDetail = PPCActivitiesDatatable::getEventDetail($evt_id);
         $activitiesType = PPCActivitiesDatatable::getAllActivityType();
@@ -692,6 +705,223 @@ class PPCActivitiesController extends ControllerBase {
           ];
 
 
-    }    
+    }
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('ppcactivities.content');
+        $admin_url = Url::fromRoute('ppcactivities.admin_content');
+        $admin_type_url = Url::fromRoute('ppcactivities.admin_type');
+        $admin_cop_url = Url::fromRoute('ppcactivities.admin_category');
+        $base_path = [
+            'name' => 'PPC Activities', 
+            'url' => $base_url,
+        ];
+        $admin_path = [
+            'name' => 'Admin - Events' ,
+            'url' =>  $admin_url,
+        ];
+        $admin_type_path = [
+            'name' => 'Types' ,
+            'url' =>  $admin_type_url,
+        ];            
+        $admin_cop_path = [
+            'name' => 'COP Category' ,
+            'url' =>  $admin_cop_url,
+        ];        
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        if ($routeName=="ppcactivities.content") {
+            $breads[] = [
+                'name' => 'PPC Activities', 
+            ];
+        } else if ($routeName=="ppcactivities.content.cop") {
+            $cop_id = $route_match->getParameter('cop_id');
+            $cop = PPCActivitiesDatatable::getCOPInfo($cop_id);
+            $breads[] = $base_path;
+            if ($cop) {
+                $breads[] = [
+                'name' => $cop['cop_name']??'No PPC COP' ,
+                ];
+            }
+        } else if ($routeName=="ppcactivities.content.type") {
+            $cop_id = $route_match->getParameter('cop_id');
+            $type_id = $route_match->getParameter('type_id');
+            $cop = PPCActivitiesDatatable::getCOPInfo($cop_id);
+            $type = PPCActivitiesDatatable::getActivityTypeInfo($type_id);
+            $breads[] = $base_path;
+            if ($cop) {
+                $cop_url = Url::fromRoute('ppcactivities.content.cop', ['cop_id' => $cop_id]);
+            }
+            $breads[] = [
+                'name' => $cop['cop_name']??'No PPC COP' ,
+                'url' => $cop_url??null,
+            ];
+            if ($type) {
+            $breads[] = [
+                'name' => $type['evt_type_name']??'No COP Type' ,
+              ];
+            }
+        } else if ($routeName=="ppcactivities.activities_detail") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            $breads[] = $base_path;
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $evt_name = $evt->evt_name;
+                $type = PPCActivitiesDatatable::getActivityTypeInfo($type_id);
+                if ($type) {
+                    $type_url = Url::fromRoute('activities.content.type', ['type_id' => $type_id]);
+                }                
+            }
+            $breads[] = [
+                'name' => $type['evt_type_name']??'No Activities Type' ,
+                'url' => $type_url??null,
+            ]; 
+            $breads[] = [
+                'name' => $evt_name??'No Event' ,
+            ];                       
+
+        } else if ($routeName=="ppcactivities.admin_content") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Admin Events' ,
+            ];
+        }  else if ($routeName=="ppcactivities.admin_type") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Type Management' ,
+            ];
+        } else if ($routeName=="ppcactivities.admin_category") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'COP Category Management' ,
+            ];
+        } else if ($routeName=="ppcactivities.admin_list_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_type_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        } else if ($routeName=="ppcactivities.admin_list_change") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_type_path;
+            $breads[] = [
+                'name' => 'Edit' ,
+            ];
+        } else if ($routeName=="ppcactivities.admin_cop_category_change") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_cop_path;
+            $breads[] = [
+                'name' => 'Edit' ,
+            ];
+        } else if ($routeName=="ppcactivities.admin_cop_category_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_cop_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        }  else if ($routeName=="ppcactivities.admin_item_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Add',
+            ];                
+        }  else if ($routeName=="ppcactivities.admin_item_change") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $breads[] = [
+                'name' => $evt_name.' - Edit',
+            ];                
+
+        } else if ($routeName=="ppcactivities.admin.enroll_list") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $breads[] = [
+                'name' => $evt_name.' - Enrollment List',
+            ];                
+
+        } else if ($routeName=="ppcactivities.photo") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $breads[] = [
+                'name' => $evt_name.' - Photos',
+            ];                
+
+        }  else if ($routeName=="ppcactivities.photo_add") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $admin_photo_url = Url::fromRoute('ppcactivities.photo', ['evt_id' => $evt_id]);
+            $breads[] = [
+                'name' => $evt_name.' - Photos',
+                'url' => $admin_photo_url,
+            ];                
+            $breads[] = [
+                'name' => 'Add',
+            ];                
+
+
+        } else if ($routeName=="ppcactivities.deliverable") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $breads[] = [
+                'name' => $evt_name.' - Deliverable',
+            ];                
+
+        } else if ($routeName=="ppcactivities.deliverable_add") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $evt_name = $evt->evt_name;
+            }            
+            $admin_photo_url = Url::fromRoute('ppcactivities.deliverable', ['evt_id' => $evt_id]);
+            $breads[] = [
+                'name' => $evt_name.' - Deliverable',
+                'url' => $admin_photo_url,
+            ];                
+            $breads[] = [
+                'name' => 'Add',
+            ];                
+
+
+        } 
+
+        return $breads;
+    }
+
 
 }

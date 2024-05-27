@@ -1,33 +1,30 @@
-<div class="forum_navigation">{{ forum_info.forum_name }}</div>
+<div class="forum_navigation"><strong>{{ forum_info.forum_name }}</strong></div>
 <div style="float:right;">
 <button class="kicp_button" onClick="self.location.href='{{ path('forum.forum_topic_add', {'forum_id': forum_info.forum_id }) }}';"><i class="fa-solid fa-circle-plus"></i> Add </button>
 </div>
 <div id="DivContentTable">
-    <div class="common_table_header">
-        <div style="width:29%;text-align:left;margin-left:15px">Topics</div>
-        <div style="width:17%;text-align:left;">KICP Forum</div>
-        <div style="width:17%;text-align:left;">Creator</div>
-        <div style="width:8%;text-align:left;">Replies</div>
-        <div style="width:7%;text-align:left;">Views</div>
-        <div style="width:16%;text-align:left;">Date</div>
+    <div class="common_table_header2 columns">
+        <div class="w30">Topics</div>
+        <div class="w20" style="width:17%;text-align:left;">KICP Forum</div>
+        <div class="w20" style="width:17%;text-align:left;">Creator</div>
+        <div class="w10" style="width:8%;text-align:left;">Replies</div>
+        <div class="w20" style="width:16%;text-align:left;">Date</div>
     </div>
 
   {% if posts is empty %}  
   <div style="padding:5px;text-align:center;display:inline-block;width:98%;border:1px solid #ECECEC;">No record found.</div>
  {% endif %}   
   {% for post in posts %}
-    <div class="DivContentTable_item  {{ loop.index0 is odd ? 'odd' : 'even' }} " style="width:97.7%;">
-        <div style="width:30%;float:left;display:block;"><a href="{{ path('forum.forum_view_topic', {'topic_id': post['topic_id'] }) }}">{{ post['title'] }}</a></div>
-        <div style="width:18%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': post['forum_id'] }) }}">{{ post['forum_name'] }}</a></div>
-        <div style="width:19%;float:left;display:block;">{{ post['user_name'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: post['user_id'], following: post['follow']}  %}</span></div>
-        <div style="width:9%;float:left;display:block;">{{ post['total_reply'] }}</div>
-        <div style="width:6%;float:left;display:block;">{{ post['topic_access'] }}</div>
-        <div style="width:11%;float:left;display:block;">{{ post['create_datetime'] }}</div>
-        {% include '@common/common-like.html.twig'  with {module: 'forum', record_id:  post['topic_id'], countLike: post['countlike'], 'liked': post['liked']  }  %}
+    <div class="DivContentTable_item2 {{ loop.index0 is odd ? 'odd' : 'even' }} columns">
+        <div class="w30"><a href="{{ path('forum.forum_view_topic', {'topic_id': post['topic_id'] }) }}">{{ post['title'] }}</a></div>
+        <div class="w20"><a href="{{ path('forum.forum_view_forum', {'forum_id': post['forum_id'] }) }}">{{ post['forum_name'] }}</a></div>
+        <div class="w20">{{ post['user_name'] }} </div>
+        <div class="w10">{{ post['total_reply'] }}</div>
+        <div class="w20">{{ post['create_datetime'] | date('d.m.Y H:i:s')}}</div>
     </div>
  {% endfor %}  
 </div>
 
-<div style="float:right; margin:20px;">{{ pager }}</div>
+<div style="float:right">{{ pager }}</div>
 
 

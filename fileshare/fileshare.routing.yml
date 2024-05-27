@@ -54,7 +54,7 @@ fileshare.fileshare_view:
   path: '/fileshare_view/{file_id}'
   defaults:
     _controller: '\Drupal\fileshare\Controller\FileShareController::viewShareFile'
-    _title: 'File Share View'
+    _title: 'File Share'
   requirements:
     _permission: 'access content'  
   options:

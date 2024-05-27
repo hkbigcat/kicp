@@ -35,7 +35,7 @@
                <div class="entry_content">{{ item['description'] }}</div>
                <div><span class="entry_subtitle">Folder: </span><a href="fileshare?folder_id={{ item['folder_id'] }}">{{ item['folder_name'] }}</a></div>
                <div><span class="entry_subtitle">Uploaded by: </span> {{ item['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</span></div>
-               <div><span class="entry_subtitle">Date: </span>{{ item['modify_datetime'] }}</div>
+               <div><span class="entry_subtitle">Date: </span>{{ item['modify_datetime'] | date('d.m.Y H:i:s')}}</div>
                {% include '@common/common-tags-list.html.twig'  with {tags: item ['tags']}  %}            
           </div>
           <div class="w30">

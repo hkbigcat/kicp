@@ -1,14 +1,18 @@
-<nav class="breadcrumb" role="navigation" aria-labelledby="system-breadcrumb">
+       <nav class="breadcrumb" role="navigation" aria-labelledby="system-breadcrumb">
     <ol class="breadcrumb-items">
           <li class="breadcrumb-item">
                   <a href="/kmapp2/kicp/">Home</a>
               </li>
-          {% for bread in breads %}
+          {% for bread in breads %} 
           <li class="breadcrumb-item">
-                   <span><i class="icon-angle-right"></i></span> {{ bread['name'] | capitalize }}
+                    <span><i class="icon-angle-right"></i></span> 
+                    {% if bread['url'] %}
+                    <a href="{{bread['url']}}">{{ bread['name'] }}</a>
+                    {% else  %}
+                   {{ bread['name'] }}
+                   {% endif %}
               </li>
            {% endfor %}    
         </ol>
   </nav>
 
-  

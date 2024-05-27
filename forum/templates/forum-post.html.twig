@@ -1,6 +1,6 @@
  {% set threadTopic = threads|first %}
 
-<div class="forum_navigation"><a href="{{ path('forum.forum_view_forum', {'forum_id': forum_info.forum_id }) }}">{{ forum_info.forum_name }}</a> &gt; {{ threadTopic.subject }}</div>
+<div class="forum_navigation"><strong>{{ threadTopic.subject }}</strong></div>
 {% include '@common/common-tags-list.html.twig' %} 
 {% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('forum.forum_tag') }}">
@@ -23,7 +23,7 @@
                             {% endfor %} 
                             <div class="spacer"></div>
                         {% endif %}                      
-                        <div><span class="blog_subtitle" >Posted on:</span> {{ thread['create_datetime'] }}</div>
+                        <div><span class="blog_subtitle" >Posted on:</span> {{ thread['create_datetime'] | date('d.m.Y H:i:s') }}</div>
                     </div>
             </div>
             <div id="forum_post_87" style="width:23%;float:right;display:block;">

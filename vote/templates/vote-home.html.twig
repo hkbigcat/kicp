@@ -18,12 +18,12 @@
         </div>
         <div class="w20">
           {% include '@common/common-like.html.twig'  with {module: 'vote', 'record_id':  item['vote_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
-          {% if item['show_response'] %}
+          {% if  user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id) or item['show_response'] %}
           <div><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
           {% endif %}
         </div>  
         <div class="w20">
-          <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
+           <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
           {% if item['allow_copy'] %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('vote.vote_copy', {'vote_id': item['vote_id'] }) }}'"><i class="fa-solid fa-copy"></i>Copy</button></span>
           {% endif %}
@@ -31,9 +31,8 @@
           <span><button class="kicp_button" onclick="self.location.href='{{ path('vote.vote_change_1', {'vote_id': item['vote_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
           <span><button class="kicp_button" onclick="self.location.href='{{ path('vote.export_vote' , {'vote_id': item['vote_id'] }  ) }}'"><i class="fa-solid fa-file-excel"></i>Export</button></span>
           <span><button class="kicp_button" onClick="module_item_delete('vote',{{ item['vote_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
-          {% endif %}
-
           <div style="margin:10px;"><a href="#add-record" onclick="getAddGroupMemberUI('vote',{{ item['vote_id'] }});">{{ item['vote_access']?'Restricted':'Public' }}</a></div>
+          {% endif %}
         </div>
     </div>
  {% endfor %}  

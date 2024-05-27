@@ -139,6 +139,8 @@ function common_theme($existing, $type, $theme, $path) {
                 'breads' => NULL,			
 			],
         ],
+		'common-no-access' =>[
+        ],
 	];
 }
 

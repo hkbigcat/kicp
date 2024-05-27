@@ -27,6 +27,7 @@ class FileShareChange extends FormBase {
   public function __construct() {
     $AuthClass = "\Drupal\common\Authentication";
     $authen = new $AuthClass();
+    $this->is_authen = $authen->isAuthenticated;
     $this->my_user_id = $authen->getUserId();      
     $this->module = 'fileshare';
     $this->allow_file_type = 'doc docx ppt pptx pdf';
@@ -58,13 +59,28 @@ class FileShareChange extends FormBase {
 
          $config = \Drupal::config('fileshare.settings'); 
 
+         if (! $this->is_authen) {
+          $form['no_access'] = [
+              '#markup' => CommonUtil::no_access_msg(),
+          ];     
+          return $form;        
+      }
+
          $file = FileShareDatatable::getSharedFile($file_id);
 
          if (!$file) {
              $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found or you cannot access the file'),
-          );
-          return $form; 
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found'),
+             );
+            return $form; 
+         }
+
+         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+         if (!$isSiteAdmin && $file['user_id'] != $this->my_user_id  )  {
+          $form['intro'] = array(
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You cannot edit this file.'),
+             );
+            return $form; 
          }
 
          $Taglist = new TagList();

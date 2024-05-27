@@ -24,6 +24,7 @@ class FileShareFolderAdd extends FormBase {
     public function __construct() {
       $AuthClass = "\Drupal\common\Authentication";
       $authen = new $AuthClass();
+      $this->is_authen = $authen->isAuthenticated;
       $this->my_user_id = $authen->getUserId();      
         $this->module = 'fileshare';
     }
@@ -42,6 +43,12 @@ class FileShareFolderAdd extends FormBase {
 
         $output = NULL;
         
+        if (! $this->is_authen) {
+          $form['no_access'] = [
+              '#markup' => CommonUtil::no_access_msg(),
+          ];     
+          return $form;        
+      }
         
         $form['folder_name'] = array(
           '#title' => t('Folder Name'),

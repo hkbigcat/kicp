@@ -29,6 +29,7 @@ class VoteCopy extends FormBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();            
     }
 
@@ -43,6 +44,14 @@ class VoteCopy extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $vote_id="") {
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
+
         $request = \Drupal::request();
         $session = $request->getSession();
         $session->set('questionNo', "");
@@ -264,20 +273,6 @@ class VoteCopy extends FormBase {
             '#type' => 'details',
             '#open' => false,
             '#description' =>  $taglist,
-          );
-
-
-          $form['actions']['submit'] = array(
-            '#type' => 'submit',
-            '#value' => t('Save'),
-          );
-
-          $form['actions']['cancel'] = array(
-            '#type' => 'button',
-            '#value' => t('Cancel'),
-            '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
-            '#limit_validation_errors' => array(),
           );
       
         return $form;

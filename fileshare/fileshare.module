@@ -6,6 +6,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
+use Drupal\fileshare\Common\FileShareDatatable;
 
 
 function fileshare_page_attachments_alter(&$page) {
@@ -85,6 +86,30 @@ function fileshare_file_download($uri) {
     }
 }
 
+
+function fileshare_preprocess_page_title(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "fileshare.fileshare_view") {
+        $file_id = $route_match->getParameter('file_id');
+        $file_title = FileShareDatatable::getTitle($file_id);
+        if ( $file_title ) {
+            $variables['title'] = $file_title;
+        }
+    }
+  }
+
+ function fileshare_preprocess_html(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "fileshare.fileshare_view") {
+        $file_id = $route_match->getParameter('file_id');
+        $file_title = FileShareDatatable::getTitle($file_id);
+        if ( $file_title ) {
+            $variables['head_title']['title'] = $file_title;
+        }
+    }
+  }  
 
 /**
  * Implements hook_help().

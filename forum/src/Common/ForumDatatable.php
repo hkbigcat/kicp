@@ -120,7 +120,7 @@ class ForumDatatable {
         $query-> fields('b', ['forum_name']);
         $query-> fields('x', ['user_name']);
         //$query-> fields('c', ['topic_id']);
-        $query->addExpression('count(c.post_id)', 'total_reply');
+        $query->addExpression('IF(count(c.post_id)>0,count(c.post_id)-1,0)', 'total_reply');
         $query->addExpression('count(d.id)', 'topic_access');
 
         $query-> groupBy('a.topic_id');
@@ -243,6 +243,16 @@ class ForumDatatable {
             $output[] = $record;
         }
         return $output;    
+    }
+
+    public static function getForumSubject($topic_id="") {
+        $sql = "SELECT `subject` FROM kicp_forum_post WHERE topic_id = '$topic_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();        
+        if ($result) 
+            return $result->subject;
+        else return null;
+
     }
 
     public static function getForumName($forum_id) {

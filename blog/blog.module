@@ -6,7 +6,8 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
-
+use Drupal\blog\Common\BlogDatatable;
+use Drupal\Core\Url;
 
 function blog_page_attachments_alter(&$page) {
 
@@ -92,6 +93,34 @@ function blog_theme($existing, $type, $theme, $path) {
     ];
 
 }
+
+function blog_preprocess_page_title(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "blog.blog_entry") {
+        $entry_id = $route_match->getParameter('entry_id');
+        $entry = BlogDatatable::getEntryName($entry_id);
+        if ($entry) {
+            $entry_name = htmlspecialchars_decode($entry['entry_title']);        
+            $variables['title'] = $entry_name;
+        }
+    }
+  }
+
+ function blog_preprocess_html(&$variables) {
+
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "blog.blog_entry") {
+        $entry_id = $route_match->getParameter('entry_id');
+        $entry = BlogDatatable::getEntryName($entry_id);
+        if ($entry) {
+            $entry_name = htmlspecialchars_decode($entry['entry_title']);        
+            $variables['head_title']['title'] = $entry_name;
+        }
+    }
+  }  
+
 
 /*
 function fileshare_file_download($uri) {

@@ -21,6 +21,7 @@ class SurveyView extends FormBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();             
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
         $this->max_preview_page = CommonUtil::getSysValue('survey_max_preview_page');
@@ -36,9 +37,15 @@ class SurveyView extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
+    public function buildForm(array $form, FormStateInterface $form_state, $survey_id="") {
 
-        $survey_id = \Drupal::request()->query->get('survey_id');
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        }
+
         $survey = SurveyDatatable::getSurvey($survey_id, $this->my_user_id);
 
         $isShowSubmit = true;
@@ -155,7 +162,7 @@ class SurveyView extends FormBase {
 
                     $rateScalearry[$counter] = $rateresult['scale'];
                     if ($show_scale == 1) {
-                        $rateLegendarry[$counter] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
+                        $rateLegendarry[$rateresult['id']] = $rateresult['legend'] . " (" . $rateresult['scale'] . ")";
                     }
                     else {
                         $rateLegendarry[$rateresult['id']] = $rateresult['legend'];
@@ -293,13 +300,16 @@ class SurveyView extends FormBase {
                             $rateTable = '<table class="tb_rate">';
                             $rateTableHeader = "<tr>";
                             $rateColHeader = "<th></th>";
-                            for ($x = 0; $x < $counter; $x++) {
+                            foreach  ($rateLegendarry as $rate1) {
+                            //for ($x = 0; $x < $counter; $x++) {
                                 $rateColHeader .= "<th>";
                                 if ($show_legend == 1) {
-                                    $rateColHeader .= $rateLegendarry[$x];
+                                    //$rateColHeader .= $rateLegendarry[$x];
+                                    $rateColHeader .= $rate1;
                                 }
                                 if ($show_scale == 1) {
-                                    $rateColHeader .= " ( " . $rateScalearry[$x] . " ) ";
+                                    //$rateColHeader .= " ( " . $rateScalearry[$x] . " ) ";
+                                    $rateColHeader .= " ( " . $rate1 . " ) ";
                                 }
                                 $rateColHeader .= "</th>";
                             }
@@ -510,6 +520,13 @@ class SurveyView extends FormBase {
             $$key = $value;
         }
 
+        $start_entry = array(
+            'start_survey' => 1,
+            'modify_datetime' => date('Y-m-d H:i:s'),
+            'modified_by' => $this->my_user_id,
+         );
+
+
         $RespondentEntry = array(
             'submitted' => 'Y',
             'username' => $this->my_user_id,
@@ -519,6 +536,13 @@ class SurveyView extends FormBase {
         $database = \Drupal::database();
         $transaction = $database->startTransaction();   
         try {
+
+            $query = $database->update('kicp_survey')
+            ->fields($start_entry)
+            ->condition('survey_id', $survey_id)
+            ->condition('start_survey', 0)
+            ->execute();
+
             $query = $database->insert('kicp_survey_respondent')
             ->fields($RespondentEntry);
             $Respondent_id = $query->execute();

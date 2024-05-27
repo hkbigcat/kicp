@@ -13,8 +13,8 @@
                 <div style="width:4%;float:left;display:block;">{{ loop.index0 + 1 }}</div>
                 <div style="width:64%;float:left;display:block;"><a href="javascript:;" onclick="displayGroupMember('group_member_{{ group['group_type'] }}_{{ group['group_id'] }}', '{{ group['group_type'] }}',{{ group['group_id'] }})" style="border-bottom:0px;" id="group_member_link"><span id="group_member_{{ group['group_type'] }}_{{ group['group_id'] }}">{{ group['group_name'] }}</span></a></div>
                 <div style="width:15%;float:left;display:block;">{{ group['group_type']=='P'?'Public':'Personal' }}</div>
-                <div style="width:5%;float:left;display:block;"><a href="javascript:;" onclick="delete_access_control('blog','{{ record_id }}','{{ group['group_type'] }}','{{ group['group_id'] }}')">x</a>
-                    <input type="hidden" name="this_module" id="this_module" value="blog">
+                <div style="width:5%;float:left;display:block;"><a href="javascript:;" onclick="delete_access_control('{{module}}','{{ record_id }}','{{ group['group_type'] }}','{{ group['group_id'] }}')" title="Delete Access Control"><i class="fa-solid fa-xmark"></i></a>
+                    <input type="hidden" name="this_module" id="this_module" value="{{module}}">
                     <input type="hidden" name="record_id" id="record_id" value="33">
                     <input type="hidden" name="id" id="id" value="2761">
                 </div>

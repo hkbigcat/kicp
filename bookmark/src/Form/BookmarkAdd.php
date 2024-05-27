@@ -23,7 +23,9 @@ class BookmarkAdd extends FormBase  {
 
     public function __construct() {
         $this->module = 'bookmark';
-
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
     }
 
     /**
@@ -53,6 +55,12 @@ class BookmarkAdd extends FormBase  {
 
         $config = \Drupal::config('bookmark.settings'); 
 
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        }
 
         $form['bTitle'] = [
             '#type' => 'textfield',

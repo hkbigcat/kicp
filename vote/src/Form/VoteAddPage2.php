@@ -28,6 +28,7 @@ class VoteAddPage2 extends FormBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();     
         $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
     }
@@ -46,6 +47,13 @@ class VoteAddPage2 extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         // display the form
+
+        if (! $this->is_authen) {
+          $form['no_access'] = [
+              '#markup' => CommonUtil::no_access_msg(),
+          ];     
+          return $form;        
+        }
 
         $request = \Drupal::request();
         $session = $request->getSession();
@@ -114,7 +122,7 @@ class VoteAddPage2 extends FormBase {
             );
         } else {
             $resultChoicearry = array(
-              '#choice' => $voteChoice->id,
+              '#choice' => $voteChoice['id'],
             );
         }
         $form['name'] = array(
@@ -515,9 +523,10 @@ class VoteAddPage2 extends FormBase {
                 }  else {
                     $url = new Url('vote.vote_add_page3');
                 }
-                \Drupal::logger('vote')->info('Created question id: %id.',   
+                \Drupal::logger('vote')->info('Created question id: %id. session vote id: %vote_id',   
                 array(
                     '%id' => $question_id,
+                    '%vote_id' => $_SESSION['vote_id'],
                 ));   
                 $form_state->setRedirectUrl($url);
             } else {
@@ -605,14 +614,14 @@ class VoteAddPage2 extends FormBase {
                       $request = \Drupal::request();
                       $session = $request->getSession();
                       $session->set('questionNo', $questionNo);
-                      $session->set('totalQuestionNo', $totalQuestionNo);                        
+                      $session->set('totalQuestionNo', $totalQuestionNo);
                       $url = new Url('vote.vote_add_page2');
                   }  elseif ($btSaveOnly == 1) {
                     $url = new Url('vote.vote_add_page2');
                   } else {
                         $url = new Url('vote.vote_add_page3');
                   }
-                    $form_state->setRedirectUrl($url);
+                  $form_state->setRedirectUrl($url);
                 } else {
                   \Drupal::messenger()->addError(
                     t('update Vote : ( '.$get_vote_id.' ) question ( '.$questionNo.' )  is not sucesss. ' )

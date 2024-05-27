@@ -16,6 +16,8 @@ use Drupal\common\CommonUtil;
 use Drupal\common\Follow;
 use Drupal\vote\Common\VoteDatatable;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Url;
 
 
 class VoteController extends ControllerBase {
@@ -24,10 +26,16 @@ class VoteController extends ControllerBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();            
     }
 
     public function VoteContent() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $tags = array();
         $tmp = null;
@@ -57,22 +65,13 @@ class VoteController extends ControllerBase {
 
     public function deleteVote($vote_id) {
 
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
         $actual_files = 0;
         $file_system = \Drupal::service('file_system');
         $VoteUri = 'private://vote';
         $vote_path = $file_system->realpath($VoteUri);
     
-
-        $vote = VoteDatatable::getVote($vote_id,  $this->my_user_id);
-        if ($vote->title == null) {
-            \Drupal::messenger()->addError(
-                t('Unable to delete this vote: '.$vote_id )
-                );
-      
-              $response = array('result' => 0);
-              return new JsonResponse($response);
-        }
-
         $database = \Drupal::database();
         $transaction = $database->startTransaction();   
         try {
@@ -81,7 +80,11 @@ class VoteController extends ControllerBase {
                 'is_deleted'=>1 , 
                 'modify_datetime' => date('Y-m-d H:i:s'),
               ])
-            ->condition('vote_id', $vote_id);
+            ->condition('vote_id', $vote_id)
+            ->condition('is_deleted', 0);
+            if (!$isSiteAdmin) {
+                $query->condition('user_id', $this->my_user_id);
+            }               
             $row_affected = $query->execute();        
 
             if ($row_affected) {
@@ -121,10 +124,9 @@ class VoteController extends ControllerBase {
                 $return2 = TagStorage::markDelete($this->module, $vote_id);
     
                 // write logs to common log table
-                \Drupal::logger('vote')->info('Deleted id: %id, title: %title, delted files: %actual_files' ,   
+                \Drupal::logger('vote')->info('Deleted id: %id, delted files: %actual_files' ,   
                 array(
                     '%id' => $vote_id,    
-                    '%title' => $vote->title,
                     '%actual_files' => $actual_files,
                 ));        
 
@@ -149,7 +151,6 @@ class VoteController extends ControllerBase {
         $response = array('result' => $actual_files);
         return new JsonResponse($response);
 
-
     }
 
 
@@ -163,7 +164,7 @@ class VoteController extends ControllerBase {
         $is_showPost = $voteHeader->is_showPost;
         $num_response = VoteDatatable::getVoteRespondentCount($vote_id);
                 
-        $output .=  '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';
+        $output =  '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';
         
         $output .= '<table>';
         $output .= '<tr>';
@@ -216,35 +217,15 @@ class VoteController extends ControllerBase {
         }
 
         foreach ($voteQuestions as $record) {
-            $questionId = $record->id;
-            $questionType = $record->type_id;
-            $questionHasOther = $record->has_others;
+            $questionId = $record['id'];
+            $questionType = $record['type_id'];
+            $questionHasOther = $record['has_others'];
 
-            if ($questionType == '6') {
-                $voteInfoChoice = VoteDatatable::getVoteChoice($questionId);
-                $choiceCounter = 0;
-                foreach ($voteInfoChoice as $choice) {
-                    $questionRateHeader .= '<td nowrap>' . $choice['choice'] . '</td>';
-                    $choiceCounter++;
-                }
-                $sectionHeader .= '<td colspan="' . $choiceCounter . '" >' . $record->name . '</td>'; //nowrap
-                $questionHeader .= '<td colspan="' . $choiceCounter . '" >'; //nowrap
-                $questionHeader .= $record->content;
-                $questionRateLengcy = VoteDatatable::getVoteQuestionRateById($questionId);
-                $questionHeader .= '<br> [Option:';
-                foreach ($questionRateLengcy as $rate) {
-                    $questionHeader .= ' ' . $rate->legend . ' - ' . $rate->scale . ';';
-                }
-                if ($questionHasOther == "Y") {
-                    $questionHeader .= ' N/A - 0;';
-                }
-                $questionHeader .= ']';
-            } else {
-                $sectionHeader .= '<td  nowrap>' . $record->name . '</td>';
-                $questionHeader .= '<td  nowrap>';
-                $questionHeader .= $record['content'];
-                $questionRateHeader .= '<td  nowrap></td>';
-            }
+            $sectionHeader .= '<td  nowrap>' . $record['name'] . '</td>';
+            $questionHeader .= '<td  nowrap>';
+            $questionHeader .= $record['content'];
+            $questionRateHeader .= '<td  nowrap></td>';
+
             $questionHeader .= '</td>';
         }
         $sectionHeader .= '</tr>';
@@ -272,29 +253,21 @@ class VoteController extends ControllerBase {
                 $questionId = $record['id'];
                 $questionType = $record['type_id'];
 
-                if ($questionType == '6') {
-                    /*
-                    $voteResponseChoice = VoteDatatable::getVoteResponseRankById($vote_id, $respondentId, $questionId);
-                    foreach ($voteResponseChoice as $answer) {
-                        $responseData .= '<td  nowrap>' . $answer['scale'] . '</td>';
+                $voteResponse = VoteDatatable::getVoteResponseById($vote_id, $respondentId, $questionId);
+                $responseData .= '<td  nowrap>';
+                $responseCount = 0;
+                foreach ($voteResponse as $answer) {
+                    if ($responseCount > 0) {
+                        $responseData .= ',';
                     }
-                    */
-                } else {
-                    $voteResponse = VoteDatatable::getVoteResponseById($vote_id, $respondentId, $questionId);
-                    $responseData .= '<td  nowrap>';
-                    $responseCount = 0;
-                    foreach ($voteResponse as $answer) {
-                        if ($responseCount > 0) {
-                            $responseData .= ',';
-                        }
-                        if( $answer['response']==""){
-                            $answerr['response'] = " ";
-                        }
-                        $responseData .= t(strip_tags($answer['response']));
-                        $responseCount++;
+                    if( $answer['response']==""){
+                        $answerr['response'] = " ";
                     }
-                    $responseData .= '</td>';
+                    $responseData .= t(strip_tags($answer['response']));
+                    $responseCount++;
                 }
+                $responseData .= '</td>';
+                
             }
             $responseData .= '</tr>';
             $respondentIndex++;
@@ -356,6 +329,102 @@ class VoteController extends ControllerBase {
         $file_path = 'sites/default/files/private/vote/' . $this_vote_id . '/' . $this_question_id . '/' . $file_name;
         \Drupal::logger('vote')->info('file_path : '.$file_path);
         return $file_path;
-    }        
+    }
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('vote.vote_content');
+        $base_path = [
+            'name' => 'Vote', 
+            'url' => $base_url,
+        ];
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        $request = \Drupal::request();
+        $session = $request->getSession();
+        $vote_id = (isset($_SESSION['vote_id']) && $_SESSION['vote_id'] != "") ? $_SESSION['vote_id'] : "";
+        if ($vote_id != "") {
+            $change_url = Url::fromRoute('vote.vote_change_1', ['vote_id' => $vote_id]);
+            $edit_path = [
+                'name' => 'Edit information', 
+                'url' => $change_url??null ,
+            ];
+    
+        }
+
+        if ($routeName=="vote.vote_content") {
+            $breads[] = [
+                'name' => 'Vote', 
+            ];
+        } else if ($routeName=="vote.vote_view") {
+            $vote_id = $route_match->getParameter('vote_id');
+            $breads[] = $base_path;
+            $title = VoteDatatable::getVoteName($vote_id);
+            $breads[] = [
+                'name' => $title??'No Vote' ,
+            ];                 
+        } else if ($routeName=="vote.vote_add_page1") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        } else if ($routeName=="vote.vote_copy") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Copy' ,
+            ];           
+
+        } else if ($routeName=="vote.vote_add_page2") {
+            $breads[] = $base_path;
+            $breads[] = $edit_path;
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+            ];           
+
+        } else if ($routeName=="vote.vote_add_page3") {
+            $breads[] = $base_path; 
+            $breads[] = $edit_path;
+            if ($vote_id != "") {
+                $add2_url = Url::fromRoute('vote.vote_add_page2');
+            }
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+                'url' => $add2_url??null ,
+            ];
+            $breads[] = [
+                'name' => 'Questions Order' ,
+            ];           
+
+        } else if ($routeName=="vote.vote_add_page4") {
+            $breads[] = $base_path; 
+            if ($vote_id != "") {
+                $add2_url = Url::fromRoute('vote.vote_add_page2');
+                $add3_url = Url::fromRoute('vote.vote_add_page3');
+            }
+            $breads[] = $edit_path;
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+                'url' => $add2_url??null ,
+            ];
+            $breads[] = [
+                'name' => 'Questions Order' ,
+                'url' => $add3_url??null ,
+            ];  
+            $breads[] = [
+                'name' => 'Invite Participants' ,
+            ];           
+
+        } else if ($routeName=="vote.vote_change_1") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Edit Infomation' ,
+            ];           
+
+        }
+
+
+        return $breads;
+    }
 
 }

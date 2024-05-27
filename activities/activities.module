@@ -6,6 +6,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
+use Drupal\activities\Common\ActivitiesDatatable;
 
 
 function activities_page_attachments_alter(&$page) {
@@ -136,20 +137,32 @@ function activities_theme($existing, $type, $theme, $path) {
 
 }
 
-/*
-function fileshare_file_download($uri) {
-
-    $scheme = \Drupal\Core\StreamWrapper\StreamWrapperManager::getScheme($uri);
-    if ($scheme === 'private') {
-        $uri_target = array();
-        $uri_target = explode('/', \Drupal\Core\StreamWrapper\StreamWrapperManager::getTarget($uri));
-
-        return $uri;
-    } else {
-        return $uri;
+function activities_preprocess_page_title(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "activities.activities_detail") {
+        $evt_id = $route_match->getParameter('evt_id');
+        $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+        if ( $evt ) {
+            $evt_name = $evt->evt_name;
+            $variables['title'] = $evt_name;
+        }
     }
-}
-*/
+  }
+
+ function activities_preprocess_html(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "activities.activities_detail") {
+        $evt_id = $route_match->getParameter('evt_id');
+        $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+        if ( $evt ) {
+            $evt_name = $evt->evt_name;
+            $variables['head_title']['title'] = $evt_name;
+        }
+    }
+  }  
+
 
 /**
  * Implements hook_help().

@@ -30,6 +30,7 @@ class FileShareAdd extends FormBase  {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $this->my_user_id = $authen->getUserId();         
+        $this->is_authen = $authen->isAuthenticated;
         $this->module = 'fileshare';
         $this->allow_file_type = 'doc docx ppt pptx pdf';
         $this->target_folder = 'fileshare';
@@ -60,6 +61,13 @@ class FileShareAdd extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $config = \Drupal::config('fileshare.settings'); 
+
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        }    
 
         $form['title'] = [
             '#type' => 'textfield',

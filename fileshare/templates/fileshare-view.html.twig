@@ -11,7 +11,7 @@
           <div><span class="entry_subtitle" style="margin-top:15px">Folder: </span><a href="{{ path('fileshare.fileshare_content', {'folder_id': items['folder_id'] }) }}">{{ items['folder_name'] }} </a></div>
           {% include '@common/common-tags-list.html.twig' %}    
           <div><span class="entry_subtitle" style="margin-top:15px">Uploaded by: </span> {{ items['user_displayname'] }} <span>{% include '@common/common-follow.html.twig'  with {contributor_id: items['user_id'], following: items['follow']}  %}</span></div>
-          <div><span class="entry_subtitle" style="margin-top:15px">Date: </span> {{ items['modify_datetime'] }}</div>
+          <div><span class="entry_subtitle" style="margin-top:15px">Date: </span> {{ items['modify_datetime'] | date('d.m.Y H:i:s') }}</div>
           <div id="cpRate_fileshare_{{ items['file_id'] }}" style="width:100%; margin-top:15px;">{% include '@common/common-rating.html.twig' %}</div>
           <div style="margin:20px;"><button class="kicp_button" onclick="window.open('{{ path('common.download', {'module_name': 'fileshare', 'file_id': items['file_id'] }) }}');"><i class="fa-solid fa-file-arrow-down"></i> Download</button></div>
 

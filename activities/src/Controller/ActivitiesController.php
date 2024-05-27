@@ -32,12 +32,18 @@ class ActivitiesController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();      
         
     }
     
     public function content($type_id=1, $cop_id="", $item_id="" ) {
         
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
         $activitiesType = ActivitiesDatatable::getAllActivityType();
         $GroupInfo = ActivitiesDatatable::getCOPGroupInfo();
         $COPitems = array();
@@ -50,7 +56,8 @@ class ActivitiesController extends ControllerBase {
                 $item_index = array_search($item_id, (array_column($COPitems, 'cop_id')));
                 $activityInfo = ['evt_type_name' => $COPitems[$item_index]['cop_name'], 'description' =>  $COPitems[$item_index]['cop_info']];
             } else {
-                $activityInfo = ['evt_type_name' => $GroupInfo[$cop_id]['group_name'], 'description' =>  $GroupInfo[$cop_id]['group_description']];
+                $cop_info = ActivitiesDatatable::getCOPGroupInfo($cop_id);
+                $activityInfo = ['evt_type_name' => $cop_info['group_name'], 'description' =>  $cop_info['group_description']];
             }
         } else {
             $activityInfo = ActivitiesDatatable::getActivityTypeInfo($type_id);
@@ -58,7 +65,7 @@ class ActivitiesController extends ControllerBase {
         $activityInfo['type_id'] = $type_id;
 
         if ($type_id==1 & $item_id!="" || $type_id!=1 )
-            $events = ActivitiesDatatable::getEventItemByTypeId($type_id);
+            $events = ActivitiesDatatable::getEventItemByTypeId($type_id, $item_id);
 
         $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
 
@@ -78,6 +85,11 @@ class ActivitiesController extends ControllerBase {
 
 
     public function ActivityDetail($evt_id="") {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $EventDetail = ActivitiesDatatable::getEventDetail($evt_id);
         $activitiesType = ActivitiesDatatable::getAllActivityType();
@@ -777,6 +789,318 @@ class ActivitiesController extends ControllerBase {
           ];
 
 
+    }
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('activities.content');
+        $admin_url = Url::fromRoute('activities.admin_content');
+        $admin_cop_url = Url::fromRoute('activities.admin_category');
+        $base_path = [
+            'name' => 'KM Activities', 
+            'url' => $base_url,
+        ];
+        $admin_path = [
+            'name' => 'Admin - Events Type' ,
+            'url' =>  $admin_url,
+        ];
+        $admin_cop_path = [
+            'name' => 'COP Category' ,
+            'url' =>  $admin_cop_url,
+        ];        
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        $type_id = $route_match->getParameter('type_id');
+        if ($type_id) {
+            $type_name = ActivitiesDatatable::getTypeName($type_id);
+            if ($type_name) 
+               $type_url = Url::fromRoute('activities.content.type', ['type_id' => $type_id]);
+        }
+
+        if ($routeName=="activities.content") {
+            $breads[] = [
+                'name' => 'KM Activities', 
+            ];
+        } else if ($routeName=="activities.content.type") {
+            $breads[] = $base_path;
+            $breads[] = [
+             'name' => $type_name??'No Activities Type' ,
+           ];
+        } else if ($routeName=="activities.content.cop") {
+            $group_id = $route_match->getParameter('cop_id');
+            $group_name = ActivitiesDatatable::getCOPGroupName($group_id);
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $type_name??'No Activities Type' ,
+                'url' => $type_url??null,
+            ];
+            if ($type_name) {
+            $breads[] = [
+                'name' => $group_name??'No COP Group' ,
+              ];
+            }
+        }  else if ($routeName=="activities.content.item") {
+            $group_id = $route_match->getParameter('cop_id');
+            $item_id = $route_match->getParameter('item_id');
+            $group_name = ActivitiesDatatable::getCOPGroupName($group_id);
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $type_name??'No Activities Type' ,
+                'url' => $type_url??null,
+            ];
+            if ($group_name) {
+                $group_url = Url::fromRoute('activities.content.cop', ['type_id' => $type_id, 'cop_id' => $group_id]);
+            }
+            $breads[] = [
+                'name' => $group_name??'No COP Group' ,
+                'url' => $group_url??null,
+            ];
+            if ($group_name) {
+                $item = ActivitiesDatatable::getCOPItem($item_id);
+                $breads[] = [
+                    'name' => $item['cop_name']??'No COP' ,
+                ];
+    
+            }
+        } else if ($routeName=="activities.activities_detail") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            $breads[] = $base_path;
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $evt_name = $evt->evt_name;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                if ($type_name) {
+                    $type_url = Url::fromRoute('activities.content.type', ['type_id' => $type_id]);
+                }                
+            }
+            $breads[] = [
+                'name' => $type_name??'No Activities Type' ,
+                'url' => $type_url??null,
+            ]; 
+            if ($evt && $type_id==1) {
+                $group_name = $evt->group_name;
+                $group_id = $evt->group_id;
+                $group_url = Url::fromRoute('activities.content.cop', ['type_id' => $type_id, 'cop_id' => $group_id ]);
+                $breads[] = [
+                    'name' => $group_name??'No Group' ,
+                    'url' => $group_url??null,
+                ];         
+                $cop_id = $evt->cop_id;
+                $cop_name = $evt->cop_name;
+                $cop_url = Url::fromRoute('activities.content.item', ['type_id' => $type_id, 'cop_id' => $group_id, 'item_id' => $cop_id ]);
+                $breads[] = [
+                    'name' => $cop_name??'No Group' ,
+                    'url' => $cop_url??null,
+                ];         
+            }
+            $breads[] = [
+                'name' => $evt_name??'No Event' ,
+            ];                       
+
+        } else if ($routeName=="activities.admin_content") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Admin Event Type' ,
+            ];
+        }  else if ($routeName=="activities.admin_category") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'COP Category Management' ,
+            ];
+        } else if ($routeName=="activities.admin_list_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        } else if ($routeName=="activities.admin_list_change") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Edit' ,
+            ];
+        } else if ($routeName=="activities.admin_cop_category_change") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_cop_path;
+            $breads[] = [
+                'name' => 'Edit' ,
+            ];
+        } else if ($routeName=="activities.admin_cop_category_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = $admin_cop_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        } else if ($routeName=="activities.admin_event") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            if ($type_name) {
+                $breads[] = [
+                    'name' => $type_name??null,
+                ];
+            }
+        }  else if ($routeName=="activities.admin_item_add") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+                $breads[] = [
+                    'name' => 'Add',
+                ];                
+            }
+        }  else if ($routeName=="activities.admin_item_change") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $breads[] = [
+                'name' => 'Edit',
+            ];                
+
+        } else if ($routeName=="activities.admin.enroll_list") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $breads[] = [
+                'name' => $evt_name.' - Enrollment List',
+            ];                
+
+        } else if ($routeName=="activities.photo") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $breads[] = [
+                'name' => $evt_name.' - Photos',
+            ];                
+
+        }  else if ($routeName=="activities.photo_add") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $admin_photo_url = Url::fromRoute('activities.photo', ['evt_id' => $evt_id]);
+            $breads[] = [
+                'name' => $evt_name.' - Photos',
+                'url' => $admin_photo_url,
+            ];                
+            $breads[] = [
+                'name' => 'Add',
+            ];                
+
+
+        } else if ($routeName=="activities.deliverable") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $breads[] = [
+                'name' => $evt_name.' - Deliverable',
+            ];                
+
+        } else if ($routeName=="activities.deliverable_add") {
+            $evt_id = $route_match->getParameter('evt_id');
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $evt  = ActivitiesDatatable::getEventInfo($evt_id);
+            if ($evt) {
+                $type_id = $evt->evt_type_id;
+                $type_name = ActivitiesDatatable::getTypeName($type_id);
+                $evt_name = $evt->evt_name;
+            }            
+            if ($type_name) {
+                $admin_event_url = Url::fromRoute('activities.admin_event', ['type_id' => $type_id]);
+                $breads[] = [
+                    'name' => $type_name??null,
+                    'url' => $admin_event_url??null,
+                ];
+            }
+            $admin_photo_url = Url::fromRoute('activities.deliverable', ['evt_id' => $evt_id]);
+            $breads[] = [
+                'name' => $evt_name.' - Deliverable',
+                'url' => $admin_photo_url,
+            ];                
+            $breads[] = [
+                'name' => 'Add',
+            ];                
+        } else if ($routeName=="activities.activities_tag") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Tags' ,
+            ];
+        } 
+
+        return $breads;
     }
 
 

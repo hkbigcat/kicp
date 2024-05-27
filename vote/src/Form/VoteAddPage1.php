@@ -22,11 +22,15 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity;
 use Drupal\Core\Utility\Error;
 
+
 class VoteAddPage1 extends FormBase {
 
     public function __construct() {
-        $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
         $this->module = 'vote';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;        
+        $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
     }
 
     /**
@@ -40,15 +44,23 @@ class VoteAddPage1 extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
-        $request = \Drupal::request();
-        $session = $request->getSession();
-        $session->set('questionNo', "");
-        $session->set('totalQuestionNo', "");
-        $_SESSION['questionNo'] = "";
-        $_SESSION['totalQuestionNo'] = "";
-        $output = NULL;
 
-        // display the form
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
+
+      $request = \Drupal::request();
+      $session = $request->getSession();
+      $session->set('questionNo', "");
+      $session->set('totalQuestionNo', "");
+      $_SESSION['questionNo'] = "";
+      $_SESSION['totalQuestionNo'] = "";
+      $output = NULL;
+
+      // display the form
 
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
 //page 1        
@@ -173,17 +185,18 @@ class VoteAddPage1 extends FormBase {
         $form['actions']['submit'] = array(
           '#type' => 'submit',
           '#value' => t('Save'),
+          '#attributes' => array('style' => 'margin-bottom:10px;'),
         );
 
         $form['actions']['cancel'] = array(
           '#type' => 'button',
           '#value' => t('Cancel'),
           '#prefix' => '&nbsp;',
-          //'#attributes' => array('onClick' => 'window.open(\'bookmark\', \'_self\'); return false;'),
           '#attributes' => array('onClick' => 'history.go(-1); return false;'),
           '#limit_validation_errors' => array(),
         );
         
+
           // Tag List
           $TagList = new TagList();
 
@@ -212,20 +225,6 @@ class VoteAddPage1 extends FormBase {
             '#description' =>  $taglist,
           );
 
-
-          $form['actions']['submit'] = array(
-            '#type' => 'submit',
-            '#value' => t('Save'),
-            '#attributes' => array('style' => 'margin-bottom:10px;'),
-          );
-
-          $form['actions']['cancel'] = array(
-            '#type' => 'button',
-            '#value' => t('Cancel'),
-            '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
-            '#limit_validation_errors' => array(),
-          );
       
         return $form;
     }

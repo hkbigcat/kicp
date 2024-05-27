@@ -2,9 +2,9 @@
     <div style="margin-left:10px;">COP</div>
 </div>
 {% for item in items %}
-    <div class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;padding:5px;">
-        <div style="width:85%;display:inline-block;float:left;margin-left:10px;">{{ item['cop_name'] }}</div>
-        <div style="width:10%;display:inline-block;float:left;text-align:center;"> 
+    <div class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }} columns" >
+        <div class="w80">{{ item['cop_name'] }}</div>
+        <div class="w20"> 
             {% if item['joined_cop'] is empty  %}
                 <a href="javascript:;" onclick="joinCopMember({{ item['cop_id'] }}, '{{ item['cop_name'] }}');">Join Now</a>
             {% else %} 

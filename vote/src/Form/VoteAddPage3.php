@@ -27,6 +27,7 @@ class VoteAddPage3 extends FormBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();     
 
     }
@@ -43,8 +44,14 @@ class VoteAddPage3 extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-        // display the form
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
 
+        // display the form
 
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
 

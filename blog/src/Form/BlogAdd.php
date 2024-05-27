@@ -30,6 +30,7 @@ class BlogAdd extends FormBase  {
         $this->module = 'blog';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();   
     }
 
@@ -58,6 +59,14 @@ class BlogAdd extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $config = \Drupal::config('blog.settings'); 
+
+
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        }       
 
         $my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
         if (!$my_blog_id) {
@@ -147,6 +156,12 @@ class BlogAdd extends FormBase  {
             '#attributes' => array('style'=>'1px solid #888888;margin-top:30px;'),
         );
 
+        $form['allow_comment'] = [
+            '#title' => t('Allow comment?'),
+            '#type' => 'checkbox',
+            '#default_value' => '1',
+        ];
+
         $form['published'] = [
             '#title' => t('Published'),
             '#type' => 'checkbox',
@@ -156,6 +171,7 @@ class BlogAdd extends FormBase  {
         $form['actions']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style' => 'margin-bottom:20px'),
         );
         
         $form['actions']['cancel'] = array(
@@ -213,6 +229,7 @@ class BlogAdd extends FormBase  {
             'blog_id' => $blog_id,
             'entry_title' => $bTitle,
             'entry_content' => $bContent['value'],
+            'is_pub_comment' => $allow_comment,
             'is_visible' => $published,
             'created_by' => $this->my_user_id,
             'has_attachment' => $hasAttach,

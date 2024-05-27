@@ -41,3 +41,37 @@ mainpage.follow_no:
     _permission: 'access content'
   options:
     no_cache: TRUE 
+
+mainpage.mainpage_disclaimer:
+  path: '/disclaimer'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::getDisclaimer'
+    _title: 'Acceptable Use Policy'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+    
+mainpage.mainpage_ask_disclaimer:
+  path: '/ask_disclaimer'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::askDisclaimerAccept'
+    _title: 'Acceptable Use Policy'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+    
+mainpage.mainpage_go_accept_disclaimer:
+  path: '/go_accept_disclaimer'
+  defaults:
+    _controller: '\Drupal\mainpage\Controller\MainpageController::goAcceptDisclaimer'
+    _title: 'Acceptable Use Policy'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+    

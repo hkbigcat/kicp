@@ -27,6 +27,9 @@ class SurveyAddPage1 extends FormBase {
     public function __construct() {
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
         $this->module = 'survey';
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
     }
 
     /**
@@ -40,6 +43,14 @@ class SurveyAddPage1 extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+    }
+
         $request = \Drupal::request();
         $session = $request->getSession();
         $session->set('questionNo', "");

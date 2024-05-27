@@ -24,7 +24,7 @@ function ChangeDisplayGroupList(module, record_id, group_type) {
     
     jQuery.ajax({
         type: "POST",
-        url: 'get_add_group_member_group_type',
+        url: app_path + 'get_add_group_member_group_type',
         data: JSON.stringify({"module":module,"record_id":record_id, "group_type": group_type}),
         cache: false,
         success: function (data)
@@ -42,7 +42,7 @@ function reloadCurrentAccessControlGroup(module, record_id) {
     
     jQuery.ajax({
         type: 'POST',
-        url: 'get_current_access_control_group',
+        url: app_path + 'get_current_access_control_group',
         data: JSON.stringify({"this_module": module, "record_id": record_id}),
         cache: false,
         success: function (data) {
@@ -58,7 +58,7 @@ function reloadCurrentAccessControlGroup(module, record_id) {
 function update_access_control_allow_edit(module, record_id, group_type, group_id, to_status) {
     jQuery.ajax({
         type: 'POST',
-        url: 'update_access_control_allow_edit',
+        url: app_path + 'update_access_control_allow_edit',
         data: JSON.stringify({"this_module": module, "record_id": record_id, "group_type": group_type, "group_id":  group_id, "to_status":to_status}),
         cache: false,
         success: function (data) {
@@ -76,7 +76,7 @@ function get_search_public_group(search_str, module, record_id) {
     console.log("get search - search_str: "+search_str+" module: "+module+" record_id: "+record_id);
     jQuery.ajax({
         type: 'POST',
-        url: 'get_search_public_group',
+        url: app_path + 'get_search_public_group',
         data: JSON.stringify({"search_str": search_str, "module": module, "record_id": record_id}),
         cache: false,
         success: function (data) {
@@ -144,7 +144,7 @@ function add_access_control(module, record_id, group_type, group_id) {
 
                 jQuery.ajax({
                     type: 'POST',
-                    url: 'access_control_add_action',
+                    url: app_path + 'access_control_add_action',
                     data: JSON.stringify({"this_module": module, "record_id": record_id, "group_type": group_type, "group_id": group_id}),
                     cache: false,
                     success: function (data) {
@@ -178,7 +178,7 @@ function delete_access_control(module, record_id, group_type, group_id) {
             "OK": function () {
                 jQuery.ajax({
                     type: 'POST',
-                    url: 'access_control_delete_action',
+                    url: app_path + 'access_control_delete_action',
                     data: JSON.stringify({"this_module": module, "record_id": record_id, "group_type": group_type, "group_id": group_id}),
                     cache: false,
                     success: function (data) {
@@ -207,7 +207,7 @@ function reloadCurrentAccessControlGroup(module, record_id) {
 
     jQuery.ajax({
         type: 'POST',
-        url: 'get_current_access_control_group',
+        url: app_path + 'get_current_access_control_group',
         data: JSON.stringify({"this_module": module, "record_id": record_id}),
         cache: false,
         success: function (data) {

@@ -31,10 +31,16 @@ class VideoController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();              
     }
     
     public function content() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $EventListAry = VideoDatatable::getVideoEventList($this->pagesize); // get most updated events
         $EventListRight = VideoDatatable::getVideoEventList($limit="", $start=($this->pagesize+1));
@@ -53,9 +59,10 @@ class VideoController extends ControllerBase {
 
     public function VideoContent($media_event_id="") {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $EventInfo = VideoDatatable::getVideoEventInfo($media_event_id);
         $VideoList = VideoDatatable::getVideoListByEventId($media_event_id);
@@ -63,7 +70,7 @@ class VideoController extends ControllerBase {
         $taglist = $TagList->getTagsForModule('video', $media_event_id);        
         $RatingData = new RatingData();
         $rating = $RatingData->getList('video', $media_event_id);
-        $rsHadRate = $RatingData->checkUserHadRate('kicp_media_event_name', $media_event_id, $my_user_id);
+        $rsHadRate = $RatingData->checkUserHadRate('kicp_media_event_name', $media_event_id, $this->my_user_id);
         $rating['rsHadRate'] = $rsHadRate;
         $rating['module'] = "video";        
 
@@ -83,6 +90,11 @@ class VideoController extends ControllerBase {
     }
 
     public function VideoTagContent() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $tags = array();
         $tagsUrl = \Drupal::request()->query->get('tags');
@@ -327,6 +339,103 @@ class VideoController extends ControllerBase {
 
     
         return $response;
+
+    }
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('video.video_entrylist');
+        $admin_url = Url::fromRoute('video.admin_content');
+        $base_path = [
+            'name' => 'Video', 
+            'url' => $base_url,
+        ];
+        $admin_path = [
+            'name' => 'Admin - Events List', 
+            'url' => $admin_url,
+        ];
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        $media_event_id = $route_match->getParameter('media_event_id');
+        if ($routeName=="video.video_entrylist") {
+            $breads[] = [
+                'name' => 'Video', 
+            ];
+        } else if  ($routeName=="video.video_tag") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Tags', 
+            ];            
+        }
+        else if ($routeName=="video.video_list") {
+            $breads[] = $base_path;
+            if ($media_event_id) {
+                $media_event_name = VideoDatatable::getEventName($media_event_id);
+                if ($media_event_name) {
+                    $breads[] = [
+                        'name' => $media_event_name, 
+                    ];        
+                }
+            }
+        }  else if  ($routeName=="video.admin_content") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Admin - Events List', 
+            ];            
+        } else if  ($routeName=="video.admin_video_content") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Videos List', 
+            ];            
+        } else if ($routeName=="video.change_event_data") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Edit', 
+            ];            
+        } else if ($routeName=="video.add_event_data") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $breads[] = [
+                'name' => 'Add', 
+            ];            
+        } else if ($routeName=="video.add_video_data") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            if ($media_event_id) {
+                $admin_event_url = Url::fromRoute('video.admin_video_content', ['media_event_id' => $media_event_id]);
+            }
+            $breads[] = [
+                'name' => 'Videos List', 
+                'url'  => $admin_event_url,           
+            ];
+            $breads[] = [
+                'name' => 'Add', 
+            ];            
+        }  else if ($routeName=="video.change_video_data") {
+            $breads[] = $base_path;
+            $breads[] = $admin_path;
+            $media_id = $route_match->getParameter('media_id');
+            if ($media_id)  {
+                $media = VideoDatatable::getVideoInfo($media_id);
+                $media_event_id = $media['media_event_id'];
+            }
+            if ($media_event_id) {
+                $admin_event_url = Url::fromRoute('video.admin_video_content', ['media_event_id' => $media_event_id]);
+            }
+            $breads[] = [
+                'name' => 'Videos List', 
+                'url'  => $admin_event_url,           
+            ];
+            $breads[] = [
+                'name' => 'Edit', 
+            ];            
+        }
+        
+        
+        return $breads;
 
     }
 

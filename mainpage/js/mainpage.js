@@ -1,4 +1,3 @@
-console.log("mainpage js");
 function LoadMoreDescription(this_id) {
     
     // hide the short description
@@ -64,3 +63,8 @@ function closeFollowModal() {
     jQuery("#follow_list").css("display","none");
     jQuery("#follow_list").html("");    
 }
+
+
+jQuery(document).ready(function ($) {
+    jQuery("#block-thex-kicp-main-menu li.menu-item.menu-item-level-1:first-child").addClass("active");
+  })

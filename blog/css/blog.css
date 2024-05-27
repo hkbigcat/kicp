@@ -175,3 +175,18 @@ ul, li {
     max-width:720px;
 }
 
+.blog_access_modal {
+        position: fixed;
+        top:5%;
+        left:20%;
+        max-width: 1000px;
+        background-color: #fff;
+        border-radius:1%;
+        padding:15px 30px !important;
+        z-index: 2;
+}
+
+h4 {
+        font-size:unset !important;
+        font-weight: unset !important;
+}

@@ -24,6 +24,8 @@ use Drupal\common\TagList;
 use Drupal\common\RatingData;
 use Drupal\common\Common\CommonDatatable;
 use Drupal\common\Follow;
+use Drupal\Core\Url;
+use Drupal\Core\Utility\Error;
 
 class CommonController extends ControllerBase {
 
@@ -31,7 +33,13 @@ class CommonController extends ControllerBase {
 
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
+        $is_authen = $authen->isAuthenticated;
         $my_user_id = $authen->getUserId(); 
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         switch($module_name) {
 
@@ -372,11 +380,8 @@ class CommonController extends ControllerBase {
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass');
-        
         $my_user_id = $authen->getUserId();
         
-
-
         $request = \Drupal::request();   // Request from ajax call
         $content = $request->getContent();
         $params = array();
@@ -409,7 +414,8 @@ class CommonController extends ControllerBase {
             $content .= "Already exist.";
             
         } else {
-            
+            $database = \Drupal::database();
+            $transaction = $database->startTransaction();   
             try {
                 $entry = array(
                   'module' => $this_module,
@@ -423,20 +429,28 @@ class CommonController extends ControllerBase {
                 $query = \Drupal::database()->insert('kicp_access_control')
                 ->fields($entry);
                 $entry_id = $query->execute();
-                $content .= "Updated";
+                if ($entry_id) {
+                    \Drupal::logger('common')->info('add access control module %module, record_id: %record_id, group_type: %group_type, group_id: %group_id.',   
+                    array(
+                        '%module' => $this_module,
+                        '%record_id' => $record_id,
+                        '%group_type' => $group_type,
+                        '%group_id' => $group_id,
+                    ));
+                    $content .= "Updated";
+                }     
 
             }
             catch (Exception $e) {
             
-                //$variables = Error::decodeException($e);
-
+                $variables = Error::decodeException($e);
                 $messenger = \Drupal::messenger(); 
                 $messenger->addMessage( t('Access control list is not updated.'));
-
+                \Drupal::logger('common')->error('access control is not added '  . $variables);
                 $content .= "Error";
-                
+                $transaction->rollBack();   
             }
-            
+            unset($transaction);
             
         }
        
@@ -478,12 +492,14 @@ class CommonController extends ControllerBase {
 
     public function AccessControlDeleteAction() {
 
+        /*
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
         $author = CommonUtil::getSysValue('AuthorClass'); 
         
         $user_id = $authen->getUserId();
         $isSiteAdmin = $author::isSiteAdmin($user_id);
+        */
 
         /*
         if (!$authen->isAuthenticated) {
@@ -517,37 +533,44 @@ class CommonController extends ControllerBase {
         }
         */
         
-        // check whether the record is deleted        
-        $isDeleted = CommonUtil::isRecordDeleted('kicp_access_control', array('module' => $this_module, 'record_id' => $record_id, 'group_type' => $group_type, 'group_id' => $group_id));
-        
-        //  if the blog entry already deleted
-        if ($isDeleted) {
-            $err_code = '2';
-        }
-        else {
-            try {
-                // delete record
-                $database = \Drupal::database();
-                $query = $database->update('kicp_access_control')->fields([
-                    'is_deleted'=>1, 
-                  ])
-                ->condition('module',$this_module)
-                ->condition('record_id', $record_id)
-                ->condition('group_type', $group_type)
-                ->condition('group_id', $group_id)
-                ->execute();
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();             
+        try {
+            // delete record
+            $query = $database->update('kicp_access_control')->fields([
+                'is_deleted'=>1, 
+                ])
+            ->condition('module',$this_module)
+            ->condition('record_id', $record_id)
+            ->condition('group_type', $group_type)
+            ->condition('group_id', $group_id)
+            ->condition('is_deleted', 0);
+            $row_affected = $query->execute();
 
-                $response = array('result' => $query);
-                return new JsonResponse($response);
-        
+            if ($row_affected) {
+                \Drupal::logger('common')->info('delete access control module %module, record_id: %record_id, group_type: %group_type, group_id: %group_id.',   
+                array(
+                    '%module' => $this_module,
+                    '%record_id' => $record_id,
+                    '%group_type' => $group_type,
+                    '%group_id' => $group_id,
+                ));
+            }     
 
-            }
-            catch (Exception $e) {
-                \Drupal::messenger()->addStatus(
-                    t('Unable to delete this record due to datbase error. Please try again. ' )
-                    );
-            }
+            $response = array('result' => $query);
+            return new JsonResponse($response);
+    
+
         }
+        catch (Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Unable to delete this record due to datbase error. Please try again. ' )
+                );
+            \Drupal::logger('common')->error('access control is not deleted '  . $variables);                   
+            $transaction->rollBack();                  
+        }
+        unset($transaction);
 
     }    
 
@@ -668,6 +691,15 @@ class CommonController extends ControllerBase {
 
     public function getKicpediaTag() {
 
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $is_authen = $authen->isAuthenticated;
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
         $tags = array();
         $tagsUrl = \Drupal::request()->query->get('tags');
         
@@ -757,6 +789,22 @@ class CommonController extends ControllerBase {
         return new JsonResponse($response);
                 
     }
+    public static function Breadcrumb() {
 
+        $breads = array();
+        $routeName = \Drupal::routeMatch()->getRouteName();
+        if ($routeName=="common.kicpedia_tag") {
+            $breads[] = [
+                'name' => 'KICPedia', 
+                'url' => 'mediawiki'
+            ];
+            $breads[] = [
+                'name' => 'Tags', 
+            ];
+        } 
+
+        return $breads;
+
+    }
 
 }

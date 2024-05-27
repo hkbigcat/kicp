@@ -16,7 +16,8 @@ use Drupal\common\CommonUtil;
 use Drupal\common\AccessControl;
 use Drupal\survey\Common\SurveyDatatable;
 use Symfony\Component\HttpFoundation\Response;
-
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Url;
 
 class SurveyController extends ControllerBase {
 
@@ -24,10 +25,16 @@ class SurveyController extends ControllerBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();    
     }
 
     public function SurveyContent() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $tags = array();
         $tmp = null;
@@ -58,22 +65,13 @@ class SurveyController extends ControllerBase {
 
     public function deleteSurvey($survey_id) {
 
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+
         $actual_files = 0;
         $file_system = \Drupal::service('file_system');
         $SurveyUri = 'private://survey/';
         $survey_path = $file_system->realpath($SurveyUri);
     
-
-        $survey = SurveyDatatable::getSurvey($survey_id,  $this->my_user_id);
-        if ($survey->title == null) {
-            \Drupal::messenger()->addError(
-                t('Unable to delete this survey: '.$survey_id )
-                );
-      
-              $response = array('result' => 0);
-              return new JsonResponse($response);
-        }
-
         $database = \Drupal::database();
         $transaction = $database->startTransaction();   
         try {
@@ -82,7 +80,11 @@ class SurveyController extends ControllerBase {
                 'is_deleted'=>1 , 
                 'modify_datetime' => date('Y-m-d H:i:s'),
               ])
-            ->condition('survey_id', $survey_id);
+            ->condition('survey_id', $survey_id)
+            ->condition('is_deleted', 0);
+            if (!$isSiteAdmin) {
+                $query->condition('user_id', $this->my_user_id);
+            }   
             $row_affected = $query->execute();        
 
             if ($row_affected) {
@@ -120,10 +122,9 @@ class SurveyController extends ControllerBase {
                 $return2 = TagStorage::markDelete($this->module, $survey_id);
     
                 // write logs to common log table
-                \Drupal::logger('survey')->info('Deleted id: %id, title: %title, delted files: %actual_files' ,   
+                \Drupal::logger('survey')->info('Deleted id: %id, delted files: %actual_files' ,   
                 array(
                     '%id' => $survey_id,    
-                    '%title' => $survey->title,
                     '%actual_files' => $actual_files,
                 ));        
 
@@ -163,8 +164,7 @@ class SurveyController extends ControllerBase {
         $is_showPost = $surveyHeader->is_showPost;
         $num_response = SurveyDatatable::getSurveyRespondentCount($survey_id);
                 
-        $output .=  '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';
-        
+        $output =  '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';
         $output .= '<table>';
         $output .= '<tr>';
         $output .= '<td nowrap>Survey Name:</td> <td nowrap>' . $survey_title . '</td>';
@@ -216,9 +216,9 @@ class SurveyController extends ControllerBase {
         }
 
         foreach ($surveyQuestions as $record) {
-            $questionId = $record->id;
-            $questionType = $record->type_id;
-            $questionHasOther = $record->has_others;
+            $questionId = $record['id'];
+            $questionType = $record['type_id'];
+            $questionHasOther = $record['has_others'];
 
             if ($questionType == '6') {
                 $surveyInfoChoice = SurveyDatatable::getSurveyChoice($questionId);
@@ -227,20 +227,20 @@ class SurveyController extends ControllerBase {
                     $questionRateHeader .= '<td nowrap>' . $choice['choice'] . '</td>';
                     $choiceCounter++;
                 }
-                $sectionHeader .= '<td colspan="' . $choiceCounter . '" >' . $record->name . '</td>'; //nowrap
+                $sectionHeader .= '<td colspan="' . $choiceCounter . '" >' . $record['name'] . '</td>'; //nowrap
                 $questionHeader .= '<td colspan="' . $choiceCounter . '" >'; //nowrap
-                $questionHeader .= $record->content;
+                $questionHeader .= $record['content'];
                 $questionRateLengcy = SurveyDatatable::getSurveyQuestionRateById($questionId);
                 $questionHeader .= '<br> [Option:';
                 foreach ($questionRateLengcy as $rate) {
-                    $questionHeader .= ' ' . $rate->legend . ' - ' . $rate->scale . ';';
+                    $questionHeader .= ' ' . $rate['legend'] . ' - ' . $rate['scale'] . ';';
                 }
                 if ($questionHasOther == "Y") {
                     $questionHeader .= ' N/A - 0;';
                 }
                 $questionHeader .= ']';
             } else {
-                $sectionHeader .= '<td  nowrap>' . $record->name . '</td>';
+                $sectionHeader .= '<td  nowrap>' . $record['name'] . '</td>';
                 $questionHeader .= '<td  nowrap>';
                 $questionHeader .= $record['content'];
                 $questionRateHeader .= '<td  nowrap></td>';
@@ -356,5 +356,103 @@ class SurveyController extends ControllerBase {
         $file_path = 'sites/default/files/private/survey/' . $this_survey_id . '/' . $this_question_id . '/' . $file_name;
         return $file_path;
     }    
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('survey.survey_content');
+        $base_path = [
+            'name' => 'Survey', 
+            'url' => $base_url,
+        ];
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        $request = \Drupal::request();
+        $session = $request->getSession();
+        $survey_id = $route_match->getParameter('survey_id');
+        if (!$survey_id || $survey_id=="") {
+            $survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
+        }
+
+        if ($survey_id != "") {
+            $change_url = Url::fromRoute('survey.survey_change_1', ['survey_id' => $survey_id]);
+            $edit_path = [
+                'name' => 'Edit information', 
+                'url' => $change_url??null ,
+            ];
+        }        
+        if ($routeName=="survey.survey_content") {
+            $breads[] = [
+                'name' => 'Survey', 
+            ];
+        } else if ($routeName=="survey.survey_view") {
+            $survey_id = $route_match->getParameter('survey_id');
+            $breads[] = $base_path;
+            $title = SurveyDatatable::getSurveyName($survey_id);
+            $breads[] = [
+                'name' => $title??'No Survey' ,
+            ];                 
+        } else if ($routeName=="survey.survey_add_page1") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Add' ,
+            ];
+        } else if ($routeName=="survey.survey_copy") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Copy' ,
+            ];           
+
+        } else if ($routeName=="survey.survey_add_page2") {
+            $breads[] = $base_path;
+            $breads[] = $edit_path;
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+            ];           
+
+        } else if ($routeName=="survey.survey_add_page3") {
+            $breads[] = $base_path; 
+            if ($survey_id != "") {
+                $add2_url = Url::fromRoute('survey.survey_add_page2', ['survey_id' => $survey_id]);
+            }
+            $breads[] = $edit_path;
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+                'url' => $add2_url??null ,
+            ];
+            $breads[] = [
+                'name' => 'Questions Order' ,
+            ];           
+
+        } else if ($routeName=="survey.survey_add_page4") {
+            $breads[] = $base_path; 
+            if ($survey_id != "") {
+                $add2_url = Url::fromRoute('survey.survey_add_page2', ['survey_id' => $survey_id]);
+                $add3_url = Url::fromRoute('survey.survey_add_page3', ['survey_id' => $survey_id]);
+            }
+            $breads[] = $edit_path;
+            $breads[] = [
+                'name' => 'Add / Update questions' ,
+                'url' => $add2_url??null ,
+            ];
+            $breads[] = [
+                'name' => 'Questions Order' ,
+                'url' => $add3_url??null ,
+            ];  
+            $breads[] = [
+                'name' => 'Invite Participants' ,
+            ];           
+
+        } else if ($routeName=="survey.survey_change_1") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Edit Infomation' ,
+            ];           
+
+        }
+
+
+        return $breads;
+    }
     
 }

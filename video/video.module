@@ -10,7 +10,7 @@ use Drupal\file\Entity\File;
 
 function video_page_attachments_alter(&$page) {
         
-    $path = $current_path = \Drupal::service('path.current')->getPath();
+    $path = \Drupal::service('path.current')->getPath();
     $routeName = \Drupal::routeMatch()->getRouteName();
 
     if ( str_contains($path, '/video')  ) {

@@ -80,6 +80,15 @@ class VoteDatatable {
 
     }
 
+    public static function checkOwner($vote_id = "", $user_id = "") {
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if ($isSiteAdmin) return true;
+        $sql = "SELECT 1 FROM kicp_vote where vote_id = '$vote_id' AND user_id = '$user_id '";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result;
+    }
+
 
     public static function getVote($vote_id = "", $user_id="") {
 
@@ -99,10 +108,20 @@ class VoteDatatable {
             }
         }
 
-        $sql = "SELECT a.file_name,a.vote_id, a.title, a.description, a.vote_name, a.user_id, a.modify_datetime, a.start_date, a.expiry_date, a.is_visible, a.allow_copy, a.is_showDep, a.is_showPost, a.is_showname,start_vote, a.is_completed FROM kicp_vote a $sql_access WHERE a.is_deleted = 0 and a.vote_id = '$vote_id' $sql_access2 ORDER BY a.vote_id DESC LIMIT 1";
+        $sql = "SELECT a.file_name,a.vote_id, a.title, a.description, a.vote_name, a.user_id, a.show_response, a.modify_datetime, a.start_date, a.expiry_date, a.is_visible, a.allow_copy, a.is_showDep, a.is_showPost, a.is_showname,start_vote, a.is_completed FROM kicp_vote a $sql_access WHERE a.is_deleted = 0 and a.vote_id = '$vote_id' $sql_access2 ORDER BY a.vote_id DESC LIMIT 1";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
         return $result;
+
+    }
+
+    public static function getVoteName($vote_id) {
+        $sql = "SELECT title FROM kicp_vote WHERE vote_id = '$vote_id' ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result) 
+            return $result->title;
+        else return null; 
 
     }
 
@@ -116,6 +135,16 @@ class VoteDatatable {
 
         return $result;
     }    
+
+    public static function hasQuestion($vote_id = "") {
+
+        $sql = "SELECT count(1) as total FROM kicp_vote_question WHERE vote_id = '$vote_id' AND deleted = 'N' ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();   
+        if ($result)
+            return $result->total;
+        else return 0;
+    }
 
     public static function getVoteQuestion($vote_id = "", $position = "") {
 

@@ -78,6 +78,14 @@ class SurveyDatatable {
 
     }
 
+    public static function checkOwner($survey_id = "", $user_id = "") {
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if ($isSiteAdmin) return true;
+        $sql = "SELECT 1 as total FROM kicp_survey where survey_id = '$survey_id' AND user_id = '$user_id '";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        return $result;
+    }
 
     public static function getSurvey($survey_id = "", $user_id = "") {
 
@@ -104,6 +112,16 @@ class SurveyDatatable {
 
     }
 
+    public static function getSurveyName($survey_id) {
+        $sql = "SELECT title FROM kicp_survey WHERE survey_id = '$survey_id' ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+        if ($result) 
+            return $result->title;
+        else return null; 
+
+    }
+
 
     public static function getSurveyQuestionAll($survey_id = "") {
 
@@ -114,6 +132,16 @@ class SurveyDatatable {
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
 
         return $result;
+    }
+
+    public static function hasQuestion($survey_id = "") {
+
+        $sql = "SELECT count(1) as total FROM kicp_survey_question WHERE survey_id = '$survey_id' AND deleted = 'N' ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();   
+        if ($result)
+            return $result->total;
+        else return 0;
     }
 
 
@@ -165,8 +193,7 @@ class SurveyDatatable {
 
 
     public static function getSurveyChoice($question_id = "") {
-        $sql = "SELECT id,choice FROM kicp_survey_question_choice WHERE question_id='" . $question_id . "'";
-        $sql .= " order by id";
+        $sql = "SELECT id,choice FROM kicp_survey_question_choice WHERE question_id='$question_id' order by id";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
         return $result;    
@@ -280,6 +307,14 @@ class SurveyDatatable {
 
         return $return_value;
 
+    }
+
+    public static function getSurveyQuestionRateById($question_id = "") {
+
+        $sql = "SELECT legend,scale FROM kicp_survey_question_rate WHERE question_id= '$question_id' order by position";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);   
+        return $result;
     }
 
     public static function resetSurveyRate($question_id = "") {

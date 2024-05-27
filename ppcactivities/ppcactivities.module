@@ -6,6 +6,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
+use Drupal\ppcactivities\Common\PPCActivitiesDatatable;
 
 
 function ppcactivities_page_attachments_alter(&$page) {
@@ -126,6 +127,32 @@ function ppcactivities_theme($existing, $type, $theme, $path) {
     ];
 
 }
+
+function ppcactivities_preprocess_page_title(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "ppcactivities.activities_detail") {
+        $evt_id = $route_match->getParameter('evt_id');
+        $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+        if ( $evt ) {
+            $evt_name = $evt->evt_name;
+            $variables['title'] = $evt_name;
+        }
+    }
+  }
+
+ function ppcactivities_preprocess_html(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "ppcactivities.activities_detail") {
+        $evt_id = $route_match->getParameter('evt_id');
+        $evt  = PPCActivitiesDatatable::getEventInfo($evt_id);
+        if ( $evt ) {
+            $evt_name = $evt->evt_name;
+            $variables['head_title']['title'] = $evt_name;
+        }
+    }
+  }  
 
 
 /**

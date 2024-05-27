@@ -25,6 +25,7 @@ class BookmarkChange extends FormBase  {
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();  
         $this->module = 'bookmark';
     }
@@ -54,25 +55,32 @@ class BookmarkChange extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state, $bid=NULL) {
 
         $config = \Drupal::config('bookmark.settings'); 
+
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        }
+
         $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid);
 
 
-        if ($bookmark['bid'] == null || $bookmark['user_id'] != $this->my_user_id ) {
+        if ($bookmark['bid'] == null ) {
+            $output = '<p style="text-align:center">this bookmark cannot be found.</p>';
+            $form['intro'] = array(
+            '#markup' => t($output),
+            );  
+            return $form;
+        }
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if (!$isSiteAdmin && $bookmark['user_id'] != $this->my_user_id ) {
             $output = '<p style="text-align:center">You cannot edit this bookmark.</p>';
             $form['intro'] = array(
             '#markup' => t($output),
-            );
-
-            $form['cancel'] = array(
-                '#type' => 'button',
-                '#value' => t('Cancel and Go Back'),
-                '#prefix' => '&nbsp;',
-                '#attributes' => array('onClick' => 'history.go(-1); return false;'),
-                '#limit_validation_errors' => array(),
-              );
-  
-              return $form;
-
+            );  
+            return $form;
         }
 
 

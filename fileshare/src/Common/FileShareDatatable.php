@@ -105,6 +105,27 @@ class FileShareDatatable extends ControllerBase {
   }
 
 
+    public static function getTitle($file_id = NULL) {
+ 
+      $sql = "SELECT title from kicp_file_share WHERE file_id = '$file_id'";
+      $database = \Drupal::database();
+      $result = $database-> query($sql)->fetchObject();
+      if ($result)
+        return $result->title;
+      else return null;
+
+      
+    }
+
+    public static function checkOwner($file_id = NULL, $user_id = NULL) {
+      $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+      if ($isSiteAdmin) return true;
+      $sql = "SELECT 1 from kicp_file_share WHERE file_id = '$file_id' and user_id = '$user_id' ";
+      $database = \Drupal::database();
+      $result = $database-> query($sql)->fetchObject();
+      return $result;
+    }
+
      public static function getSharedFile($file_id = NULL, $my_user_id="") {
 
       $tags="";

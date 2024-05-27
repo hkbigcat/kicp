@@ -28,6 +28,17 @@ activities.content.cop:
   options:
     no_cache: TRUE
 
+activities.content.item:
+  path: '/activities/{type_id}/{cop_id}/{item_id}'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::content'
+    _title: 'KM Activities'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+
 activities.activities_detail:
   path: '/activities_detail/{evt_id}'
   defaults:

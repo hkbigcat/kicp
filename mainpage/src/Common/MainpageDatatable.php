@@ -9,6 +9,7 @@ use Drupal\Core\Pager\PagerManagerInterface;
 use Drupal\Core\Database\Query\PagerSelectExtender;
 use Drupal\common\RatingData;
 use Drupal\blog\Common\BlogDatatable;
+use Drupal\Core\Utility\Error;
 
 class MainpageDatatable {
     
@@ -430,6 +431,33 @@ class MainpageDatatable {
         
         return $output;
 
+    }
+
+
+    public static function acceptDisclaimer($user_id) {
+        $return_value = NULL;
+        \Drupal::logger('mainpage')->info('Accept Dsiclimare user id:'.$user_id); 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
+        try {
+            $return_value = $database->update('xoops_users')->fields(['user_is_disclaimer' => 1])
+            ->condition('user_id', $user_id)
+            ->execute();
+            \Drupal::logger('mainpage')->info('Accept Dsiclimare user id: %user_id', 
+            array(
+                '%user_id' => $user_id,
+            ));                 
+        }
+        catch (\Exception $e) {
+            $variables = Error::decodeException($e);
+            \Drupal::messenger()->addError(
+                t('Unable to accept disclimaer. Please try again. ' )
+                );
+            \Drupal::logger('mainpage')->error('accept disclimaer is not success: ' . $variables);   
+            $transaction->rollBack();
+        }
+        unset($transaction);
+        return $return_value;
     }
 
     

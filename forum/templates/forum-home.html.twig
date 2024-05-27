@@ -1,20 +1,20 @@
 <div class="forum_mainpage_title">Latest Forum Topics</div>
 <div class="announcement_div">To review the previous forum topics and posts, please kindly access the archive <a href="{{ path('fileshare.fileshare_content', {'folder_id': '19' }) }}" target="_blank">here</a></div>
-<div id="DivContentTable" style="display:table;">
-  <div class="common_table_header">
-    <div style="width:24%;text-align:left; margin-left:15px;">Latest Updated Topics</div>
-    <div style="width:20%;text-align:left;">KICP Forum</div>
-    <div style="width:19%;text-align:left;">Creator</div>
-    <div style="width:8%;text-align:left;">Replies</div>
-    <div style="width:16%;text-align:left;">Date</div>
+<div id="DivContentTable">
+  <div class="common_table_header2 columns">
+    <div class="w30">Latest Updated Topics</div>
+    <div class="w20">KICP Forum</div>
+    <div class="w20">Creator</div>
+    <div class="w10">Replies</div>
+    <div class="w20">Date</div>
   </div>
 {% for item in latest %}
-  <div class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
-    <div style="width:25%;float:left;display:block;"><a href="{{ path('forum.forum_view_topic', {'topic_id': item['topic_id'] }) }}">{{ item['title'] }}</a></div>
-    <div style="width:20%;float:left;display:block;"><a href="{{ path('forum.forum_view_forum', {'forum_id': item['forum_id'] }) }}">{{ item['forum_name'] }}</a></div>
-    <div style="width:20%;float:left;display:block;">{{ item['user_name'] }}</div>
-    <div style="width:8%;float:left;display:block;">{{ item['total_reply'] }}</div>
-    <div style="width:14%;float:left;display:block;">{{ item['create_datetime'] }}</div>
+  <div class="DivContentTable_item2 {{ loop.index0 is odd ? 'even' : 'odd' }} columns">
+    <div class="w30"><a href="{{ path('forum.forum_view_topic', {'topic_id': item['topic_id'] }) }}">{{ item['title'] }}</a></div>
+    <div class="w20"><a href="{{ path('forum.forum_view_forum', {'forum_id': item['forum_id'] }) }}">{{ item['forum_name'] }}</a></div>
+    <div class="w20">{{ item['user_name'] }}</div>
+    <div class="w10">{{ item['total_reply'] }}</div>
+    <div class="w20">{{ item['create_datetime'] | date('d.m.Y H:i:s') }}</div>
   </div>
     {% endfor %}   
 </div>
@@ -48,7 +48,7 @@
       </div>
       <div style="width:10%;float:left;display:block;">{{ forum['total_topic'] }}</div>
       <div style="width:10%;float:left;display:block;">{{ forum['total_post'] }}</div>
-      <div style="width:22%;float:left;display:block;">{{ forum['topic_datetime'] }}</div>
+      <div style="width:22%;float:left;display:block;">{{ forum['topic_datetime'] | date('d.m.Y H:i:s') }}</div>
     </div>
 
     {% if loop.index0 is odd %}    

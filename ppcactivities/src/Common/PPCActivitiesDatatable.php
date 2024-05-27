@@ -170,6 +170,14 @@ class PPCActivitiesDatatable {
         return $result;
     }
 
+    public static function getEventInfo($evt_id) {
+
+        $sql = "SELECT evt_name, evt_type_id, cop_id FROM kicp_ppc_event wHERE evt_id = '$evt_id'";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        return $result;        
+    }
 
     public static function getEventDetail($evt_id) {
 

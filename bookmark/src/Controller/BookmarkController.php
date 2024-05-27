@@ -21,18 +21,25 @@ use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Drupal\Core\Utility\Error;
 
 class BookmarkController extends ControllerBase {
 
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();        
 
         $this->module = 'bookmark';
     }
 
     public function BookmarkContent() {
+
+      $url = Url::fromUri('base:/no_access');
+      if (! $this->is_authen) {
+          return new RedirectResponse($url->toString());
+      }
 
         $tags = array();
         $tmp = null;
@@ -64,18 +71,7 @@ class BookmarkController extends ControllerBase {
 
     public function BookmarkDelete($bid=NULL) {
 
-
-      $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid); 
-      if ($bookmark['bid'] == null) {
-
-        \Drupal::messenger()->addError(
-          t('Unable to delete this bookmark'.$bookmark['bid']  )
-          );
-
-        $response = array('result' => 0);
-        return new JsonResponse($response);
-
-      }
+      $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
       // delete record
       $database = \Drupal::database();
@@ -87,22 +83,28 @@ class BookmarkController extends ControllerBase {
           'bModified' => date('Y-m-d H:i:s'),
         ])
         ->condition('bid', $bid)
-        ->execute();
+        ->condition('is_deleted', 0);
+        if (!$isSiteAdmin) {
+          $query->condition('user_id', $this->my_user_id);
+        }    
+        $row_affected = $query->execute();        
 
-        // delete tags  
-        $return2 = TagStorage::markDelete($this->module, $bid);
+        if ($row_affected) {
+          // delete tags  
+          $return2 = TagStorage::markDelete($this->module, $bid);
 
-        // delete rating
-        $rating = RatingStorage::markDelete($this->module, $bid);
+          // delete rating
+          $rating = RatingStorage::markDelete($this->module, $bid);
 
-        \Drupal::logger('bookmark')->info('Deleted id: %id, title: %title.',   
-        array(
-            '%id' => $bid,
-            '%title' => $bookmark['bTitle'],
-        ));       
+          \Drupal::logger('bookmark')->info('Deleted id: %id, row_affected: %row_affected', 
+          array(
+              '%id' => $bid,
+              '%row_affected' => $row_affected,
+          ));       
 
-        $messenger = \Drupal::messenger(); 
-        $messenger->addMessage( t('Bookmark has been deleted'));
+          $messenger = \Drupal::messenger(); 
+          $messenger->addMessage( t('Bookmark has been deleted'));
+        }
 
       }
       catch (\Exception $e) {
@@ -117,7 +119,39 @@ class BookmarkController extends ControllerBase {
        $response = array('result' => 1);
        return new JsonResponse($response);
   
-  }    
+  }   
+  
+  
+  public static function Breadcrumb() {
+
+    $base_url = Url::fromRoute('bookmark.bookmark_content');
+    $breads = array();
+    $routeName = \Drupal::routeMatch()->getRouteName();
+    if ($routeName=="bookmark.bookmark_content") {
+      $breads[] = [
+          'name' => 'Bookmarks',
+      ];
+    } else if ($routeName=="bookmark.add_data") {
+      $breads[] = [
+          'name' => 'Bookmarks',
+          'url' => $base_url,
+      ];
+      $breads [] = [
+        'name' => 'Add',
+      ];
+    } else if ($routeName=="bookmark.change_data") {
+      $breads[] = [
+          'name' => 'Bookmarks',
+          'url' => $base_url,
+      ];
+      $breads [] = [
+        'name' => 'Edit',
+      ];
+    }
+
+    return $breads;
+
+  }
 
 
 }

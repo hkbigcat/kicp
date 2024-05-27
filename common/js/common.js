@@ -92,7 +92,8 @@ function module_item_delete(module, item_id) {
   console.log('module: '+module);
   console.log('page_url: '+page_url);
   let position = page_url.search('blog_delete');
-  
+  let delete_redirect_page = (document.getElementById('delete_redirect_page') && document.getElementById('delete_redirect_page').value!="")?document.getElementById('delete_redirect_page').value:"";
+  console.log('delete_redirect_page: '+delete_redirect_page);
 
   jQuery("#delete-confirm").dialog({
     title: 'Delete '+ msgtitle,
@@ -101,21 +102,24 @@ function module_item_delete(module, item_id) {
     modal: true,
     buttons: {
       "OK": function () {
-
         if (module=="blog") {
-          jQuery.post(page_url, {function(result){
+          //jQuery.post(page_url, {function(){
+            jQuery.post(page_url, function(data, status){
               jQuery('#delete-confirm').dialog('close');
-              console.log("close dialog: "+result);
-              let redirect_page = page_url.substring(0, position) + 'blog';
-              window.location.href=redirect_page;      
-            }});
+              if (delete_redirect_page!="") {
+                console.log("close dialog 1 Status : "+status );
+                window.location.href=delete_redirect_page;      
+              } else {
+                console.log("close dialog 2 Status : "+status );
+                window.location.reload();        
+              }
+            });
           } else {
-        jQuery.post({url:page_url, success: function(result){
-            jQuery('#delete-confirm').dialog('close');
-            console.log("close dialog: "+result);
-            window.location.reload();      
-          }});
-
+          jQuery.post({url:page_url, success: function(result){
+              jQuery('#delete-confirm').dialog('close');
+              console.log("close dialog 3: "+result);
+              window.location.reload();      
+            }});
           } 
       },
 
@@ -442,8 +446,8 @@ function mailto(sub, body) {
 
 jQuery(document).ready(function(){
     jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
-    if (location.pathname == app_path || location.pathname == app_path + "tag")
-      jQuery('#block-thex-kicp-main-menu li.menu-item.menu-item-level-1:first-child').addClass( "active" );  
+    jQuery('.menu:last-child').addClass( 'columns' );  
+    jQuery("[data-drupal-link-system-path='disclaimer']").attr('target', '_blank');
 
 });
 

@@ -97,6 +97,14 @@ padding:14px;
 margin:0px !important;
 }
 
+
+.DivContentTable_item2 {
+    border:1px solid #ECECEC;
+    width:100%;
+    padding:15px;
+    margin:0px !important;
+}
+
 .odd {
 background-color: #F9F9F9 !important;
 }
@@ -115,6 +123,12 @@ background-color: #7A7A7A;
 display: inline-block;
 width:100%;
 padding: 5px 0px 5px 0px;
+}
+
+.common_table_header2 {
+    background-color: #7A7A7A;
+    width:100%;
+    padding: 5px 15px;
 }
 
 .common_table_header div {
@@ -148,6 +162,12 @@ width:100%;
 display:inline-block;
 /*float:left;*/
 }
+
+.access_control_inside {
+    padding: 3px;
+    border: 1px solid #FFFFFF;
+}
+
 
 /* Color of Placeholder [Start] */
 ::-webkit-input-placeholder { /* Chrome/Opera/Safari */

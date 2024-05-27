@@ -27,6 +27,7 @@ class SurveyAddPage4 extends FormBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();             
     }
 
@@ -41,6 +42,13 @@ class SurveyAddPage4 extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+    }
 
         $output = "";
         $survey_id = (isset($_SESSION['survey_id']) && $_SESSION['survey_id'] != "") ? $_SESSION['survey_id'] : "";
@@ -114,7 +122,7 @@ class SurveyAddPage4 extends FormBase {
           $return = $query->execute();    
           \Drupal::logger('survey')->info('final updated ID: '.$survey_id);
           $messenger = \Drupal::messenger(); 
-          $messenger->addMessage( t('Survey is created.'));          
+          $messenger->addMessage( t('Survey is created / updated.'));          
         } 
         catch (Exception $e) {
           $variables = Error::decodeException($e);

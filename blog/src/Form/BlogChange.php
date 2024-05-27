@@ -22,6 +22,7 @@ use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Utility\Error;
 
 class BlogChange extends FormBase  {
@@ -30,6 +31,7 @@ class BlogChange extends FormBase  {
         $this->module = 'blog';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();        
 
         $UserInfo = $authen->getKICPUserInfo($this->my_user_id);
@@ -77,14 +79,33 @@ class BlogChange extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state, $entry_id=NULL) {
 
         $config = \Drupal::config('blog.settings'); 
+
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+        } 
+
+
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
         
-        if ($entry['entry_title'] == null) {
+        if (!$entry) {
             $form['intro'] = array(
-              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> Blog enrty not found'),
+              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This blog cannot be found'),
             );
             return $form; 
            }
+
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        $isdeletegate = BlogDatatable::isBlogDelegatedUser($entry['blog_id'],  $this->my_user_id);          
+        if (!$isSiteAdmin && $entry['user_id'] != $this->my_user_id  )  {
+            $form['intro'] = array(
+              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You cannot edit this blog.'),
+               );
+              return $form; 
+           }
+
 
         $BlogFileUri = 'private://blog/file';
              
@@ -188,6 +209,18 @@ class BlogChange extends FormBase  {
             '#attributes' => array('style'=>'1px solid #888888;margin-top:30px;'),
         );
 
+        $form['allow_comment'] = [
+            '#title' => t('All comment?'),
+            '#type' => 'checkbox',
+            '#default_value' => '1',
+        ];        
+
+        $form['allow_comment_prev'] = [
+            '#type' => 'hidden',
+            '#value' => $entry['is_pub_comment'],
+        ];        
+        
+
         $form['published'] = [
             '#title' => t('Published'),
             '#type' => 'checkbox',
@@ -199,10 +232,11 @@ class BlogChange extends FormBase  {
             '#value' => $entry['is_visible'],
         ];        
 
-
+      
         $form['actions']['submit'] = [
             '#type' => 'submit',
             '#value' => t('Save'),
+            '#attributes' => array('style' => 'margin-bottom:20px'),            
         ];
 
         $form['actions']['cancel'] = [
@@ -340,9 +374,13 @@ class BlogChange extends FormBase  {
             if ($bContent['value'] != $bContent_prev) {
                 $entry['entry_content'] = $content;
             }
+            if ($allow_comment != $allow_comment_prev) {
+                $entry['is_pub_comment'] = $allow_comment;
+            }            
             if ($published != $published_prev) {
                 $entry['is_visible'] = $published;
-            }            
+            }     
+                   
             $entry['has_attachment'] = $hasAttach;
         }
 

@@ -23,6 +23,7 @@ class VoteView extends FormBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();         
         $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
         $this->max_preview_page = CommonUtil::getSysValue('vote_max_preview_page');
@@ -38,11 +39,16 @@ class VoteView extends FormBase {
     /**
      * {@inheritdoc}
      */
-    public function buildForm(array $form, FormStateInterface $form_state) {
+    public function buildForm(array $form, FormStateInterface $form_state, $vote_id="") {
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
 
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
-
-        $vote_id = (isset($_REQUEST['vote_id']) && $_REQUEST['vote_id'] != "") ? $_REQUEST['vote_id'] : "";
         $vote = VoteDatatable::getVote($vote_id);
         
         $isShowSubmit = true;
@@ -373,6 +379,11 @@ class VoteView extends FormBase {
             $$key = $value;
         }
 
+        $start_entry = array(
+          'start_vote' => 1,
+          'modify_datetime' => date('Y-m-d H:i:s'),
+          'modified_by' => $this->my_user_id,
+       );        
     
         $RespondentEntry = array(
           'submitted' => 'Y',
@@ -383,6 +394,12 @@ class VoteView extends FormBase {
         $database = \Drupal::database();
         $transaction = $database->startTransaction();  
         try {
+
+          $query = $database->update('kicp_vote')
+          ->fields($start_entry)
+          ->condition('vote_id', $vote_id)
+          ->condition('start_vote', 0)
+          ->execute();
 
           $query =  $database->insert('kicp_vote_respondent')
           ->fields($RespondentEntry);
@@ -460,7 +477,7 @@ class VoteView extends FormBase {
                 // $return1 = TagStorage::insert($entry1);
             }
             //end looping
-            $k++;
+            //$k++;
 
             \Drupal::logger('vote')->info('sumiited vote id: %vote_id. Respondent id: %respondent_id.',   
             array(

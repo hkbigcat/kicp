@@ -74,7 +74,7 @@ video.delete_video_data:
     _controller: '\Drupal\video\Controller\VideoController::VideoDelete'
     _title: 'Delete Video'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE        
 
@@ -84,7 +84,7 @@ video.video_event_privilege:
     _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilege'
     _title: 'Event Privilege'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE
 
@@ -94,7 +94,7 @@ video.video_event_privilege_add_action:
     _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilegeAddAction'
     _title: 'Event Privilege'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE
 
@@ -144,7 +144,7 @@ video.change_video_data:
     _form: '\Drupal\video\Form\VideoChange'
     _title: 'Edit Video'
   requirements:
-    _permission: 'access content'
+   _permission: 'access administration pages' 
   options:
     no_cache: TRUE
 

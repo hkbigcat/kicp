@@ -278,4 +278,11 @@ class CommonUtil {
         
     }
 
+
+    public static function no_access_msg() {
+        $output =  '<p>You do not have privilege to access this page</p>
+        <p>Please contact <a href="mailto:kicpadm@ogcio.gov.hk">KICP Administrator</a> for support.</p>';
+        return $output;
+    }
+
 }

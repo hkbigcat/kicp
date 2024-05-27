@@ -1,6 +1,6 @@
 {% include '@activities/leftmenu.html.twig' %}
 <div id="right_content">
-    <div style="float:right;margin-top:-50px;text-align:right;">
+    <div class="text-right">
         <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
         <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
         {% if user.hasPermission('activities_admin') %}

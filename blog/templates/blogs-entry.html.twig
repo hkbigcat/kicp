@@ -5,6 +5,7 @@
 
 <input type="hidden" name="tag_page" id="tag_page" value="{{ path('blog.blog_tag') }}">
 <input type="hidden" name="notag_page" id="notag_page" value="{{ path('blog.blog_content') }}">
+<input type="hidden" name="delete_redirect_page" id="delete_redirect_page" value="{{ path('blog.blog_view', {'blog_id': items['blog_id'] }) }}">
 
 <div id="MainEntryContainer">
    <div style="float:right;">
@@ -16,7 +17,7 @@
     
     <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
         <div style="float:right">
-            {% if (items['delegate']) %}        
+            {% if ( user.hasPermission('access administration pages') or my_user_id == items['user_id'] or  items['delegate']) %}        
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': items['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ items['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
             {% endif %}              
@@ -29,12 +30,14 @@
             <a href="{{ path('common.download', {'module_name': 'blog', 'file_id': items ['entry_id'], 'fname': attachment | url_encode }) }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
         {% endfor %}
         {% include '@common/common-tags-list.html.twig' %}    
-        <div class="entry_time"><span class="blog_subtitle">Publish Date:</span>
+
+        <div class="entry_time">
         {% if item['is_visible'] %}
-        {{item ['entry_modify_datetime'] }}
+        <span class="blog_subtitle">Publish Date:</span>
         {% else %}
-        Not Yet Published
+        <span class="blog_subtitle">[Pending] Last Save:</span>
         {% endif %}
+        {{items ['entry_modify_datetime'] | date('d.m.Y H:i:s')  }}
         </div>
          <div class="text-right">
           {% include '@common/common-like.html.twig'  with {module: 'blog', 'record_id':  items['entry_id'], countLike: items['countlike'], 'liked': items['liked']  }  %}
@@ -44,8 +47,8 @@
 
 <Script>getiframe();</script>
 
-  <hr style="margin: 20px 0;"><a name="comment_area"></a>
-
+{% if (items['is_pub_comment'])  %}
+<hr style="margin: 20px 0;"><a name="comment_area"></a>
 <div id="blogCommentContainer">
     {% include '@blog/blogs-comments.html.twig'  with {comments: items['comments'] }  %}
 </div>
@@ -61,5 +64,6 @@
         <input type="Reset" name="cancelBtn" id="cancelBtn" value="Cancel">  
       </div>
   </form>
+{% endif %}  
 </div>
 {% include '@common/common-confirm-delete.html.twig'  with {module: 'Blog'}  %}

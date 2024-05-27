@@ -20,10 +20,18 @@ class ProfileController extends ControllerBase {
 
     public function __construct() {
         $this->module = 'profile';
-        $this->domain_name = CommonUtil::getSysValue('domain_name');
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
     }
 
     public function ProfileCop() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
 
         $joinedCopInfo = ProfileDatatable::getUserJoinedCopInfo();
         
@@ -96,6 +104,11 @@ class ProfileController extends ControllerBase {
 
     public function ProfileGroupContent() {
 
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
         $groups = ProfileDatatable::getGroups();
         $type = \Drupal::request()->query->get('type');
         $groups["type"] = $type;
@@ -156,6 +169,11 @@ class ProfileController extends ControllerBase {
     }
 
     public function ProfileGroupMemberContent($type="",$group_id="") {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         if($type == "P") {
             $field_text = "Personal Public Group Name";
@@ -294,6 +312,70 @@ class ProfileController extends ControllerBase {
 
     }
 
+    public static function Breadcrumb() {
 
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+        $base_url = Url::fromRoute('profile.profile_cop');
+        $base_path = [
+            'name' => 'Profile', 
+            'url' => $base_url,
+        ];
+        $type = $route_match->getParameter('type');
+        if (!$type) {
+            $type = \Drupal::request()->query->get('type');
+        }
+        if (!$type || $type == 'B' ) {
+            $group_type = "Persaonl ";
+            $group_url = Url::fromRoute('profile.profile_group', ['type' => 'B']);
+        } else {
+            $group_type = "Persaonl Public ";
+            $group_url = Url::fromRoute('profile.profile_group', ['type' => 'P']);
+        }        
+        if ($routeName=="profile.profile_cop") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => 'Profile - CoP Subscription', 
+            ];
+        } else if ($routeName=="profile.profile_group") {
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $group_type.'Group Maintenance', 
+            ];
+        } else if ($routeName=="profile.profile_group_add") {
+           
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $group_type.'Group Maintenance', 
+                'url' => $group_url,
+            ];
+            $breads[] = [
+                'name' => 'Add', 
+            ];            
+        } else if ($routeName=="profile.profile_group_member") {
+           
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $group_type.'Group Maintenance', 
+                'url' => $group_url,
+            ];
+            $breads[] = [
+                'name' => 'Member List', 
+            ];            
+        } else if ($routeName=="profile.profile_group_change") {
+           
+            $breads[] = $base_path;
+            $breads[] = [
+                'name' => $group_type.'Group Maintenance', 
+                'url' => $group_url,
+            ];
+            $breads[] = [
+                'name' => 'Edit', 
+            ];            
+        } 
+
+        return $breads;
+    }
 
 }

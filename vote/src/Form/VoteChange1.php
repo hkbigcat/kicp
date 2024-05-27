@@ -27,6 +27,7 @@ class VoteChange1 extends FormBase {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();    
         $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');     
     }
@@ -42,8 +43,16 @@ class VoteChange1 extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $vote_id="") {
-        // display the form
 
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
+
+        // display the form
         $form['#attributes'] = array('enctype' => 'multipart/form-data');
 
         $vote = VoteDatatable::getVote($vote_id,  $this->my_user_id);
@@ -54,6 +63,13 @@ class VoteChange1 extends FormBase {
           );
           return $form; 
          }
+         $owner = VoteDatatable::checkOwner($vote_id,  $this->my_user_id);
+         if (!$owner) {
+          $form['intro'] = array(
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You cannot edit this survey'),
+          );
+          return $form; 
+         }         
 
         // File path
         $this_vote_id = str_pad($vote_id, 6, "0", STR_PAD_LEFT);
@@ -159,14 +175,14 @@ class VoteChange1 extends FormBase {
     
         }
         $form['ReadyVote'] = array(
-          '#title' => t('Ready for voting'),
+          '#title' => t('Ready for voting?'),
           '#description' => t('If disabled, the vote can be accessed but cannot be submitted.'),
           '#type' => 'checkbox',
           '#default_value' => $vote->is_visible,
         );
         
           $form['Allowcopy'] = array(
-          '#title' => t('Allow copy:'),
+          '#title' => t('Allow copy?'),
           '#type' => 'checkbox',
           '#default_value' => $vote->allow_copy,
           );
@@ -256,18 +272,32 @@ class VoteChange1 extends FormBase {
             '#attributes' => array('id' => 'hiddenCount'),
           );
 
+          $hasQuestion = VoteDatatable::hasQuestion($vote_id);
+          $question_goto = $hasQuestion>0?' and Goto Questions':'';
+          $question_total = $hasQuestion>0?' ('.$hasQuestion.')':'';          
 
           $form['actions']['submit'] = array(
             '#type' => 'submit',
-            '#value' => t('Save'),
+            '#value' => t('Save'.$question_goto),
           );
+
+          if ($hasQuestion) {
+            $form['btQuestion'] = array(
+              '#type' => 'submit',
+              '#name' => 'btQuestion',
+              '#value' => t('Goto Questions without Save'.$question_total),
+              '#attributes' => array('id' => 'btQuestion'),
+              '#prefix' => '<div class="w30px"></div>',
+              '#limit_validation_errors' => [],
+            );
+          }          
 
           $form['actions']['cancel'] = array(
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
             '#attributes' => array('onClick' => 'history.go(-1); return false;'),
-            '#limit_validation_errors' => array(),
+            '#limit_validation_errors' => [],
           );
         
         return $form;
@@ -355,6 +385,16 @@ class VoteChange1 extends FormBase {
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
+
+        $button_clicked = $form_state->getTriggeringElement()['#name'];
+        if ($button_clicked=="btQuestion" && $hiddenCount && $hiddenCount > 0) {
+          $questionNo = 1;
+          $request = \Drupal::request();
+          $session = $request->getSession();
+          $session->set('questionNo', $questionNo);
+          $url = Url::fromUserInput('/vote_add_page2/');
+          $form_state->setRedirectUrl($url);
+        }        
 
         if ($deleteFile == 1) {
           $attach_deleted = VoteDatatable::DeleteVoteEntryAttachment($vote_id);

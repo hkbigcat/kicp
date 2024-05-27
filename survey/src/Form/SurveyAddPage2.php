@@ -28,6 +28,7 @@ class SurveyAddPage2 extends FormBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();     
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
     }
@@ -45,6 +46,13 @@ class SurveyAddPage2 extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+      }
+
         // display the form
 
         $request = \Drupal::request();
@@ -60,6 +68,7 @@ class SurveyAddPage2 extends FormBase {
 
         $surveyInfoCount = SurveyDatatable::getSurveyQuestionCount( $get_survey_id);
 
+        $surveyChoice = array();
         $surveyInfoRate = array();
         if ($questionInfo) {
           $surveyChoice = SurveyDatatable::getSurveyChoice($questionInfo->id);
@@ -74,7 +83,7 @@ class SurveyAddPage2 extends FormBase {
         $k = 1;
         $choiceCounter = 0;
 
-        if ($questionInfo) {
+        if ($surveyChoice) {
           foreach ($surveyChoice as $result) {
               $choicearry[$k]['choice'] = $result['choice'];
               $k++;
@@ -121,15 +130,17 @@ class SurveyAddPage2 extends FormBase {
             
   
         }
+        /*
         if ( !isset($surveyChoice) || $surveyChoice==null || $choiceCounter == 0) {
             $resultChoicearry = array(
               '#choice' => '',
             );
         } else {
             $resultChoicearry = array(
-              '#choice' => $surveyChoice->id,
+              '#choice' => $surveyChoice['id'],
             );
         }
+        */
         $form['name'] = array(
           '#title' => t('Section:</p>  Here, you could input some descriptive text or instructions for a group of questions.[For example, Q2-Q8 are of similar nature]'),
           '#type' => 'text_format',
@@ -432,6 +443,7 @@ class SurveyAddPage2 extends FormBase {
           '#attributes' => array('id' => 'NewQuestion'),
           '#prefix' => '<div class="w30px"></div>',
           '#suffix' => '</div>',
+          '#limit_validation_errors' => [],
         );
 
         $form['btSaveOnly'] = array(
@@ -460,10 +472,6 @@ class SurveyAddPage2 extends FormBase {
      * {@inheritdoc}
      */
     public function validateForm(array &$form, FormStateInterface $form_state) {
-
-
-      $button_clicked = $form_state->getTriggeringElement()['#name'];
-      if (substr($button_clicked,0,10)!="btQuestion") {
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
@@ -499,8 +507,6 @@ class SurveyAddPage2 extends FormBase {
             $hasError = true;
         }
 
-      }
-
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -516,10 +522,9 @@ class SurveyAddPage2 extends FormBase {
         $button_clicked = $form_state->getTriggeringElement()['#name'];
 
         if (substr($button_clicked,0,10)=="btQuestion") {
-          $hiddenJump   = $$button_clicked;
           $request = \Drupal::request();
           $session = $request->getSession();
-          $session->set('questionNo', $hiddenJump);
+          $session->set('questionNo', 1);
           $url = new Url('survey.survey_add_page2');
           $form_state->setRedirectUrl($url);
           return;

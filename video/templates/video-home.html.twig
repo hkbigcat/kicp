@@ -1,10 +1,10 @@
-<div style="float:right;margin-top:-40px; width:500px;text-align:right;">
-        <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
-        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
-         {% if user.hasPermission('access administration pages') %}
-        <button class="kicp_button" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
-         {% endif %}
-</div>        
+<div class="text-right">
+    <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+    <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
+    {% if user.hasPermission('access administration pages') %}
+    <button class="kicp_button" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
+    {% endif %}
+</div>  
 <div id="main_content" >
     <div id="right_content">
     <script type="text/javascript">
@@ -87,7 +87,7 @@
         <script type="text/javascript">jssor_1_slider_init();</script>
     </div>
 
-    <div class="homepage_div2" style="min-height:525px;">
+    <div class="homepage_div2">
     <div class="title">Past Events</div>
     <div id="LeftVideolist" class="left_video_list" style="height:490px;">
 {% for item_right in items_right %}

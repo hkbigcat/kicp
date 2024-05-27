@@ -1,3 +1,6 @@
+{% if '/blog_entry' in url('<current>') | render | render  or '/blog_view' in url('<current>') | render | render %}
+{% include '@blog/blogs-accesscontrol-modal.html.twig' %}
+{% endif  %}
 <div class="homepage_div leftpanel">
     <div class="title"><a href="{{ path('blog.blog_content') }}">Blog Home</a></div> 
     <div class="title">My Blog</div> 
@@ -7,8 +10,10 @@
         <li><a href="{{ path('blog.add_data') }}">Write New Entry</a></li>
         <li><a href="{{ path('blog.my_photo') }}">My Photo</a></li>
         <li><a href="{{ path('blog.blog_delegate') }}">My Delegated Users</a></li>
-        {% if '/blog_entry' not in url('<current>') | render | render  and '/blog_view' not in url('<current>') | render | render %}
+         {% if '/blog_entry' not in url('<current>') | render | render  and '/blog_view' not in url('<current>') | render | render %}
         <li><a href="#add-record" onclick="getAddGroupMemberUI('blog',{{ items['my_blog_id'] }});">My Blog Access Control</a></li>
+        {% else  %}
+        <li><a href="javascript:;" onclick="blog_modal(); getAddGroupMemberUI('blog',{{ items['my_blog_id'] }});">My Blog Access Control</a></li>
         {% endif  %}
     </ul>
     <div class="title">Other Blogs</div>
@@ -16,7 +21,9 @@
         <!--li><a href="javascript:;" onClick="self.location.href='blog_favorite'">My Favorite Blogs</a></li-->
         <li><a href="{{ path('blog.blog_all_list') }}">View All Blogs</a></li>
     </ul>
-{% include '@common/common-accesscontrol-modal.html.twig' %}
+     {% if '/blog_entry' not in url('<current>') | render | render  and '/blog_view' not in url('<current>') | render | render %}
+    {% include '@common/common-accesscontrol-modal.html.twig' %}
+    {% endif  %}
     {% if archive | length %}
     <div class="title">Blog Archive</div>
 

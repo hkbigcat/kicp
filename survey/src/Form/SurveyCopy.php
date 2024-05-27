@@ -29,6 +29,7 @@ class SurveyCopy extends FormBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();            
     }
 
@@ -43,6 +44,13 @@ class SurveyCopy extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state, $survey_id="") {
+
+      if (! $this->is_authen) {
+        $form['no_access'] = [
+            '#markup' => CommonUtil::no_access_msg(),
+        ];     
+        return $form;        
+    }
         $request = \Drupal::request();
         $session = $request->getSession();
         $session->set('questionNo', "");
@@ -58,6 +66,14 @@ class SurveyCopy extends FormBase {
           );
           return $form; 
          }
+
+         if (!$survey->allow_copy) {
+          $form['intro'] = array(
+            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This is Survey cannot be copied.'),
+          );
+          return $form; 
+         }         
+
 
         // File path
         $this_survey_id = str_pad($survey_id, 6, "0", STR_PAD_LEFT);
@@ -219,11 +235,9 @@ class SurveyCopy extends FormBase {
           '#default_value' => implode(";", $tags),          
         );
 
-
         $form['actions']['submit'] = array(
           '#type' => 'submit',
           '#value' => t('Save'),
-          '#attributes' => array('style' => 'margin-bottom:10px;'),
         );
 
         $form['actions']['cancel'] = array(
@@ -233,6 +247,10 @@ class SurveyCopy extends FormBase {
           //'#attributes' => array('onClick' => 'window.open(\'bookmark\', \'_self\'); return false;'),
           '#attributes' => array('onClick' => 'history.go(-1); return false;'),
           '#limit_validation_errors' => array(),
+        );
+
+        $form['space'] = array(
+          '#markup' => t('<div class="spacer"></div>'),
         );
 
         $form['original_survey_id'] = array(

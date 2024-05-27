@@ -29,6 +29,7 @@ class BlogController extends ControllerBase {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
 
         $this->my_user_id = $authen->getUserId();
         $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
@@ -39,6 +40,11 @@ class BlogController extends ControllerBase {
     }
     
     public function content() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
 
         $ThematicBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'T', $this->BlogHomepageDisplayNo);
         $PersonalBlogAry = BlogDatatable::getHomepageBlogList($this->my_user_id, 'P', $this->BlogHomepageDisplayNo);
@@ -60,6 +66,12 @@ class BlogController extends ControllerBase {
     
 
     public function viewEntry($entry_id) {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
 
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
 
@@ -90,6 +102,12 @@ class BlogController extends ControllerBase {
     }
 
     public function viewBlog($blog_id) {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
 
         if ($blog_id==0) {
             return [
@@ -129,6 +147,12 @@ class BlogController extends ControllerBase {
 
     public function ViewBlogByTag() {
 
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
+
         $tags = array();
         $tagsUrl = \Drupal::request()->query->get('tags');
     
@@ -154,100 +178,111 @@ class BlogController extends ControllerBase {
     }
 
 
-    public function BlogDelete($entry_id) {
+    public function BlogDelete($entry_id=null) {
 
-        $entry = BlogDatatable::getBlogEntryContent($entry_id);
+        //$entry = BlogDatatable::getBlogEntryContent($entry_id);
+        if ($entry_id == null) {
+            \Drupal::messenger()->addError(
+                t('you cannot delete this blog' )
+                );
+
+                $response = array('result' => 0);
+                return new JsonResponse($response);    	                    
+        }
+
+        //Check owner, admin and delegate
+        $entry_title = BlogDatatable::checkBlogowner($entry_id, $this->my_user_id);
+
+        if (!$entry_title && !$isdeletegate) {
+            \Drupal::messenger()->addError(
+                t('you cannot delete this blog' )
+                );
+
+                $response = array('result' => 0);
+                return new JsonResponse($response);    	        
+        } 
+
         $file_system = \Drupal::service('file_system');
         $BlogUri = 'private://blog';
         $blog_path = $file_system->realpath($BlogUri);
-        
-        if ($entry==null) {
-            \Drupal::messenger()->addError(
-                t('you cannot delete this blog ' )
-                );
 
-                $response = array('result' => 0);
-                return new JsonResponse($response);    	        
-        } else if ($entry['is_deleted']==1) {
-            \Drupal::messenger()->addStatus(
-                t('this blog has already deleted ' )
-                );
-                $response = array('result' => 0);
-                return new JsonResponse($response);    	        
-        }
-        else {
-            $database = \Drupal::database();
-            $transaction = $database->startTransaction(); 
-            // delete record
-            try {
 
-                $query = $database->update('kicp_blog_entry')->fields([
-                'is_deleted'=>1 , 
-                'entry_modify_datetime' => date('Y-m-d H:i:s'),
-                ])
-                ->condition('entry_id', $entry_id);
-                $row_affected = $query->execute();        
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction(); 
+        // delete record
+        try {
 
-                if ($row_affected) {                
+            $query = $database->update('kicp_blog_entry')->fields([
+            'is_deleted'=>1 , 
+            'entry_modify_datetime' => date('Y-m-d H:i:s'),
+            ])
+            ->condition('entry_id', $entry_id)
+            ->condition('is_deleted', 0);
+            $row_affected = $query->execute();        
+ 
 
-                    $blog_uid = BlogDatatable::getBlogUID($entry_id);                          
-                    $this_entry_id = str_pad($entry_id, 6, "0", STR_PAD_LEFT);
-                    $this_blog_uid = str_pad($blog_uid, 6, "0", STR_PAD_LEFT);
-                    $blog_file_uri = $BlogUri."/file/".$this_blog_uid."/". $this_entry_id;
-                    $blog_image_uri = $BlogUri."/image/".$this_blog_uid."/". $this_entry_id;
-                    $blog_file_path = $blog_path."/file/".$this_blog_uid."/". $this_entry_id;
-                    $blog_image_path = $blog_path."/image/".$this_blog_uid."/". $this_entry_id;
 
-                    if (is_dir($blog_file_path)) {
-                        $blogFileList = scandir($blog_file_path);
-                        foreach($blogFileList as $filename) {
-                            if($filename == "." || $filename == "..") {
-                                continue;
-                            }
-                            $uri =  $blog_file_uri."/".$filename;
-                            $fid = CommonUtil::deleteFile($uri);                                  
+            if ($row_affected) {                
+
+                $blog_uid = BlogDatatable::getBlogUID($entry_id);                          
+                $this_entry_id = str_pad($entry_id, 6, "0", STR_PAD_LEFT);
+                $this_blog_uid = str_pad($blog_uid, 6, "0", STR_PAD_LEFT);
+                $blog_file_uri = $BlogUri."/file/".$this_blog_uid."/". $this_entry_id;
+                $blog_image_uri = $BlogUri."/image/".$this_blog_uid."/". $this_entry_id;
+                $blog_file_path = $blog_path."/file/".$this_blog_uid."/". $this_entry_id;
+                $blog_image_path = $blog_path."/image/".$this_blog_uid."/". $this_entry_id;
+
+                if (is_dir($blog_file_path)) {
+                    $blogFileList = scandir($blog_file_path);
+                    foreach($blogFileList as $filename) {
+                        if($filename == "." || $filename == "..") {
+                            continue;
                         }
+                        $uri =  $blog_file_uri."/".$filename;
+                        $fid = CommonUtil::deleteFile($uri);                                  
                     }
-                    if (is_dir($blog_image_path)) {
-                        $blogImageList = scandir($blog_image_path);
-                        foreach($blogImageList as $filename) {
-                            if($filename == "." || $filename == "..") {
-                                continue;
-                            }
-                            $uri =  $blog_image_uri."/".$filename;
-                            $fid = CommonUtil::deleteFile($uri);                                  
+                }
+                if (is_dir($blog_image_path)) {
+                    $blogImageList = scandir($blog_image_path);
+                    foreach($blogImageList as $filename) {
+                        if($filename == "." || $filename == "..") {
+                            continue;
                         }
+                        $uri =  $blog_image_uri."/".$filename;
+                        $fid = CommonUtil::deleteFile($uri);                                  
                     }
-
-
-                    // delete tags  
-                    $return2 = TagStorage::markDelete($this->module, $entry_id);
-                
-                    // write logs to common log table
-                    \Drupal::logger('blog')->info('Deleted id: %id, title: %title',   
-                    array(
-                        '%id' => $entry_id,
-                        '%title' =>  $entry['entry_title'],
-                    ));    
-    
-                    $messenger = \Drupal::messenger(); 
-                    $messenger->addMessage( t('Blog has been deleted') );
                 }
 
+
+                // delete tags  
+                $return2 = TagStorage::markDelete($this->module, $entry_id);
+            
+                // write logs to common log table
+                \Drupal::logger('blog')->info('Deleted id: %id, title: %title, row_affected: %row_affected',   
+                array(
+                    '%id' => $entry_id,
+                    '%title' =>  $entry_title,
+                    '%row_affected' => $row_affected,
+                ));    
+
+                $messenger = \Drupal::messenger(); 
+                $messenger->addMessage( t('Blog has been deleted') );
             }
-            catch (\Exception $e) {
-                \Drupal::messenger()->addStatus(
-                    t('Unable to delete blog at this time due to datbase error. Please try again. ' )
-                    );
-                    \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
-                    $transaction->rollBack();     
-                }
-                unset($transaction);
-                
-            $response = array('result' => 1);
-            return new JsonResponse($response);    	
 
         }
+        catch (\Exception $e) {
+            \Drupal::messenger()->addStatus(
+                t('Unable to delete blog at this time due to datbase error. Please try again. ' )
+                );
+                \Drupal::logger('survey')->error('Blog is not deleted: '.$entry_id);   
+                $transaction->rollBack();     
+            }
+            unset($transaction);
+            
+        $response = array('result' => 1);
+        return new JsonResponse($response);    	
+
+        
     }
 
     public function CommentAdd() {
@@ -323,6 +358,13 @@ class BlogController extends ControllerBase {
 
 
     public function BlogDelegateList() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
+
         $entry = BlogDatatable::getBlogDelegate($this->my_blog_id);
         $entry['my_blog_id'] = $this->my_blog_id;
         $archive = BlogDatatable::getBlogArchiveTree($this->my_blog_id);
@@ -376,6 +418,12 @@ class BlogController extends ControllerBase {
     }
 
     public function BlogDelegateAdd() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
 
         $entry = BlogDatatable::getBlogDelegate($this->my_blog_id);
         $entry['my_blog_id'] = $this->my_blog_id;
@@ -444,6 +492,87 @@ class BlogController extends ControllerBase {
 
 
     }
+
+    public static function Breadcrumb() {
+
+        $base_url = Url::fromRoute('blog.blog_content');
+        $base_path = [
+            'name' => 'Blog', 
+            'url' => $base_url,
+        ];
+        $breads = array();
+        $route_match = \Drupal::routeMatch();
+        $routeName = $route_match->getRouteName();
+                
+        if ($routeName=="blog.blog_content") {
+          $breads[] = [
+              'name' => 'Blog',
+          ];
+        } else if ($routeName=="blog.blog_view") {
+           $blog_id = $route_match->getParameter('blog_id');
+           $blog_name = BlogDatatable::getBlogName($blog_id);                   
+           $breads[] = $base_path;
+           $breads[] = [
+            'name' => $blog_name??'No Blog' ,
+          ];
+        } else if ($routeName=="blog.blog_entry") {
+           $entry_id = $route_match->getParameter('entry_id');
+           $entry = BlogDatatable::getEntryName($entry_id);
+           if ($entry) {
+            $blog_id = $entry['blog_id'];
+            $blog_name = BlogDatatable::getBlogName($blog_id);
+            $blog_url = Url::fromRoute('blog.blog_view', ['blog_id' => $blog_id]);
+           }
+           $breads[] = $base_path;
+           $breads[] = [
+              'name' => $blog_name??'No Blog' ,
+              'url' => $blog_url??null,
+          ];
+          if ($entry) {
+            $breads [] = [
+                'name' => htmlspecialchars_decode($entry['entry_title']??'No Entry'),
+            ];
+        }
+        } else if ($routeName=="blog.add_data") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'Add',
+              ];            
+        } else if ($routeName=="blog.change_data") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'Edit',
+              ];            
+        } else if ($routeName=="blog.my_photo") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'My Photo',
+              ];            
+        } else if ($routeName=="blog.blog_all_list") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'View All Blogs',
+              ];            
+        } else if ($routeName=="blog.blog_delegate") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'My Delegated Users',
+              ];            
+        } else if ($routeName=="blog.blog_delegate_list_add") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'Add My Delegated Users',
+              ];            
+        } else if ($routeName=="blog.blog_tag") {
+            $breads[] = $base_path;
+            $breads [] = [
+                'name' => 'Tags',
+              ];            
+        }
+
+        return $breads;
+    
+      }    
 
 
 }

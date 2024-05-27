@@ -20,6 +20,9 @@ class ProfileChangeGroup extends FormBase {
     public function __construct() {
         $this->module = 'profile';
         $this->access_right_alert = "You do not have privilege on profile admin page.";
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $this->is_authen = $authen->isAuthenticated;
     }
 
     /**
@@ -33,6 +36,13 @@ class ProfileChangeGroup extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state,$type="", $group_id="") {
+
+        if (! $this->is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+          }
 
         $type = $type=='P'?'P':'B';
         

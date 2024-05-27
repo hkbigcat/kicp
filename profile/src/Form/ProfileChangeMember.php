@@ -37,7 +37,13 @@ class ProfileChangeMember extends FormBase {
         $output = NULL;
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
+        $is_authen = $authen->isAuthenticated;
+        if (!$is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+          }        
           
         $userInfo = ProfileDatatable:: getMembersGroupId($type, $group_id,  $user_id);
         

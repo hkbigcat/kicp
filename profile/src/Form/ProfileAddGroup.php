@@ -36,12 +36,17 @@ class ProfileAddGroup extends FormBase {
 
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
-
+        $is_authen = $authen->isAuthenticated;
+        if (!$is_authen) {
+            $form['no_access'] = [
+                '#markup' => CommonUtil::no_access_msg(),
+            ];     
+            return $form;        
+          }
         
         if($_REQUEST['type'] == "B") {
             $field_text = "Personal Group Name";
-            $groupInfo = ProfileDatatable::getBuddyGroupByGroupId($_REQUEST['group_id']);
+            //$groupInfo = ProfileDatatable::getBuddyGroupByGroupId($_REQUEST['group_id']);
         } else  {
             $field_text = "Personal Public Group Name";
         } 
