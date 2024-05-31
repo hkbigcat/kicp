@@ -1,0 +1,151 @@
+@charset "utf-8";
+
+.mySlides {display:none;}
+
+.ProfileMainContainer {margin:0;}
+
+/*
+a , a:hover {border-bottom:none !important; }
+a {color: inherit !important;}
+a:hover {color:#0070b3: text-decoration:underline;}
+*/
+
+#searchresult {font-size:20px;font-family: Arial;}
+
+#search_str {margin: 10px 0; border-color:#00B4CC;height:36px;padding:0 10px; border-radius: 5px 0 0 5px; width:44%;}
+
+#search_str:disabled {background-color:#dddddd;}
+
+.plselect {margin-top: 100px;}
+
+.rankyrfield1 {float: left;width:35%;margin: 0}
+.rankyrfield2 {float: left;width:20%;margin: 0 20px 0 0; height:130px; padding-top: 45px }
+#plus {float: left;width:5%;font-size:24px;padding: 70px 0;text-align: center;}
+.imgwrap {text-align:center;min-width:800px;margin-bottom:20px;}
+
+.wrapper:after {content: "";  display: table;   clear: both; }
+
+#myform {position:relative; display:flex;}
+.button2 {margin: 10px 0; background-color:#00B4CC;height:36px;}
+
+.button3 {margin: 10px 5px; background-color:#00B4CC;height:36px; color:white; padding: 5px 10px; font-size:14px;}
+
+.staff_header {background-color: #074e40; height: 40px;}
+.staff_header td {color:#fff; font-size:16px;}
+
+.staff_head {font-size:2.5em; margin: 0.2em 0; color:#444444; font-family: 'Raleway',sans-serif}
+
+.staffnametable {width:250px; margin-bottom:20px;}
+.staffnametable tr td {border: none; font-size:16px; font-family:monospace;}
+
+.staffrow {background-color: white; height:32px; border-bottom: solid 1px #cccccc;}
+tr.staffrow a:hover {text-decoration: underline;}
+
+.newsletter, .newsletter a { font-size:18px; color: #105809;}
+.staffnews_link,.staffnews_link:hover {text-decoration:underline};
+
+.publish_date, .publish_date a, .publish_date a:hover {color: #444444;;}
+.detailslink {text-decoration:underline !important;}
+.detailslink:hover {color: #0070b3 !important;}
+
+#PromotionDetail {display:table-cell; padding:0; width:100%; font-size: 16px;}
+PromotionDetail p {font-size:18px;}
+#StaffContainer {padding:0; display:table-cell; float: left; height: 100vh; width:270px;}
+
+.button1:hover {
+  background-color: #4CAF50
+}
+
+.button1 {
+  background-color: #4BA35C; /* Green */
+  border: none;
+  color: white !important;
+  padding: 10px 35px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 5px 20px;
+}
+
+.btn1active {color: #DAF7A6 !important;}
+
+#disclaimer_text {
+   margin: 20px;
+   font-size: 14px;
+}
+
+
+#search_str2 {
+   margin: 20px;
+   font-size: 14px;
+}
+
+.staff_one {
+   display: inline-block;
+   margin: 20px;
+   width:250px;
+   border: 1px solid black; 
+   text-align:center; 
+   padding: 10px 0 30px 0; 
+   border-radius: 10px;
+   height:30px;
+   background: linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(45,253,212,0.2861519607843137) 59%);
+   font-family: sans-serif;
+   font-weight: 500;
+   font-size:16px;
+   color: #000;
+}
+.staff_one:hover {box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;}
+
+
+.contactus {
+    color: #aaaaaa;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.contactus a {color: #aaaaaa;}
+
+
+.PromotionMainContainer {
+   width:100%;
+   margin-bottom: 50px;
+}
+
+
+.rankselect {
+   font-family: Arial; font-size:16px;  height: 30px; margin:10px 15px;width:100%; max-width:90%;  
+} 
+
+#rank1 {
+  background-color:#ffcccc;
+}
+
+
+#rank2 {
+  background-color:#66ffcc;
+}
+
+
+#rank3 {
+  background-color:#28D3EB;
+}
+
+#year {
+  background-color:#D3C5F0;
+  width:200px;
+  text-align: center;
+  text-align-last: center;
+  -moz-text-align-last: center;
+}
+
+
+.hidden {
+ display:none;
+}
+
+

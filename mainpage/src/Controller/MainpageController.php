@@ -40,9 +40,9 @@ class MainpageController extends ControllerBase {
 
     public function contentByView() {
 
-        $url = Url::fromRoute('<front>')->toString();
+        $url = Url::fromUri('base:/no_access');
         if (! $this->is_authen) {
-            return new RedirectResponse($url.'no_access');
+            return new RedirectResponse($url->toString());
         }
        
         $myRecordOnly = \Drupal::request()->query->get('my');
@@ -72,9 +72,9 @@ class MainpageController extends ControllerBase {
 
     public function GeneralTagContent() {
 
-        $url = Url::fromRoute('<front>')->toString();
+        $url = Url::fromUri('base:/no_access');
         if (! $this->is_authen) {
-            return new RedirectResponse($url.'no_access');
+            return new RedirectResponse($url->toString());
         }
 
         $tags = array();  

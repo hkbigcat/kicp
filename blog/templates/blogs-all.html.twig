@@ -1,31 +1,50 @@
 <div class="div_container">
     {% include '@blog/leftmenu.html.twig' %}
     <div id="MainEntryContainer">
-        {% include '@common/common-search-form.html.twig'  with {placeholder: 'User Name / Blog Name'}  %}  
         <div id="BlogListDiv" class="BlogName">Blog List</div>
         <div id="DivContentTable">
 
-            <div class="common_table_header2 columns space-between">
-                <div class="w10 ">&nbsp;</div>
-                <div class="w20 text-left">User Name</div>
-                <div class="w10">&nbsp;</div>
-                <div class="w40">Blog Name</div>
-                <div class="w20">Blog Type</div>
-            </div>
+        <table id="datatable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th>User Name</th>
+                    <th>&nbsp;</th>
+                    <th>Blog Name</th>
+                    <th>Blog Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                {% if  item['user_name'] %}    
+                <tr id="row_{{ loop.index0 + 1 }}" class="{{ loop.index0 is odd ? 'even' : 'odd' }}" style="line-height:4rem">
+                    <td>{{ loop.index0 + 1 }}<div class="w20px"></div></td>
+                    <td>{{  item['user_name'] }}</td>
+                    <td>{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</td>
+                    <td><a href="{{ path('blog.blog_view' , {'blog_id': item['blog_id']}) }}">Blog of {{  item['user_name'] }}</a></td>
+                    <td>{% if item['blog_type'] == "P"  %}Personal{% else %}Thematic{% endif%}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}        
+            </tbody>
+            <tfoot>
+                    <th>&nbsp;</th>
+                    <th>User Name</th>
+                    <th>&nbsp;</th>
+                    <th>Blog Name</th>
+                    <th>Blog Type</th>    
+            </tfoot>
+        </table>
+         
 
-            {% for item in items %}
-            {% if  item['user_name'] %}
-            <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item columns {{ loop.index0 is odd ? 'odd' : 'even' }}">
-                <div class="w10">{{ loop.index0 + 1 }}</div>
-                <div class="w20 text-left">{{  item['user_name'] }}</div>
-                <div class="w10 text-left">{% include '@common/common-follow.html.twig'  with {contributor_id: item['user_id'], following: item['follow']}  %}</div>
-                <div class="w40"><a href="{{ path('blog.blog_view' , {'blog_id': item['blog_id']}) }}">Blog of {{  item['user_name'] }}</a></div>
-                <div class="w20">{% if item['blog_type'] == "P"  %}Personal{% else %}Thematic{% endif%}</div>
-            </div>
-            {% endif %}
-            {% endfor %}
-        </div>
-        <div style="float:right">{{ pager }}</div>
     </div>
 </div>
 
+<script>
+new DataTable('#datatable', {
+     order: [[1, 'asc']],
+     "columnDefs": [
+    { "orderable": false, "targets": 2 }
+  ]
+});
+</script>

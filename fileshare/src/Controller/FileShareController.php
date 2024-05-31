@@ -189,7 +189,6 @@ class FileShareController extends ControllerBase {
    
   }
 
-  
 
   public function deleteShareFile($file_id = NULL) {
 

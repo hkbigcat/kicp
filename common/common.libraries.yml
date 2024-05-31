@@ -78,3 +78,13 @@ jssor_slider_function2:
     js/jssor_slider_function2.js: {}    
   dependencies:
     - core/jquery
+
+data_table:
+  version: 1.x
+  css:
+    theme:
+      css/dataTables.dataTables.css: {}
+  js:
+      js/dataTables.js: {}
+  header: true
+  

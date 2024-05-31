@@ -1,0 +1,18 @@
+promotion_key:
+  version: 1.x
+  css:
+    theme:
+      css/promotion.css: {}
+      css/slideshow.css: {}
+      css/jquery.modal.min.css: {}
+  header: true
+  js:
+    js/promotion.js: {}
+    js/slideshow.js: {}
+    js/jquery.modal.min.js: ()
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal
+
+

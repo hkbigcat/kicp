@@ -21,6 +21,7 @@ use Drupal\video\Controller\VideoController;
 use Drupal\profile\Controller\ProfileController;
 use Drupal\mainpage\Controller\MainpageController;
 use Drupal\common\Controller\CommonController;
+use Drupal\promotion\Controller\PromotionController;
 use Drupal\node\Entity;
 
  /**
@@ -64,7 +65,9 @@ use Drupal\node\Entity;
             $breads = MainpageController::Breadcrumb();
         } else if ( $module_name == "common") { 
             $breads = CommonController::Breadcrumb();
-         } else if ( $module_name == "contact") { 
+        } else if ( $module_name == "promotion") { 
+            $breads = PromotionController::Breadcrumb();
+        } else if ( $module_name == "contact") { 
             $breads[] = [
                 'name' => 'Contact Us',
             ];    

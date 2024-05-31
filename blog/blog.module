@@ -30,6 +30,11 @@ function blog_page_attachments_alter(&$page) {
             $page['#attached']['library'][] = 'blog/blog_gallery';
         }	
 
+        if ( str_contains($path, '/blog_list') ) {
+            $page['#attached']['library'][] = 'common/data_table';
+        }        
+
+
     }
 
 }

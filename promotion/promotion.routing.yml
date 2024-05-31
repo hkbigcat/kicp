@@ -1,0 +1,34 @@
+promotion.promotion_content:
+  path: '/collections_promotion'
+  defaults:
+    _controller: '\Drupal\promotion\Controller\PromotionController::PromotionContent'
+    _title: 'eStaff News: Staff Promotion - Search by name'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+
+
+promotion.promotion_rank:
+  path: '/collections_rank'
+  defaults:
+    _controller: '\Drupal\promotion\Controller\PromotionController::PromotionRank'
+    _title: 'eStaff News: Staff Promotion - Search by rank and year'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+
+
+promotion.get_promotion_detail:
+  path: '/get_promotion_detail'
+  defaults:
+    _controller: '\Drupal\promotion\Controller\PromotionController::getPromotionDetailPage'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+

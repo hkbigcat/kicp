@@ -102,7 +102,7 @@ blog.blog_all_list:
   path: '/blog_list'
   defaults:
     _controller: '\Drupal\blog\Controller\BlogController::ViewAllBlogList'
-    _title: 'Blog'
+    _title: 'View All Blogs'
   requirements:
     _permission: 'access content'
   options:

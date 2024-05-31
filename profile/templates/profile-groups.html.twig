@@ -11,15 +11,14 @@
         <div id="DivContentTable">
            {% include '@common/common-search-form.html.twig'  with {placeholder: 'Group Name'}  %}    
             <div class="common_table_header">
-                <div style="width:60%;text-align:left;margin-left:5px;">Group Name</div>
-                <div style="width:35%;">&nbsp;</div>
+                <div><div class="w40px"></div>Group Name</div>
             </div>
             {% for item in items %}
             {% if  item['group_name'] is not null %}
-            <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
+            <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}">
                 <div style="width:2%;float:left;display:block;margin-left:5px;">{{ loop.index0 + 1 }}</div>
-                <div style="width:55%;float:left;display:block;">{{ item['group_name'] }}</div>
-                <div style="width:40%;float:left;display:block;">
+                <div style="width:62%;float:left;display:block;">{{ item['group_name'] }}</div>
+                <div style="float:left;display:block;">
                     <span><button class="kicp_button" onClick="location.href='{{ path('profile.profile_group_member' , {'type': items['type']=="P"?'P':'B'  , 'group_id' : item['group_id']  }  ) }}';"><i class="fa-solid fa-user-group"></i>Member</button></span>
                     <span><button class="kicp_button" onClick="location.href='{{ path('profile.profile_group_change' , { 'type':  items['type']=="P"?'P':'B' , 'group_id': item['group_id'] } ) }}';"><i class="fa-solid fa-pencil"></i> Edit</button></span>
                     <span><button class="kicp_button size-2" onclick="module_item_delete('profile_group','{{  items['type']=="P"?'P':'B' }},{{ item['group_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button></span>

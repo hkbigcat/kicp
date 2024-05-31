@@ -510,7 +510,7 @@ class BlogDatatable {
     }
     
     
-    public static function getAllEntry($my_user_id="") {
+       public static function getAllEntry($my_user_id="") {
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
@@ -555,10 +555,7 @@ class BlogDatatable {
         $query->groupBy("b.user_name");
         $query->groupBy("a.blog_type");
         $query-> orderBy('b.user_name');
-        $pager = $query->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(20);
-        $result =  $pager->execute()->fetchAll(\PDO::FETCH_ASSOC);
-        if (!$result)
-            return null;
+        $result =  $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
         $output = array();        
         foreach ($result as $record) {
             $record["follow"] = Follow::getFollow($record["user_id"], $my_user_id);
@@ -566,7 +563,7 @@ class BlogDatatable {
         }
         return $output;
 
-    }
+    }    
 
 
     public static function getBlogDelegate($my_blog_id) {

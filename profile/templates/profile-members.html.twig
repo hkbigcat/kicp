@@ -7,13 +7,12 @@
     <div id="RightContainer">
         <div class="ProfileName">Member List</div>
         <h2>Group Name: {{ items['group_name'] }}</h2>
-        <div style="width: 55%; text-align: right; margin-top: -30px; float: right;">
+        <div class="text-right">
             <button class="kicp_button size-2" onClick="location.href='{{ path('profile.profile_group', {'type': type0 }) }}';"><i class="fa-solid fa-user-group"></i> {{ type0 == "P"?"Public Personal Group":"Personal Group" }} </button>
         </div>
         <div id="DivContentTable">
             <div class="common_table_header">
-                <div style="width:70%;text-align:left;margin-left:38px;">User Name</div>
-                <div style="width:25%;">&nbsp;</div>
+                <div><div class="w40px"></div>User Name</div>
             </div>
             {% for item in items %}
             {% if  item['user_name'] is not null %}

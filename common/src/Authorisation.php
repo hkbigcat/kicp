@@ -68,53 +68,7 @@ class Authorisation {
         foreach ($result as $record) {
             $group_id[] = $record->buddy_group_id;
         }
-        /*
-          ### Checking 1 ###
-          //If current user does not belongs to any group under buddy_user_list then return false
-          if (count($group_id) == 0) {
-          \Drupal::logger('Authorisation-hasPermission')->notice('current user does not belongs to any group under buddy list');
-          return false;
-          }
-
-          $group_list = implode(",", $group_id);
-          \Drupal::logger('Authorisation-hasPermission')->notice('$group_list:::' . $group_list);
-         */
-
-        /*
-          ### Checking 2 ###
-          //check public group of current user for the input module $InModule
-          $sql = "select * from xoops_users a join kicp_public_user_list b on a.user_id = b.pub_user_id" .
-          " join kicp_public_group c on b.pub_group_id = c.pub_group_id".
-          " join kicp_group_privilege d on b.pub_group_id = d.group_id" .
-          " WHERE a.user_is_inactive = 0 and d.type = 'P' and a.user_id='" . $user_id .
-          "' and d.module= '" . $InModule . "' ";
-
-          $result = db_query($sql);
-
-          foreach ($result as $record) {
-          return true;
-          }
-
-          \Drupal::logger('Authorisation-hasPermission')->notice('public group: current user '.$user_id.' does not have privilege on the module:::' . $InModule);
-
-
-          ### Checking 3 ###
-          //check buddy group of current user for the input module $InModule
-          $sql = "select * from xoops_users a join kicp_buddy_user_list b on a.user_id = b.buddy_id" .
-          " join kicp_buddy_group c on b.buddy_group_id = c.buddy_group_id".
-          " join kicp_group_privilege d on b.buddy_group_id = d.group_id" .
-          " WHERE a.user_is_inactive = 0 and d.type = 'B' and a.user_id='" . $user_id .
-          "' and d.module= '" . $InModule . "' ";
-
-          $result = db_query($sql);
-          foreach ($result as $record) {
-          return true;
-          }
-
-          \Drupal::logger('Authorisation-hasPermission')->notice('buddy group: current user '.$user_id.' does not have privilege on the module:::' . $InModule);
-         */
-
-
+     
         ### Combined Checking (2+3) ###
         // check whether current user is member of any public groups and buddy groups in module "$InModule"
         $sql = "

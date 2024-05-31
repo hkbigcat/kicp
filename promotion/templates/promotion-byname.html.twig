@@ -1,0 +1,36 @@
+<a href="/kicp/collections_promotion" class="button1 btn1active">Search By Name</a>
+<a href="/kicp/collections_rank" class="button1">Search by Rank and Year</a>
+<div class="ProfileMainContainer">
+    <div id="disclaimer_text">*The data in this app is collected from the e-Staff News issued from Jul 2004 to {{latest  | date('M Y') }}</div>
+  		<div id="search_hint" style="display:none">Staff Name: e.g. Chan, Tai Man, Tai Man Chan, Chan TM...</div>
+		<form method="get" id="myform">
+    		<input type="text" name="search_str" id="search_str" size="50" value="{{search_str}}" placeholder="Staff Name: e.g. Chan, Tai Man, Tai Man Chan, Chan TM...">
+	    	<button type="submit" value="Search" class="button2"> <i class="fa-solid fa-magnifying-glass" style="color:#fff"></i></button>
+		</form>
+       
+		<p>It is ok to search in different name format, e.g. "Tom Chan, Tai Man Chan...etc. In case the name cannot be found, please follow the format as in posting order, e.g. Chan Tai Man, Tom. or search only Chan Tai Man. </p>
+        <div id="StaffContainer">
+            <div id="DivContentTable" style="margin-top:30px; display:table-cell; height: 100vh;">{{content | raw}}</div>
+
+        </div>
+    </div>
+
+
+  
+    <div id="PromotionDetail">
+    {% if search_str %}
+        {% if (total > 1 ) %}
+        <p class="plselect">Please select a staff to check the promotion details.</p>
+        {% elseif  (total < 1 ) %}
+        {{output | raw}}
+            {% if (content3 != "" ) %}
+            <p>Similar result:{{content3 | raw }}</p>
+            {% endif %}
+        {% endif %}
+
+        {{content2 | raw}}
+
+    {% endif %}
+    </div>
+</div>
+

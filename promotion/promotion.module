@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * Hello module.
+ */
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\common\CommonUtil;
+use Drupal\Core\Url;
+
+function promotion_page_attachments_alter(&$page) {
+
+    // get the current route name the client/browser trying to access e.g. bookmark.content, bookmark.read_data...etc
+    $routeName = \Drupal::routeMatch()->getRouteName();    
+
+    if (explode(".", $routeName)[0] === 'promotion') {
+        $page['#attached']['library'][] = 'promotion/promotion_key';
+    }
+}
+
+
+function promotion_theme($existing, $type, $theme, $path) {
+
+    return [
+        'promotion-byname' =>[
+            'variables' => [
+                'latest' => NULL,
+                'content' => NULL,
+                'content2' => NULL,
+                'content3' => NULL,
+                'output' => NULL,
+                'total' => NULL,
+                'search_str' => NULL,
+            ],
+        ],
+        'promotion-byrank' =>[
+            'variables' => [
+                'latest' => NULL,
+                'content' => NULL,
+                'total' => NULL,
+                'rank' => NULL,
+                'year' => NULL,
+                'search_str' => NULL,
+                'items' => NULL,
+                'year_select' => NULL,
+                'submit' => NULL,
+            ],
+        ],        
+    ];
+}
+
+/**
+ * Implements hook_help().
+ */
+function promotion_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+      case 'help.page.blog':
+        return '<p>' . t('Promotion module that provides KICP Promotion History.') . '</p>';
+        break;
+    }
+  }  
+

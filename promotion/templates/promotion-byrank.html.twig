@@ -1,0 +1,69 @@
+        <div class="PromotionMainContainer">
+       
+            <a href="/kicp/collections_promotion" class="button1">Search By Name</a>
+            <a href="/kicp/collections_rank" class="button1 btn1active">Search by Rank and Year</a>
+
+            <div id="disclaimer_text">*The data in this app is collected from the <a class="staffnews_link" target="_blank" href="https://dp2.ogcio.ccgo.hksarg/home/hrm/html/Newsletter/index.html">e-Staff News</a> issued from Jul 2004 to {{latest | date('M Y') }}</div>
+	    	<p>*Please select Rank and Year below. You can filter staff name after selected Rank and Year.</p>
+		
+		    <form method="GET">
+		
+		
+		<div class="wrapper">
+		<fieldset class="rankyrfield1"><legend>Rank</legend>
+	
+		<select onchange="rankChg(this)" class="rankselect" id="rank1" name="rank1"> 
+		<option value="">Select Analyst/Programmer Grade</option> 
+		<option {{ rank=="DDITS"?'SELECTED':''  }} value="DDITS">DDITS - Deputy Director of ITS</option> 
+		<option {{ rank=="ADITS"?'SELECTED':''  }} value="ADITS">ADITS - Assistant Director of ITS</option>
+		<option {{ rank=="CSM"?'SELECTED':''  }} value="CSM">CSM - Chief Systems Manager</option>
+		<option {{ rank=="SSM"?'SELECTED':''  }} value="SSM">SSM - Senior Systems Manager</option>
+		<option {{ rank=="SM"?'SELECTED':''  }} value="SM">SM - Systems Manager</option>
+		<option {{ rank=="API"?'SELECTED':''  }} value="API">API - Analyst/Programmer I</option></select>
+		
+		<select onchange="rankChg(this)" class="rankselect" id="rank2" name="rank2">
+		<option value="">Select Computer Operator Grade</option> 
+		<option {{ rank=="COM"?'SELECTED':''  }} value="COM">COM - Computer Operation Manager</option> 
+		<option {{ rank=="ACOM"?'SELECTED':''  }} value="ACOM">ACOM - Assistant Computer Operation Manager</option> 
+		<option {{ rank=="SCOp"?'SELECTED':''  }} value="SCOp">SCOp - Senior Computer Operator</option> 
+		<option {{ rank=="COpI"?'SELECTED':''  }} value="COpI">COpI - Computer Operator I</option></select>
+
+		<select onchange="rankChg(this)" class="rankselect" id="rank3" name="rank3"> 
+		<option value="">Select Data Processor Grade</option> 
+		<option {{ rank=="SDPS"?'SELECTED':''  }} value="SDPS">SDPS - Senior Data Preparation Supervisor</option> 
+		<option {{ rank=="DPS"?'SELECTED':''  }} value="DPS">DPS - Data Preparation Supervisor</option> 
+		<option {{ rank=="ADPS"?'SELECTED':''  }} value="ADPS">ADPS - Assistant Data Preparation Supervisor</option></select>
+		</fieldset>
+		
+		<span id="plus">+</span>
+        		<fieldset class="rankyrfield2"><legend>Year</legend>
+		<select onchange="yearChg()"  id="year" name="year" class="rankselect">
+		<option value="">Select Year</option> 
+        {% for y in year_select %}
+            <option {{ y==year?'SELECTED':''  }} value="{{y}}">{{y}}</option>
+        {% endfor %}            
+		</select>
+		</fieldset>
+		</div>
+		
+		<div id="search_hint" style="display:none">Filter By Name: e.g. Chan, Tai Man, Chan Tai Man, Tai Man...etc</div>	
+		Filter By Name: <input {{ (year == "" or rank =="")?'disable':''}} type="text" id="search_str" name="search_str" size="64" value="{{search_str}}" placeholder="e.g. Chan, Tai Man, Chan Tai Man, Tai Man...etc..."> 
+		
+		<input type="submit" name="submit" value="Search" class="button3"><input type="button" name="reset" value="Reset" class="button3" onclick="resetbtn()">		
+		</form>
+		
+       {% if (year != "" and rank !="") %}
+	 	 <h3 name="searchresult" id="searchresult">Search Result of {{rank}} in year {{year}} </h3>
+
+		
+			<div>Showing <span id="namefilter">{{num_nameshow}}</span> of total <span id="totalitem">{{total}}</span> {{items}}</div>
+			<div id="DivContentTable" style="width:100%; overflow-wrap: normal; margin:auto;">
+			{{content | raw }}
+			</div>
+
+	   {% else  %}            
+             {% if (submit) %}
+			 <font color="#DF5210">Please select Rank and Year</font>
+             {% endif %} 
+		{% endif %}            
+        </div>       
