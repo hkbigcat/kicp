@@ -123,6 +123,12 @@ class CommonController extends ControllerBase {
             );
         
             exit;
+        } else  if(!file_exists($filename)) {
+            return array(
+                '#type' => 'markup',
+                '#markup' => $this->t('File not found.'),   
+            );
+            exit;            
         } else {
 
             $filesize = filesize(urldecode( DRUPAL_ROOT ."/".$filename));
@@ -134,11 +140,12 @@ class CommonController extends ControllerBase {
 
             @readfile($filename);
             
-
+/*
             return array(
                 '#type' => 'markup',
                 '#markup' => $this->t(' '),   
             );
+*/            
             //return new RedirectResponse($filename);
 
         }
@@ -176,57 +183,7 @@ class CommonController extends ControllerBase {
 
         return new JsonResponse($response);
     }
-
-    public function CheckAttachmentDuplication() {
-        // check file duplication during selecting attachment
-
-        $AuthClass = CommonUtil::getSysValue('AuthClass');
-        $authen = new $AuthClass();
-
-        $fileList = $_POST['fileList'];
-        $entry_id = $_POST['entry_id'];
-        $module = $_POST['module'];
-        $fileAry = explode("###", $fileList);    // "###" is the delimitor used in frontend "blog_form.js"
-
-        $server_path = CommonUtil::getSysValue("server_absolute_path");
-        $app_path = CommonUtil::getSysValue('app_path');
-        $blog_id = BlogDatatable::getBlogIDByEntryID($entry_id);
-        $user_id = BlogDatatable::getUserIdByBlogId($blog_id);
-        $UserInfo = $authen->getKICPUserInfo($user_id);
-        $this_entry_id = str_pad($entry_id, 6, "0", STR_PAD_LEFT);
-        $this_uid = str_pad($UserInfo['uid'], 6, "0", STR_PAD_LEFT);
-
-        $filePath = $app_path . '/sites/default/files/private/' . $module . '/file/' . $this_uid . '/' . $this_entry_id;
-        $dirFile = array();
-
-        // retrieve existing attachment from server
-        if (is_dir($server_path . $filePath)) {
-            $dirFile = scandir($server_path . $filePath);
-        }
-
-        $returnAry = array();
-        if (count($dirFile) > 0) {
-            $i = 0;
-            foreach ($dirFile as $attach_id => $attach) {
-                if ($attach == "." || $attach == "..") {
-                    continue;
-                }
-                // compare selected files with server files 
-                if (in_array($attach, $fileAry)) {
-                    $returnAry[] = $attach;
-                }
-            }
-        }
-
-        $returnFlag = (count($returnAry) == 0) ? false : true;    // true: with duplication; false: without duplication
-
-
-        $response = new Response();
-        $response->setContent('||' . $returnFlag . '@@' . implode('##', $returnAry) . '||');
-        return $response;
-    }   
-    
-    
+   
     public function getAddGroupMemberUI() {
 
         $request = \Drupal::request();   // Request from ajax call
@@ -678,7 +635,7 @@ class CommonController extends ControllerBase {
         $renderable = [
             '#theme' => 'common-rating',
             '#rating' => $rating,
-            '#user_id' => $user_id,
+            '#user_id' => strtoupper($user),
             '#justsubmit' => 1,
           ];
           $rendered = \Drupal::service('renderer')->renderPlain($renderable);

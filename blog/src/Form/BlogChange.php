@@ -210,7 +210,7 @@ class BlogChange extends FormBase  {
         );
 
         $form['allow_comment'] = [
-            '#title' => t('All comment?'),
+            '#title' => t('Allow comment?'),
             '#type' => 'checkbox',
             '#default_value' => '1',
         ];        

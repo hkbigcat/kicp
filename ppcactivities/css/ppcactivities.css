@@ -1,5 +1,9 @@
 @charset "utf-8";
 
+#main_content {
+    width:95%;
+}
+
 .homepage_div {
     width: 20%;
     min-width:220px;

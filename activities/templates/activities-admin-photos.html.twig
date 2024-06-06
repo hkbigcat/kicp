@@ -13,7 +13,7 @@
         {% if  item['evt_photo_id'] %}
         <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%;">
             <div style="width:2%;float:left;display:block; margin-left:10px">{{ loop.index0 + 1 }}</div>
-            <div style="width:20%;float:left;display:block;"><img src="{{ url('<front>') }}system/files/activities/photo/{{ "%06d" | format(evt_id) }}/{{ item['evt_photo_url'] }}" border="0" width="200"></div>
+            <div style="width:20%;float:left;display:block;"><img src="{{ path('<front>') }}system/files/activities/photo/{{ "%06d" | format(evt_id) }}/{{ item['evt_photo_url'] }}" border="0" width="200"></div>
             <div style="width:21%;float:left;display:block;">{{ item['evt_photo_url'] }}</div>
             <div style="width:35%;float:left;display:block;">{{ item['evt_photo_description'] }}&nbsp;</div>
             <div style="width:20%;float:left;display:block;">

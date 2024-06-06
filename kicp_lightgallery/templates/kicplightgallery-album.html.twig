@@ -6,10 +6,10 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <link href="{{ url('<front>') }}/modules/custom/kicp_lightgallery/css/main.css" rel="stylesheet">
-        <link href="{{ url('<front>') }}/modules/custom/kicp_lightgallery/css/justifiedGallery.min.css" rel="stylesheet">
-        <link href="{{ url('<front>') }}/modules/custom/kicp_lightgallery/css/lightgallery.css" rel="stylesheet">
-		<script src="{{ url('<front>') }}/modules/custom/kicp_lightgallery/js/jquery.min.js"></script>
+        <link href="{{ path('<front>') }}/modules/custom/kicp_lightgallery/css/main.css" rel="stylesheet">
+        <link href="{{ path('<front>') }}/modules/custom/kicp_lightgallery/css/justifiedGallery.min.css" rel="stylesheet">
+        <link href="{{ path('<front>') }}/modules/custom/kicp_lightgallery/css/lightgallery.css" rel="stylesheet">
+		<script src="{{ path('<front>') }}/modules/custom/kicp_lightgallery/js/jquery.min.js"></script>
     </head>
     <body class="demos">
 {% endif %}    
@@ -20,8 +20,8 @@
 
                 {% for item in items %}
                 {% if item != "." and item != ".." %}
-                <a class="jg-entry" href="{{ url('<front>') }}/sites/default/files/public/album/download/{{ album }}/{{ item }}" data-sub-html="{{ item }}">
-                    <img class="img-responsive" src="{{ url('<front>') }}/sites/default/files/public/album/gal/{{ album }}/{{ item }}">
+                <a class="jg-entry" href="{{ path('<front>') }}/sites/default/files/public/album/download/{{ album }}/{{ item }}" data-sub-html="{{ item }}">
+                    <img class="img-responsive" src="{{ path('<front>') }}/sites/default/files/public/album/gal/{{ album }}/{{ item }}">
                 </a>
                 {% endif %}
                 {% endfor %}

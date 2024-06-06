@@ -286,12 +286,6 @@ table.row_table {
 
 
 .kicp_button {
-/*    
-    background-image: linear-gradient(to bottom,rgb(158,195,207),rgb(71 103 145));
-    color:#fff;
-    margin:5px;
-    border-radius: 7px;
-*/
     color:#fff;
     margin:5px;
     border-radius: 5px;
@@ -303,10 +297,27 @@ table.row_table {
     border: 1px solid rgba(38, 56, 181, 0.43);
 }
 
-.kicp_button:hover {
+
+.share_button {
+    color:#fff;
+    margin:5px;
+    border-radius: 5px;
+    /* From https://css.glass */
+    background: rgb(36 149 29 / 96%);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(38, 56, 181, 0.43);
+}
+
+.kicp_button:hover, .share_button:hover  {
     /* From https://css.glass */
     background: rgba(53, 56, 78, 0.96);
 }
+
+
+
+
 
 
 .kicp_button2 {
@@ -328,6 +339,7 @@ table.row_table {
 .kicp_button > .svg-inline--fa, .kicp_button2 > .svg-inline--fa {
     margin: 0 10px;
 }
+
 
 
 #DivFollower {

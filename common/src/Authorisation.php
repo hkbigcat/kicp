@@ -9,52 +9,6 @@ use Drupal\Core\Database\Database;
 
 class Authorisation {
 
-    static function setMenuTabsByModulePermission() {
-
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        
-        if(self::isSiteAdmin($authen->getUserId())) {
-            return "";
-        }
-        
-        //Construct javascript to hide unauthorized menu tabs
-        
-        $output = '<script type="text/javascript">';
-        //$output .= 'window.onload = function() {';
-
-        $userModulePermissionList = self::userUnauthorizedModuleList();
-
-        foreach ($userModulePermissionList as $module) {
-            //$output .= 'jQuery("a[href=\'' . $config->get('app_path') . '/' . $module . '\']").parent().remove();';
-            $output .= 'jQuery("a[href=\'' . CommonUtil::getSysValue('app_path_url') . '/' . $module . '\']").parent().remove();';
-        }
-
-        //$output .= '};';
-        $output .= '</script>';
-
-        return $output;
-    }
-
-    static function removeAllModuleMenuTabs() {
-
-        //Construct javascript to hide unauthorized menu tabs
-        
-        $output = '<script type="text/javascript">';
-        //$output .= 'window.onload = function() {';
-
-        $allModulesList = self::getAllModules();
-        foreach ($allModulesList as $record) {
-            $module = $record->module_name;
-            $output .= 'jQuery("a[href=\'' . CommonUtil::getSysValue('app_path') . '/' . $module . '\']").parent().remove();';
-        }
-
-        //$output .= '};';
-        $output .= '</script>';
-
-        return $output;
-    }
-
     //To Check if current user has permission on the input module $InModle
     static function hasPermission($InModule, $ShowWarnMsg = \FALSE) {
 
@@ -160,17 +114,6 @@ class Authorisation {
         return $userUnauthorizedModuleList;
     }
 
-    static function gotoPortal() {
-        // go to portal web site after time out
-        $domain_name = CommonUtil::getSysValue('domain_name');
-        $delay = CommonUtil::getSysValue('delay_time_to_portal');
-        $output = "";
-        $userModulePermissionList = self::userUnauthorizedModuleList();
-        header("Location: " . $domain_name);
-        exit;
-        return $output;
-    }
-
     static function isSiteAdmin($user_id) {
         if (!isset($user_id) or $user_id == "") {
             return false;
@@ -229,73 +172,6 @@ class Authorisation {
             drupal_set_message(t('You do not have permission on this function.  (' . $code . ')'), 'warning');
 
         return false;
-    }
-
-    public static function GlobalModuleAccessRightChecking($InModule) {
-
-        ### Module access right checking [Start] ###
-
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        
-        //$domain_name = CommonUtil::getSysValue('domain_name');
-
-        $isSiteAdmin = self::isSiteAdmin($authen->getUserId());  // store "isSiteAdmin" checking in variable
-        # has no access right on all modules
-        if (!$authen->isAuthenticated) {
-            $output = self::removeAllModuleMenuTabs();
-	    /*
-            return array(
-              '#type' => 'markup',
-              '#markup' => $this->t($output),
-            );
-	    */
-	    return $output;
-        }
-
-        // if current user is not the site admin
-        if (!$isSiteAdmin) {
-
-            # get the avaible module list that user has access right to view
-            //$output .= implode(',',self::userModulePermissionList());
-
-            if (self::hasPermissionToAnyOfModules()) {
-
-                // user has no premission to access specific module, e.g. blog, ppc, etc...
-                if (!self::hasPermission($InModule, TRUE)) {
-                    $output = self::setMenuTabsByModulePermission();  // remove other module tab which user does not have access right
-                    //$output = $InModule;
-                    /*
-                      return array(
-                      '#type' => 'markup',
-                      '#markup' => $this->t($output),
-                      );
-                     */
-                    return $output;
-                }
-            }
-            else {
-                //$output = self::gotoPortal();	// no access right to any of the modules, then return to portal
-                $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ? "https" : "http";
-                //$url = $domain_name.CommonUtil::getSysValue('app_path_url');
-                $url = $protocol . "://" . $_SERVER['HTTP_HOST'] . CommonUtil::getSysValue('app_path');
-                header("Location: " . $url);
-                exit;
-                /*
-                  return array(
-                  '#type' => 'markup',
-                  '#markup' => $this->t($output),
-                  );
-                 */
-                return $output;
-            }
-        }
-
-        $output = "true";
-
-        return $output;
-
-        ### Module access right checking [End] ###
     }
 
 }

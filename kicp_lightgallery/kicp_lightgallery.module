@@ -34,29 +34,6 @@ function kicp_lightgallery_file_download($uri) {
     $author = CommonUtil::getSysValue('AuthorClass');
     $error = false;
 
-    if (!$authen->isAuthenticated) {
-            $output .= $author::removeAllModuleMenuTabs();
-            $error = true;
-    } else {
-        if ( !$author::isSiteAdmin($authen->getUserId()) ) {
-            $output .= $author::setMenuTabsByModulePermission();
-            if (!$author::hasPermission($InModule, TRUE)) {
-                $error = true;
-            }
-        }
-    }
-
-    if ($error) {
-        $output .=
-            '<script type="text/javascript">
-                    window.onload = function() {
-                            showMsg("' .$InModule. '");
-                    };
-            </script>';
-        echo $output;
-        return -1;
-    }
-
     //Load file from db by $uri
     $files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(array('uri' => $uri));
 

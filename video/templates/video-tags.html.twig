@@ -17,12 +17,12 @@
             {% set titledesc = 'Video Clip' %}
             {% endif %}
 
-                <img src="{{ url('<front>') }}/system/files/video/{{ imgpath }}/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_img']}}" border="0" width="120" alt="{{ item['media_title']}}">
+                <img src="{{ path('<front>') }}/system/files/video/{{ imgpath }}/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_img']}}" border="0" width="120" alt="{{ item['media_title']}}">
             </div>
             <div style="float:left;width:86%">
                 <span class="my_title">
                     <strong>[{{titledesc}}]</strong> 
-                    <a href="{{ path('video.video_list', { 'media_event_id': item['id'] }) }}" target="_blank">{{ item['media_title']}}</a>
+                    <a href="{{ path('video.video_list', { 'media_event_id': item['media_event_id'] }) }}" target="_blank">{{ item['media_title']}}</a>
                 </span>
                 <div style="margin-top:15px">Date: {{ item['evt_date'] | date('d.m.Y') }}</div>
                 <div>

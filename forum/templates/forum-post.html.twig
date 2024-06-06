@@ -1,13 +1,16 @@
  {% set threadTopic = threads|first %}
 
-<div class="forum_navigation"><strong>{{ threadTopic.subject }}</strong></div>
+<div class="columns v-center">
+<div class="w70"><h3>{{ threadTopic.subject }}</h3></div>
+<div class="w30">{% include '@common/common-like.html.twig'  with {'module': 'forum', 'record_id':  forum_info.forum_id, 'countLike': forum_info.countlike, 'liked': forum_info.liked  }  %}</div>
+</div>
 {% include '@common/common-tags-list.html.twig' %} 
 {% include '@common/common-tags.html.twig' %}
      <input type="hidden" name="tag_page" id="tag_page" value="{{ path('forum.forum_tag') }}">
      <input type="hidden" name="notag_page" id="notag_page" value="{{ path('forum.forum') }}">   
-<div id="DivContentTable" style="display:table; width:100%">
+<div id="DivContentTable">
   {% for thread in threads %}
-    <div class="EntryContainer  {{ loop.index0 is odd ? 'odd' : 'even' }}" style="width:97.7%;">
+    <div class="EntryContainer  {{ loop.index0 is odd ? 'even' : 'odd' }}">
         <div class="forum_hightlight" style="padding:10px;">
             <div style="width:35%;float:left;">{{ thread['poster_name'] }}<span>{% include '@common/common-follow.html.twig'  with {contributor_id: thread['user_id'], following: thread['follow']}  %}</span></div>
             <div style="width:63%;float:left;">{{ thread['subject'] }}</div>
@@ -19,7 +22,7 @@
                     <div style="display:block;margin-top:10px;">
                         {% if (thread['attachment'])  %}
                             {% for attach in thread['attachment'] %}
-                            <div><i class="fa-solid fa-paperclip"></i><span class="w20px"></span><a href="{{ url('<front>') }}system/files/forum/file/{{ "%06d" | format(thread['topic_id']) }}/{{ "%06d" | format(thread['post_id']) }}/{{attach}}">{{attach}}</a></div>
+                            <div><i class="fa-solid fa-paperclip"></i><span class="w20px"></span><a href="{{ path('<front>') }}system/files/forum/file/{{ "%06d" | format(thread['topic_id']) }}/{{ "%06d" | format(thread['post_id']) }}/{{attach}}">{{attach}}</a></div>
                             {% endfor %} 
                             <div class="spacer"></div>
                         {% endif %}                      

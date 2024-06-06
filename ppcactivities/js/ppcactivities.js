@@ -68,7 +68,7 @@ function getEventData(type, evt_id) {
 
     jQuery.ajax({
         type: "POST",
-        url: '/kmapp2/kicp/ppcactivities_event_data',
+        url:  app_path + 'ppcactivities_event_data',
         data: {
             evt_id: evt_id,
             type: type
@@ -78,7 +78,7 @@ function getEventData(type, evt_id) {
             
             var content = "";
             if (type == 'photo') {
-                link = '/kmapp2/kicp/ppcactivities_event_data?evt_id=' + evt_id + '&type=' + type
+                link =  app_path + 'ppcactivities_event_data?evt_id=' + evt_id + '&type=' + type
                 content = '<div id="lightgallery">{{lightgallery}}</div>';
             } else {
                 content = data;

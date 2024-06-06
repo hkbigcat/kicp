@@ -5,7 +5,7 @@
 <div style="padding:2px;width:99%;">
 {% for item in items %}            
     <div style="display:inline-block;width:100%;border-bottom:1px dotted #CCCCCC;">
-        <div style="width:8%;display:inline-block;vertical-align:top;"><img src="{{ url('<front>') }}modules/custom/common/images/icon_group_b.gif"></div>
+        <div style="width:8%;display:inline-block;vertical-align:top;"><img src="{{path('<front>') }}modules/custom/common/images/icon_group_b.gif"></div>
         <div style="display:inline-block;width:75%;">
             <a id="group_member_link" href="javascript:;" onclick="displayGroupMember('group_member_B{{ item['buddy_group_id'] }}', 'B',{{ item['buddy_group_id'] }})"><span id="group_member_B{{ item['buddy_group_id'] }}">{{ item['buddy_group_name'] }}</span></a>
         </div>

@@ -1,12 +1,10 @@
 var KICPadvertisement1 = 'Simply click the link below.%0a';
 var KICPadvertisement2 = 'Enjoy!%0a';
+var app_path = drupalSettings.path.baseUrl;
 
 function module_item_delete(module, item_id) {
 
-  const currentUrl = window.location.href;
-  console.log("currentUrl: "+currentUrl);
   var page_url = app_path + module + "_delete/"+item_id;
-
   var msgtitle = '';  
 
   switch (module) {
@@ -136,7 +134,7 @@ function module_item_delete(module, item_id) {
 function AddLike(module, record_id) {
 
   jQuery.ajax({
-      url: '/add_like',
+      url: app_path + 'add_like',
       data: {
           module: module,
           record_id: record_id
@@ -448,6 +446,7 @@ jQuery(document).ready(function(){
     jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
     jQuery('.menu:last-child').addClass( 'columns' );  
     jQuery("[data-drupal-link-system-path='disclaimer']").attr('target', '_blank');
+    jQuery("[data-drupal-link-system-path='contact']").text("Contact Us");
 
 });
 

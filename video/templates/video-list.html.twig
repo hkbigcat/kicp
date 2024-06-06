@@ -1,4 +1,7 @@
 <div> 
+    <div class="text-right">
+    <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+    </div>
     <h2 class="video_title">Event Name: {{ event_info.media_event_name }}</h2>
     <strong>Event Date: </strong> {{ event_info.media_event_date | date('d.m.Y') }}
     <div id="DivFollower">Knowledge Management Unit <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'KMU.OGCIO'}  %}</span></div>
@@ -15,7 +18,7 @@
         <div id="Video_Item_{{ item['media_id']}}" class="video_list_item">
             <div class="video_list_image">
                  <a href="javascript:void(0);" onclick="var view_video=window.open('{{ item['media_file_path']}}');view_video.focus();" style="border-bottom:0px;">
-                 <img src="{{ url('<front>') }}/system/files/video/video_image/{{ "%06d" | format( media_event_id ) }}/{{ item['media_img']}}" width="120" height="100" alt="{{ item['media_title']}}" title="{{ item['media_title']}}" border="0">
+                 <img src="{{ path('<front>') }}/system/files/video/video_image/{{ "%06d" | format( media_event_id ) }}/{{ item['media_img']}}" width="120" height="100" alt="{{ item['media_title']}}" title="{{ item['media_title']}}" border="0">
                 </a>
             </div>
             <div class="video_description_text">

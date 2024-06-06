@@ -71,7 +71,9 @@ use Drupal\node\Entity;
             $breads[] = [
                 'name' => 'Contact Us',
             ];    
-         } else {        
+         } else if ( $module_name == "system") { 
+            //
+         }else {        
             $path = \Drupal::service('path.current')->getPath();  
             if ($path=="/node/1") {
                 $breads[] = [

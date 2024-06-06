@@ -1,5 +1,7 @@
 {% include '@activities/leftmenu.html.twig' %}
 <div id="right_content">
+    <div class="text-right"><button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button></div>
+    <div class="spacer"></div>
     <ul class="submenu_container">
         <li class="submenu_item"><a href="javascript:;" class="active" id="submenu_link_info" onclick="getEventData('info',{{ items['evt_id'] }})">Event Information</a></li>
         {% if items['has_photo']  %}

@@ -12,8 +12,12 @@ var PhotoPerPageConst = 15;
 var totalPages = new Array();
 var currentPage = new Array();
 
+if (!app_path) {
+    var app_path = drupalSettings.path.baseUrl;
+}
+
 var modulePath = 'modules/custom/kicp_lightgallery/';
-var srcPath = '/kmapp2/kicp/' + modulePath + 'src/';
+var srcPath = app_path + modulePath + 'src/';
 
 
 function getiframe() {

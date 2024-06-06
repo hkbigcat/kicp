@@ -21,7 +21,7 @@
           <div><span class="title_no_of_reponse">No. of Response: </span><span class="entry_no_of_reponse">{{ item['response'] }} </span></div> 
         </div>  
         <div class="w20">
-          <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
+          <span><button class="share_button" onclick="copyTextToClipboard('{{ url('survey.survey_view' , {'survey_id': item['survey_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button></span>
           {% if item['allow_copy'] %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('survey.survey_copy', {'survey_id': item['survey_id'] }) }}'"><i class="fa-solid fa-copy"></i>Copy</button></span>
           {% endif %}

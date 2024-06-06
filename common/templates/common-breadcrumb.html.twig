@@ -1,7 +1,8 @@
+{% if breads %}
        <nav class="breadcrumb" role="navigation" aria-labelledby="system-breadcrumb">
     <ol class="breadcrumb-items">
           <li class="breadcrumb-item">
-                  <a href="/kmapp2/kicp/">Home</a>
+                  <a href="{{ path('<front>') }}">Home</a>
               </li>
           {% for bread in breads %} 
           <li class="breadcrumb-item">
@@ -15,4 +16,5 @@
            {% endfor %}    
         </ol>
   </nav>
+{% endif  %}  
 

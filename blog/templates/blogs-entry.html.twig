@@ -10,7 +10,7 @@
 <div id="MainEntryContainer">
    <div style="float:right;">
       <button class="kicp_button"  onclick="self.location.href='{{ path('blog.blog_view', {'blog_id': items['blog_id'] }) }}'"><i class="fa-solid fa-thumbtack"></i> All posts</button>
-      <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+      <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
       <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     </div>
     <div><span class="BlogName">{{ items ['user_full_name'] }}</span><span>{% include '@common/common-follow.html.twig'  with {contributor_id: items['user_id'], following: items['follow'] }  %}</span></div>
@@ -32,7 +32,7 @@
         {% include '@common/common-tags-list.html.twig' %}    
 
         <div class="entry_time">
-        {% if item['is_visible'] %}
+        {% if items['is_visible'] %}
         <span class="blog_subtitle">Publish Date:</span>
         {% else %}
         <span class="blog_subtitle">[Pending] Last Save:</span>

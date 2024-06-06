@@ -5,7 +5,6 @@ common_key:
       css/common.css: {}
     header: true
   js:
-    js/basepath.js: {}   
     js/common.js: {} 
     js/jquery-ui.min.js: {}
     js/calendar/AnchorPosition.js: {}

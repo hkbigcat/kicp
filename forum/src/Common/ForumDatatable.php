@@ -7,7 +7,6 @@
 namespace Drupal\forum\Common;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal;
 use Drupal\common\CommonUtil;
 use Drupal\common\LikeItem;
 use Drupal\common\TagList;
@@ -265,10 +264,18 @@ class ForumDatatable {
     }
 
     public static function getForumByTopic($topic_id) {
+
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+
         $sql = " SELECT forum_id, forum_name FROM kicp_forum_forum WHERE forum_id=( select forum_id from kicp_forum_topic where topic_id = ".$topic_id." )";
         $database = \Drupal::database();
         $record = $database-> query($sql)->fetchObject();
-        
+        if ($record) {
+            $record->countlike = LikeItem::countLike('forum', $record->forum_id);
+            $record->liked = LikeItem::countLike('forum', $record->forum_id,$my_user_id);
+        }
         return $record;
     }
 

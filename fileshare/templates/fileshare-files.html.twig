@@ -29,7 +29,7 @@
   {% for item in items %}
      {% if item['title']   %}
       <div class="EntryContainer {{ loop.index0 is odd ? 'even' : 'odd' }} columns">
-          <div class="w20"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}"><img src="{{ url('<front>') }}/system/files/fileshare/image/{{ '%06d' | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200" height="282"></a></div>
+          <div class="w20"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}"><img src="{{ path('<front>') }}/system/files/fileshare/image/{{ '%06d' | format(item['file_id']) }}/{{ (item['image_name']) }}" border="0" width="200" height="282"></a></div>
           <div class="w50">
                <div class="entry_title"><a href="{{ path('fileshare.fileshare_view', {'file_id': item['file_id'] }) }}">{{ item['title'] }}</a></div>
                <div class="entry_content">{{ item['description'] }}</div>

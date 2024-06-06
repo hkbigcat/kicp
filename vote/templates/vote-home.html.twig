@@ -23,7 +23,7 @@
           {% endif %}
         </div>  
         <div class="w20">
-           <span><button class="kicp_button" onclick="copyTextToClipboard('{{ url('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i>Share</button></span>
+           <span><button class="share_button" onclick="copyTextToClipboard('{{ url('vote.vote_view' , {'vote_id': item['vote_id'] }  ) }}'); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button></span>
           {% if item['allow_copy'] %}
           <span><button class="kicp_button" onclick="self.location.href='{{ path('vote.vote_copy', {'vote_id': item['vote_id'] }) }}'"><i class="fa-solid fa-copy"></i>Copy</button></span>
           {% endif %}

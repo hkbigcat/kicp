@@ -1,11 +1,6 @@
 {% include '@ppcactivities/leftmenu.html.twig' %}
 <div id="right_content">
     <div class="text-right">
-        <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
-        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
-        {% if user.hasPermission('activities_admin') %}
-        <button class="kicp_button" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
-        {% endif %}
         <div style="text-align:right;margin-top:5px;">
             <div id="DivFollower">PPCIS.OGCIO <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'PPCIS.OGCIO'}  %}</span></div>
         </div>

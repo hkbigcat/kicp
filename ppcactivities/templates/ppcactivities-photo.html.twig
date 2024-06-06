@@ -57,7 +57,7 @@
                     photohtmlAry = new Array();
                     var tmp='';
                     
-                    $.get("/kmapp2/kicp/modules/custom/kicp_lightgallery/src/photos.html", function(data) {
+                    $.get("{{ path('<front>') }}modules/custom/kicp_lightgallery/src/photos.html", function(data) {
                         htmldata = data;
                     }, 'html').done(function(){
                         photohtml = '';

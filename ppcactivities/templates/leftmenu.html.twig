@@ -1,4 +1,11 @@
 <div id="main_content">
+    <div class="text-right">
+    {% if user.hasPermission('activities_admin') %}
+       <button class="kicp_button" onclick="self.location.href='{{ path('ppcactivities.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
+    {% endif %}
+        <button class="share_button" onclick="copyTextToClipboard(); mailto(11,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+    </div>
+    <div class="spacer"></div>
     <ul class="submenu_container">
     {% for category in categories %}
         {% set activeclass = category['cop_id'] == cop_id?"class=active":"" %}

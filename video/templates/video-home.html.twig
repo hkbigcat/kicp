@@ -1,5 +1,5 @@
-<div class="text-right">
-    <button class="kicp_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+<div class="text-right" style="width:90%">
+    <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
     <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     {% if user.hasPermission('access administration pages') %}
     <button class="kicp_button" onclick="self.location.href='{{ path('video.admin_content') }}'"><i class="fa-solid fa-gear"></i>Admin</button>
@@ -51,7 +51,7 @@
             <!-- Loading Screen -->
             <div data-u="loading" style="position: absolute; top: 0px; left: 0px;">
                 <div style="filter: alpha(opacity=70); opacity: 0.7; position: absolute; display: block; top: 0px; left: 0px; width: 100%; height: 100%;"></div>
-                <div style="position:absolute;display:block;background:url('{{ url('<front>') }}/modules/custom/common/images/loading.gif\') no-repeat center center;top:0px;left:0px;width:100%;height:100%;"></div>
+                <div style="position:absolute;display:block;background:url('{{ path('<front>') }}/modules/custom/common/images/loading.gif\') no-repeat center center;top:0px;left:0px;width:100%;height:100%;"></div>
             </div>
             <div style="float:right;width:225px;font-weight:bold;font-size:14pt;border-bottom:1px solid #DDDDDD;padding-bottom:4px; margin-bottom:8px;">Latest 5 Events</div>
             <div data-u="slides" style="cursor:default;position:relative;top:0px;left:0px;width:540px;height:400px;overflow:hidden;margin-left:10px;margin-top:35px;">
@@ -62,11 +62,11 @@
                 <div>
                     <!-- large image //-->
                     <a href="{{ path('video.video_list', { 'media_event_id': item['media_event_id']  }) }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_name'] }}" >
-                        <img data-u="image" src="{{ url('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
+                        <img data-u="image" src="{{ path('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
                     </a>
                     <!-- Thumbnail //-->
                     <div data-u="thumb">
-                        <img class="i" src="{{ url('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
+                        <img class="i" src="{{ path('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
                         <div class="t" style="line-height:12pt;"><a href="video_list/{{ item['media_event_id'] }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_image'] }}" >{{ item['media_event_name'] }}</a></div>                                               
                     </div>
                 </div>
