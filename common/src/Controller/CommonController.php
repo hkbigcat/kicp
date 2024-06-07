@@ -179,7 +179,7 @@ class CommonController extends ControllerBase {
         
 
         $countLike = LikeItem::countLike($module, $record_id);
-        $response = array('result' => 1, 'data' => '<i class="fa-solid fa-thumbs-up" style="font-size:1.2rem"></i> (' . $countLike . ')');
+        $response = array('result' => 1, 'data' => '<a href="javascript:;" onclick="Swal.fire({text:\'You have already liked this page\'});"><i class="fa-solid fa-thumbs-up" style="font-size:1.2rem"></i> (' . $countLike . ')</a>');
 
         return new JsonResponse($response);
     }

@@ -19,15 +19,21 @@ class BookmarkDatatable extends ControllerBase {
 
   public static function getBookmarks($my_user_id=null,$bid=null ) {
 
+    if ($bid != null && !is_numeric($bid) ) {
+      return null;
+    }
+
     $myRecordOnly = \Drupal::request()->query->get('my');
     $tagsUrl = \Drupal::request()->query->get('tags');
+
+    $database = \Drupal::database();
+    
     if ($bid==null && $tagsUrl) {
-      $tags = json_decode($tagsUrl);
+      $escaped = $database->escapeLike($tagsUrl);
+      $tags = json_decode($escaped);
     } 
 
     try {
-        $database = \Drupal::database();
-
         $query = $database-> select('kicp_bookmark', 'a');
         $query -> join('xoops_users', 'b', 'a.user_id = b.user_id');
       

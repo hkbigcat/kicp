@@ -110,7 +110,8 @@ class ActivitiesDatatable {
         $query-> condition('a.cop_group_id', $group_id);
         $query-> condition('a.is_deleted', '0');
         if ($search_str && $search_str !="") {
-            $query->condition('a.cop_name', '%' . $search_str . '%', 'LIKE');
+            $escaped = $database->escapeLike($search_str);
+            $query->condition('a.cop_name', '%' . $escaped . '%', 'LIKE');
         }          
         $query->groupBy('a.cop_id');
         $query-> orderBy('a.display_order');
@@ -144,6 +145,10 @@ class ActivitiesDatatable {
 
 
     public static function getEventItemByTypeId($type_id, $item_id = "", $currentEventOnly=false) {
+
+        if ($type_id && !is_numeric($type_id))
+          return null;
+
         $output=array();
         $cond = '';
 

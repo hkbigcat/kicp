@@ -1,6 +1,6 @@
  <div id="like_div_{{ record_id }}" class="like_text_div">
  {% if liked %}
- <i class="fa-solid fa-thumbs-up" style="font-size:1.2rem"></i>&nbsp;( {{ countLike }} )
+ <a href="javascript:;" onclick="Swal.fire({text:'You have already liked this page'});"><i class="fa-solid fa-thumbs-up" style="font-size:1.2rem"></i>&nbsp;( {{ countLike }} )</a>
  {% else %}
  <a href="javascript:;" onClick="AddLike('{{ module }}',  {{ record_id }})" name="LikeLink" id="LikeLink"><i class="fa-solid fa-thumbs-up" style="font-size:1.2rem"></i>&nbsp;({{ countLike }})</a>
  {% endif %}

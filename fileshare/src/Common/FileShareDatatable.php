@@ -29,6 +29,9 @@ class FileShareDatatable extends ControllerBase {
 
   public static function load_folder($my_user_id=null,$folder_id=NULL) {
 
+    if ($folder_id != null && !is_numeric($folder_id) ) {
+      return null;
+    }
       
       $search_str = \Drupal::request()->query->get('search_str');
 
@@ -106,6 +109,10 @@ class FileShareDatatable extends ControllerBase {
 
 
     public static function getTitle($file_id = NULL) {
+
+      if ($file_id == "" or  !is_numeric($file_id) ) {
+        return null;
+    }              
  
       $sql = "SELECT title from kicp_file_share WHERE file_id = '$file_id'";
       $database = \Drupal::database();
@@ -120,6 +127,11 @@ class FileShareDatatable extends ControllerBase {
     
     public static function getSharedFile($file_id = NULL, $my_user_id="") {
 
+
+      if ($file_id != null && !is_numeric($file_id) ) {
+        return null;
+      }
+
       $tags="";
       $tagsUrl = \Drupal::request()->query->get('tags');
       if ($tagsUrl) {
@@ -127,6 +139,9 @@ class FileShareDatatable extends ControllerBase {
       }    
 
       $folder_id = \Drupal::request()->query->get('folder_id');
+      if ($folder_id && !is_numeric($folder_id) ) {
+        return null;
+      }      
       $myRecordOnly = \Drupal::request()->query->get('my');
       $myfollowed = \Drupal::request()->query->get('my_follow');
       $AuthClass = "\Drupal\common\Authentication";

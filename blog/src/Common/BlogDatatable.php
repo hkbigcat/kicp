@@ -79,6 +79,10 @@ class BlogDatatable {
 
     public static function checkBlogowner($entry_id="", $user_id="") {
 
+        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+            return null;
+        }
+
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages');
 
         if (!$isSiteAdmin) {
@@ -96,8 +100,8 @@ class BlogDatatable {
     public static function getBlogEntryContent($entry_id="") {
 
         # return "false" if the entry_id is EMPTY
-        if ($entry_id == "") {
-            return false;
+        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+            return null;
         }
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
@@ -148,7 +152,10 @@ class BlogDatatable {
 
     }    
 
-    public static function getEntryName($entry_id) {
+    public static function getEntryName($entry_id="") {
+        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+            return null;
+        }        
         $sql = "SELECT entry_title, blog_id FROM kicp_blog_entry WHERE entry_id='$entry_id'";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
@@ -157,7 +164,10 @@ class BlogDatatable {
     }
 
 
-    public static function getBlogName($blog_id) {
+    public static function getBlogName($blog_id="") {
+        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+            return null;
+        }            
         $sql = "SELECT blog_name FROM kicp_blog WHERE blog_id='$blog_id'";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();
@@ -166,7 +176,12 @@ class BlogDatatable {
         else return null;
     }
 
-    public static function getBlogInfo($blog_id) {
+    public static function getBlogInfo($blog_id="") {
+
+        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+            return null;
+        }        
+
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $my_user_id = $authen->getUserId();
@@ -219,6 +234,10 @@ class BlogDatatable {
 
     public static function getBlogIDByEntryID($entry_id = "") {
 
+        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+            return null;
+        }        
+
         $sql="SELECT blog_id FROM kicp_blog_entry WHERE entry_id ='" . $entry_id . "' AND is_deleted=0";
 
         try {
@@ -238,6 +257,10 @@ class BlogDatatable {
 
 
     public static function getBlogUID($entry_id = "") {
+
+        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+            return null;
+        }        
 
        $sql = "select a.uid from xoops_users a left join kicp_blog b on a.user_id = b.user_id left join kicp_blog_entry c on b.blog_id = c.blog_id where b.is_deleted = 0 and c.entry_id = '$entry_id'";
 
@@ -260,6 +283,10 @@ class BlogDatatable {
     }        
 
     public static function getBlogListContent($blog_id) {
+
+        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+            return null;
+        }    
 
         $output=array();
         $TagList = new TagList();
@@ -365,12 +392,16 @@ class BlogDatatable {
 
         $output=array();
         $tagsUrl = \Drupal::request()->query->get('tags');
+
+        $database = \Drupal::database();
+
         if ($tagsUrl) {
-          $tags = json_decode($tagsUrl);
+          $escaped = $database->escapeLike($tagsUrl);
+          $tags = json_decode($escaped);
         } 
         
         try {         
-          $database = \Drupal::database();
+          
           $query = $database-> select('kicp_blog_entry', 'a'); 
           $query -> leftjoin('kicp_blog', 'b', 'a.blog_id = b.blog_id');
           if ($tagsUrl) {
@@ -544,9 +575,10 @@ class BlogDatatable {
         $query-> condition('b.user_is_inactive', '0');
         $query-> condition('c.is_deleted', '0');
         if ($search_str && $search_str !="") {
+            $escaped = $database->escapeLike($search_str);
             $orGroup = $query->orConditionGroup()
-            ->condition('a.blog_name', '%' . $search_str . '%', 'LIKE')
-            ->condition('b.user_name', '%' . $search_str . '%', 'LIKE');          
+            ->condition('a.blog_name', '%' . $escaped . '%', 'LIKE')
+            ->condition('b.user_name', '%' . $escaped . '%', 'LIKE');          
             $query->condition($orGroup);
         }
         $query->groupBy("a.user_id");
@@ -589,13 +621,14 @@ class BlogDatatable {
 
     public static function blog_delegate_add_search($search_str="") {
         
-        //$sql = 'SELECT  user_id, user_name FROM xoops_users WHERE user_name LIKE "%'.$search_str.'%" OR user_id LIKE "%'.$search_str.'%" ORDER BY user_name;';
+        if ($search_str=="") return null;
         $database = \Drupal::database();
+        $escaped = $database->escapeLike($search_str);
         $query = $database-> select('xoops_users', 'a'); 
         $query-> fields('a', ['user_id', 'user_name']);
         $orGroup = $query->orConditionGroup()
-            -> condition('a.user_name', '%' . $search_str . '%', 'LIKE')
-            -> condition('a.user_id', '%' . $search_str . '%', 'LIKE');
+            -> condition('a.user_name', '%' . $escaped . '%', 'LIKE')
+            -> condition('a.user_id', '%' . $escaped . '%', 'LIKE');
         $query->condition($orGroup);
         $query-> orderBy('a.user_name');
 
@@ -711,7 +744,9 @@ class BlogDatatable {
     }
 
     public static function getBlogPhoto($blog_id="") {
-
+        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+            return null;
+        }       
         $sql = "SELECT image_name FROM kicp_blog where blog_id='$blog_id'";
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchObject();      

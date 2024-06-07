@@ -49,24 +49,25 @@ class ActivitiesController extends ControllerBase {
         $COPitems = array();
         $events = array();
 
-        if ($cop_id!="" )   { 
-            $COPitems = ActivitiesDatatable::getCOPbyGroupID($cop_id);
-
-            if ($item_id!="" )   { 
-                $item_index = array_search($item_id, (array_column($COPitems, 'cop_id')));
-                $activityInfo = ['evt_type_name' => $COPitems[$item_index]['cop_name'], 'description' =>  $COPitems[$item_index]['cop_info']];
+        if (is_numeric($type_id)) {
+            if ($cop_id!="" )   { 
+                $COPitems = ActivitiesDatatable::getCOPbyGroupID($cop_id);
+                
+                if ($item_id!="" )   { 
+                    $item_index = array_search($item_id, (array_column($COPitems, 'cop_id')));
+                    $activityInfo = ['evt_type_name' => $COPitems[$item_index]['cop_name'], 'description' =>  $COPitems[$item_index]['cop_info']];
+                } else {
+                    $cop_info = ActivitiesDatatable::getCOPGroupInfo($cop_id);
+                    $activityInfo = ['evt_type_name' => $cop_info['group_name'], 'description' =>  $cop_info['group_description']];
+                }
             } else {
-                $cop_info = ActivitiesDatatable::getCOPGroupInfo($cop_id);
-                $activityInfo = ['evt_type_name' => $cop_info['group_name'], 'description' =>  $cop_info['group_description']];
+                $activityInfo = ActivitiesDatatable::getActivityTypeInfo($type_id);
             }
-        } else {
-            $activityInfo = ActivitiesDatatable::getActivityTypeInfo($type_id);
+            $activityInfo['type_id'] = $type_id;
+
+            if ($type_id==1 & $item_id!="" || $type_id!=1 )
+                $events = ActivitiesDatatable::getEventItemByTypeId($type_id, $item_id);
         }
-        $activityInfo['type_id'] = $type_id;
-
-        if ($type_id==1 & $item_id!="" || $type_id!=1 )
-            $events = ActivitiesDatatable::getEventItemByTypeId($type_id, $item_id);
-
         $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
 
         return [

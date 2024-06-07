@@ -25,6 +25,8 @@
         {% else %}    
             {% if items['type_id'] == 1 %}
                 {% include '@activities/activities-cop-top.html.twig' %}
+            {% else %}                    
+                    <div class="text-center">No activitiy information</div>
             {% endif %}
         {% endif %}
 

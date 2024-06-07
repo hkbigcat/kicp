@@ -54,9 +54,12 @@ class ForumController extends ControllerBase {
             return new RedirectResponse($url->toString());
         }
 
-        $forumPosts = ForumDatatable::getForumPostList($forum_id);
+        
         $forumName = ForumDatatable::getForumName($forum_id);
-
+        if (!$forumName) {
+            return ['#markup' => t('This forum is not available')];    
+        }
+        $forumPosts = ForumDatatable::getForumPostList($forum_id);
         return [
             '#theme' => 'forum-forum',
             '#forum_info' => [ 'forum_id' => $forum_id, 'forum_name' => $forumName, ],
@@ -76,8 +79,12 @@ class ForumController extends ControllerBase {
             return new RedirectResponse($url->toString());
         }
 
-        $forumThreads = ForumDatatable::getForumThreads($topic_id);
         $forumInfo = ForumDatatable::getForumByTopic($topic_id);
+        if (!$forumInfo) {
+            return ['#markup' => t('This forum is not available')];    
+        }
+
+        $forumThreads = ForumDatatable::getForumThreads($topic_id);
         $TagList = new TagList();
         $taglist = $TagList->getTagsForModule('forum', $topic_id);        
 

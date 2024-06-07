@@ -99,6 +99,10 @@ class ForumDatatable {
 
     public static function getForumPostList($forum_id="") {
 
+        if ($forum_id == "" or  !is_numeric($forum_id) ) {
+            return null;
+        }        
+
         $output=array();
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
@@ -224,6 +228,10 @@ class ForumDatatable {
 
     public static function getForumThreads($topic_id="") {
 
+        if ($topic_id == "" or  !is_numeric($topic_id) ) {
+            return null;
+        }            
+
         $output = array();
         $cond = $topic_id!=""?" AND topic_id = ".$topic_id:"";
         $sql = "SELECT a.post_id, a.subject, a.content, a.parent_id, a.create_datetime, if(a.is_guest=1,a.poster_name, x.user_name) as poster_name, a.topic_id, a.is_guest, a.user_id
@@ -255,6 +263,11 @@ class ForumDatatable {
     }
 
     public static function getForumName($forum_id) {
+
+        if ($forum_id == "" or  !is_numeric($forum_id) ) {
+            return null;
+        }            
+
         $sql = " SELECT forum_name FROM kicp_forum_forum WHERE forum_id=".$forum_id;
         $database = \Drupal::database();
         $record = $database-> query($sql)->fetchObject();
@@ -264,6 +277,10 @@ class ForumDatatable {
     }
 
     public static function getForumByTopic($topic_id) {
+
+        if ($topic_id == "" or  !is_numeric($topic_id) ) {
+            return null;
+        }               
 
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
