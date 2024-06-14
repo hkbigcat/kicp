@@ -746,6 +746,14 @@ class CommonController extends ControllerBase {
         return new JsonResponse($response);
                 
     }
+
+    public static function notFound() {
+        return [
+            '#type' => 'markup',
+            '#markup' => 'Sorry. This page cannot be found.',
+          ];
+    }
+
     public static function Breadcrumb() {
 
         $breads = array();

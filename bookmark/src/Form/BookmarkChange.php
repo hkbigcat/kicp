@@ -22,6 +22,10 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkChange extends FormBase  {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;    
+
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
@@ -65,12 +69,9 @@ class BookmarkChange extends FormBase  {
 
         $bookmark = BookmarkDatatable::getBookmarks($this->my_user_id, $bid);
 
-
-        if ($bookmark['bid'] == null ) {
-            $output = '<p style="text-align:center">this bookmark cannot be found.</p>';
-            $form['intro'] = array(
-            '#markup' => t($output),
-            );  
+        if (!$bookmark) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This bookmark cannot be found.'));              
             return $form;
         }
 

@@ -22,6 +22,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Utility\Error;
 
 class BlogMyPhoto extends FormBase  {
+    public $module;    
 
     public function __construct() {
         $this->module = 'blog';
@@ -51,8 +52,6 @@ class BlogMyPhoto extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $config = \Drupal::config('blog.settings'); 
-
-
         
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();

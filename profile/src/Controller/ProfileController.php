@@ -18,6 +18,9 @@ use Drupal\Core\Utility\Error;
 
 class ProfileController extends ControllerBase {
 
+    public $is_authen;
+    public $module;    
+
     public function __construct() {
         $this->module = 'profile';
         $AuthClass = "\Drupal\common\Authentication";
@@ -45,6 +48,11 @@ class ProfileController extends ControllerBase {
 
     public function reloadCopJoinMemberTable() {
 
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }
+
         $joinedCopInfo = ProfileDatatable::getUserJoinedCopInfo();
         
         $renderable = [
@@ -59,6 +67,11 @@ class ProfileController extends ControllerBase {
     }    
 
     public function ProfileJoinCopMembership() {
+
+        $url = Url::fromUri('base:/no_access');
+        if (! $this->is_authen) {
+            return new RedirectResponse($url->toString());
+        }   
         
         $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
         $authen = new $AuthClass();

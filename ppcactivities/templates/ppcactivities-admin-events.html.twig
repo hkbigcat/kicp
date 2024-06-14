@@ -21,13 +21,13 @@
         {% for item in items %}
            {% if  item['evt_name'] %}
         <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'odd' : 'even' }}">
-            <div style="width:3%;float:left; display:block;">{{ loop.index0 + 1 }}</div>
-            <div style="width:32%;float:left;display:block;padding-right:12px;">{{ item['evt_name'] }}</div>
-            <div style="width:8%;float:left;display:block;">{{  item['evt_start_date'] }}</a></div>
-            <div style="width:9%;float:left;display:block;">{{  item['evt_end_date'] }}</a></div>
-            <div style="width:7%;float:left;display:block;">{% if item['is_recent'] %} Y {% else %} N {% endif %}</div>
-            <div style="width:7%;float:left;display:block;">{% if item['is_visible'] %} Y {% else %} N {% endif %}</div>
-            <div style="width:27%;float:left;display:block;">
+            <div style="width:3%;float:left; ">{{ loop.index0 + 1 }}</div>
+            <div style="width:32%;float:left;padding-right:12px;">{{ item['evt_name'] }}</div>
+            <div style="width:8%;float:left;">{{  item['evt_start_date'] }}</a></div>
+            <div style="width:9%;float:left;">{{  item['evt_end_date'] }}</a></div>
+            <div style="width:7%;float:left;">{% if item['is_recent'] %} Y {% else %} N {% endif %}</div>
+            <div style="width:7%;float:left;">{% if item['is_visible'] %} Y {% else %} N {% endif %}</div>
+            <div style="width:27%;float:left;">
                 <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin_item_change', {'evt_id': item['evt_id'] }) }}'"><i class="fa-solid fa-pencil"></i> Edit</button>          
                 <button class="kicp_button size-2" onclick="module_item_delete('ppcactivities_item','{{ item['evt_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
                 <button class="kicp_button size-2" onclick="self.location.href='{{ path('ppcactivities.admin.enroll_list', {'evt_id': item['evt_id'] }) }}'">Enrollment List</button>
@@ -41,5 +41,5 @@
 </div>
 
 <div style="float:right; margin:20px;">{{ pager }}</div>
-{% include '@common/common-confirm-delete.html.twig'  with {module: 'event'}  %}
+
 

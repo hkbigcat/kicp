@@ -14,8 +14,11 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\activities\Controller\ActivitiesController;
+use Drupal\Core\Utility\Error;
 
 class ActivityCOPItemAdd extends FormBase {
+
+    public $module;
 
     public function __construct() {
         $this->module = 'activities';

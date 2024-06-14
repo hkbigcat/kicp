@@ -22,6 +22,8 @@ use Drupal\Core\Utility\Error;
 
 class ForumAdd extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'forum';
     }
@@ -38,14 +40,6 @@ class ForumAdd extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state, $forum_id="") {
 
-
-        if ($forum_id == "") {
-            $form['intro'] = array(
-              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> No Forum is selected.'),
-            );
-            return $form; 
-        }
-
         $post_id = (isset($_REQUEST['post_id']) && $_REQUEST['post_id'] != "") ? $_REQUEST['post_id'] : "";
         $topic_id = (isset($_REQUEST['topic_id']) && $_REQUEST['topic_id'] != "") ? $_REQUEST['topic_id'] : "";
         $quotePost = (isset($_REQUEST['quotePost']) && $_REQUEST['quotePost'] != "") ? $_REQUEST['quotePost'] : "";
@@ -58,9 +52,8 @@ class ForumAdd extends FormBase {
         
        $forum_name = ForumDatatable::getForumName($forum_id);
        if (!$forum_name) {
-        $form['intro'] = array(
-          '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This forum is not available'),
-        );
+        $messenger = \Drupal::messenger(); 
+        $messenger->addWarning( t('This forum is not available'));                
         return $form; 
     }       
         

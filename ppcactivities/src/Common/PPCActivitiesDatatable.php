@@ -21,14 +21,14 @@ class PPCActivitiesDatatable {
 
         $search_str = \Drupal::request()->query->get('search_str');
         $cond = "";
+        $database = \Drupal::database();
         if ($search_str && $search_str !="") {
-            $cond = " and a.evt_type_name like '%$search_str%' ";
+            $escaped = $database->escapeLike($search_str);
+            $cond = " and a.evt_type_name like '%$escaped%' ";
         }                    
-
         $sql = "SELECT a.evt_type_id, a.evt_type_name, a.description, a.display_order, IF(COUNT(b.evt_id)>0, false, true) AS allow_delete 
                 FROM kicp_ppc_event_type a LEFT JOIN kicp_ppc_event b on (b.evt_type_id = a.evt_type_id AND b.is_deleted = 0) 
                 WHERE a.is_deleted = 0 GROUP BY a.evt_type_id, a.evt_type_name, a.description, a.display_order ORDER BY a.display_order;";
-        $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -72,7 +72,8 @@ class PPCActivitiesDatatable {
             $result = $query->execute()->fetchAssoc();
         } else {
             if ($search_str && $search_str !="") {
-                $query->condition('a.cop_name', '%' . $search_str . '%', 'LIKE');
+                $escaped = $database->escapeLike($search_str);
+                $query->condition('a.cop_name', '%' . $escaped . '%', 'LIKE');
             }
             $query -> leftjoin('kicp_ppc_event', 'b', 'b.cop_id=a.cop_id AND b.is_deleted=:is_deleted' , [':is_deleted' => 0]);
             $query->addExpression('COUNT(b.evt_id)', 'evt_total');
@@ -159,7 +160,8 @@ class PPCActivitiesDatatable {
         $query-> condition('a.is_archived', '0');
         $query-> condition('a.is_deleted', '0');
         if ($search_str && $search_str !="") {
-            $query->condition('a.evt_name', '%' . $search_str . '%', 'LIKE');
+            $escaped = $database->escapeLike($search_str);
+            $query->condition('a.evt_name', '%' . $escaped . '%', 'LIKE');
         }                    
         $query-> orderBy('a.evt_start_date', 'DESC');
 
@@ -270,15 +272,16 @@ class PPCActivitiesDatatable {
 
         $search_sql = "";
         $search_str = \Drupal::request()->query->get('search_str');
+        $database = \Drupal::database();
         if ($search_str && $search_str !="") {
-            $search_sql = " and ( evt_deliverable_url like '%$search_str%' or  evt_deliverable_name like '%$search_str%' ) ";
+            $escaped = $database->escapeLike($search_str);
+            $search_sql = " and ( evt_deliverable_url like '%$escaped%' or  evt_deliverable_name like '%$escaped%' ) ";
         }
 
         if($evt_id == "") {
             return $record;
         } else {
             $sql = "SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_ppc_event_deliverable WHERE evt_id='$evt_id' AND is_deleted = 0 $search_sql ORDER BY evt_deliverable_url";
-            $database = \Drupal::database();
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
             if (!$result)
               return null;
@@ -354,9 +357,10 @@ class PPCActivitiesDatatable {
 
         $search_str = \Drupal::request()->query->get('search_str');
         if ($search_str && $search_str !="") {
+            $escaped = $database->escapeLike($search_str);
             $orGroup = $query->orConditionGroup();
-            $orGroup->condition('a.evt_photo_url', '%' . $search_str . '%', 'LIKE');
-            $orGroup->condition('a.evt_photo_description', '%' . $search_str . '%', 'LIKE');
+            $orGroup->condition('a.evt_photo_url', '%' . $escaped . '%', 'LIKE');
+            $orGroup->condition('a.evt_photo_description', '%' . $escaped . '%', 'LIKE');
             $query->condition($orGroup);
         }                   
 

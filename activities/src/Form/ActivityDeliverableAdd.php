@@ -22,6 +22,8 @@ use Drupal\Core\File\FileSystemInterface;
 
 class ActivityDeliverableAdd extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
     }

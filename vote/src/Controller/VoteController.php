@@ -22,6 +22,10 @@ use Drupal\Core\Url;
 
 class VoteController extends ControllerBase {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;    
+
     public function __construct() {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";

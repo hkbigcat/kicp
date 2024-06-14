@@ -15,6 +15,7 @@ blog.blog_entry:
     _title: 'Blog'
   requirements:
     _permission: 'access content'
+    entry_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -25,6 +26,7 @@ blog.blog_view:
     _title: 'Blog'
   requirements:
     _permission: 'access content'
+    blog_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -45,6 +47,7 @@ blog.change_data:
     _title: 'Blog - Edit Entry'
   requirements:
     _permission: 'access content'
+    entry_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -55,6 +58,7 @@ blog.delete_data:
     _title: 'Delete Blog'
   requirements:
     _permission: 'access content'
+    entry_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -95,6 +99,7 @@ blog.comment_list:
     _title: 'Display Blog Comment'
   requirements:
     _permission: 'access content'
+    entry_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -125,6 +130,7 @@ blog.delegate_delete:
     _title: 'Delete Blog Delegated Users'
   requirements:
     _permission: 'access content'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE
 

@@ -18,6 +18,8 @@ use Drupal\Core\Utility\Error;
 
 class ActivityCOPCategoryAdd extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
     }

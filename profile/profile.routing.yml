@@ -54,6 +54,8 @@ profile.profile_group_delete:
     _title: 'Delete Group'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -64,6 +66,8 @@ profile.profile_group_change:
     _title: 'Edit Group'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -74,6 +78,8 @@ profile.profile_group_member:
     _title: 'Group Maintenance'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -84,6 +90,9 @@ profile.profile_group_member_change:
     _title: 'Edit Member Name'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE
 
@@ -94,6 +103,9 @@ profile.profile_group_member_add_action:
     _title: 'Add Group Member'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE    
 
@@ -104,5 +116,8 @@ profile.profile_group_member_delete:
     _title: 'Delete Group Member'
   requirements:
     _permission: 'access content'
+    type: '(P|B)'
+    group_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE    

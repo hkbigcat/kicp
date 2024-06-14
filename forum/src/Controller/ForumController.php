@@ -18,6 +18,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ForumController extends ControllerBase {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;
+
     public function __construct() {
         $this->module = 'forum';
         $AuthClass = "\Drupal\common\Authentication";
@@ -184,9 +188,11 @@ class ForumController extends ControllerBase {
              'name' => $forumName??'No Forum' ,
              'url' => $forum_url??null ,
            ];
-            $breads[] = [
-                'name' => 'Add / Reply' ,
-            ];            
+           if ($forumName) {
+                $breads[] = [
+                    'name' => 'Add / Reply' ,
+                ];            
+            }
         } else if ($routeName=="forum.forum_tag") {
             $breads[] = $base_path;
             $breads[] = [

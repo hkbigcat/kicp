@@ -23,6 +23,10 @@ use Drupal\file\Entity;
 use Drupal\Core\Utility\Error;
 
 class SurveyAddPage1 extends FormBase {
+  
+  public $is_authen;
+  public $allow_file_type;
+  public $module;
 
     public function __construct() {
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
@@ -49,15 +53,15 @@ class SurveyAddPage1 extends FormBase {
             '#markup' => CommonUtil::no_access_msg(),
         ];     
         return $form;        
-    }
+      }
 
-        $request = \Drupal::request();
-        $session = $request->getSession();
-        $session->set('questionNo', "");
-        $session->set('totalQuestionNo', "");
-        $_SESSION['questionNo'] = "";
-        $_SESSION['totalQuestionNo'] = "";
-        $output = NULL;
+      $request = \Drupal::request();
+      $session = $request->getSession();
+      $session->set('questionNo', "");
+      $session->set('totalQuestionNo', "");
+      $_SESSION['questionNo'] = "";
+      $_SESSION['totalQuestionNo'] = "";
+      $output = NULL;
 
         // display the form
 

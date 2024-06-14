@@ -27,6 +27,10 @@ use Drupal\Core\Utility\Error;
 
 class BlogChange extends FormBase  {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;    
+
     public function __construct() {
         $this->module = 'blog';
         $AuthClass = "\Drupal\common\Authentication";
@@ -91,9 +95,8 @@ class BlogChange extends FormBase  {
         $entry = BlogDatatable::getBlogEntryContent($entry_id);
         
         if (!$entry) {
-            $form['intro'] = array(
-              '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This blog cannot be found'),
-            );
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This blog cannot be found'));                
             return $form; 
            }
 

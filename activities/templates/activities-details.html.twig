@@ -1,5 +1,6 @@
 {% include '@activities/leftmenu.html.twig' %}
 <div id="right_content">
+{% if items %}
     <div class="text-right"><button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button></div>
     <div class="spacer"></div>
     <ul class="submenu_container">
@@ -16,10 +17,10 @@
         {% include '@common/common-like.html.twig'  with {module: 'activities', 'record_id':  items['evt_id'], countLike: items ['countlike'], 'liked': items ['liked']}  %}
         <style>.like_text_div{width:30%; text-align:right;display:inline-block;float:right;}</style>
     </ul>
-    <div id="event_info" class="type_item" style="width:98%;">
+    <div id="event_info" class="type_item">
         <div class="event_column_title">Event Name:</div>
         <div class="event_column_content"> {{ items['evt_name']   }}</div>
-        <div id="event_detail" style="display: block;">
+        <div id="event_detail">
             <div class="event_column_title">Date:</div>
             <div class="event_column_content">{{ items['evt_start_date'] | date('d.m.Y H:i:s')  }}  - {{ items['evt_end_date'] | date('H:i:s')  }} ({{ items['evt_start_date'] | date('l')  }})</div>
             <div class="event_column_title">Venue:</div>
@@ -54,6 +55,10 @@
         <p>{{items['enroll_text']}}</p>
         {% endif %}
     {% endif %}
+
+{% else  %}
+<div class="text-center font-large dark"><i class="fa-solid fa-circle-exclamation"></i>&nbsp;This activity is not available</div>
+{% endif %}
 </div>
 
 

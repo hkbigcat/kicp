@@ -15,6 +15,7 @@ ppcactivities.content.cop:
     _title: 'PPC Activities'
   requirements:
     _permission: 'access content'
+    cop_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -25,6 +26,8 @@ ppcactivities.content.type:
     _title: 'PPC Activities'
   requirements:
     _permission: 'access content'
+    type_id: '\d+'
+    cop_id: '\d+'    
   options:
     no_cache: TRUE
 
@@ -35,6 +38,7 @@ ppcactivities.activities_detail:
     _title: 'PPC Activities - Event Information'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -85,6 +89,7 @@ ppcactivities.admin_category_delete:
     _title: 'Delete PPC Category'
   requirements:
     _permission: 'activities_admin'
+    cop_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -95,6 +100,7 @@ ppcactivities.admin_cop_category_change:
     _title: 'PPC Activities - Edit COP Category'
   requirements:
     _permission: 'activities_admin'
+    cop_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -115,6 +121,7 @@ ppcactivities.admin_event:
     _title: 'PPC Activities Management Event'
   requirements:
     _permission: 'activities_admin'
+    type_id: '\d+'
   options:
     no_cache: TRUE     
 
@@ -135,6 +142,7 @@ ppcactivities.admin_item_delete:
     _title: 'Delete PPC Event'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE  
 
@@ -145,6 +153,7 @@ ppcactivities.enroll_status:
     _title: 'PPC Activities Enrollment Status'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -155,6 +164,7 @@ ppcactivities.admin.enroll_list:
     _title: 'PPC Activities Enrollment List'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -165,6 +175,8 @@ ppcactivities.enroll_delete:
     _title: 'Delete PPC Activities Enrollment'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'    
   options:
     no_cache: TRUE    
 
@@ -175,6 +187,8 @@ ppcactivities.enroll_status_update:
     _title: 'Update Activities Enrollment'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'    
   options:
     no_cache: TRUE
 
@@ -185,6 +199,7 @@ ppcactivities.photo:
     _title: 'PPC Activities'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -195,6 +210,7 @@ ppcactivities.photo_add:
     _title: 'PPC Activities - Add Event Photo'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -205,6 +221,7 @@ ppcactivities.photo_change:
     _title: 'PPC Activities - Edit Event Photo'
   requirements:
     _permission: 'activities_admin'
+    evt_photo_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -215,6 +232,7 @@ ppcactivities.photo_delete:
     _title: 'Delete Event Photo'
   requirements:
     _permission: 'activities_admin'
+    evt_photo_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -225,6 +243,7 @@ ppcactivities.deliverable:
     _title: 'PPC Activities'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -235,6 +254,7 @@ ppcactivities.deliverable_add:
     _title: 'PPC Activities - Add Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -245,6 +265,7 @@ ppcactivities.deliverable_change:
     _title: 'PPC Activities - Edit Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_deliverable_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -255,6 +276,7 @@ ppcactivities.deliverable_delete:
     _title: 'Delete Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_deliverable_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -265,6 +287,7 @@ ppcactivities.enroll_status_export:
     _title: 'Activities Enrollment Status'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -285,6 +308,7 @@ ppcactivities.admin_item_change:
     _title: 'PPC Activities - Edit Event'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -295,6 +319,7 @@ ppcactivities.admin_list_change:
     _title: 'PPC Activities - Edit Event Type'
   requirements:
     _permission: 'activities_admin'
+    evt_type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -315,6 +340,7 @@ ppcactivities.admin_list_delete:
     _title: 'Delete Event Type'
   requirements:
     _permission: 'activities_admin'
+    evt_type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -325,5 +351,7 @@ ppcactivities.register:
     _title: 'Event Regsitration'
   requirements:
     _permission: 'access content'
+    action: '(enroll|cancel_enroll|reenroll|cancel_reenrol)'
+    evt_type_id: '\d+'
   options:
     no_cache: TRUE    

@@ -1,7 +1,7 @@
-    
-
+{% if items %}
 {% include '@ppcactivities/leftmenu.html.twig' %}
 <div id="right_content">
+
     <ul class="submenu_container">
         <li class="submenu_item"><a href="javascript:;" class="active" id="submenu_link_info" onclick="getEventData('info',{{ items['evt_id'] }})">Event Information</a></li>
         {% if items['has_photo']  %}
@@ -55,6 +55,8 @@
         {% endif %}
     {% endif %}    
 </div>
-
+{% else %}    
+<div class="text-center font-large dark"><i class="fa-solid fa-circle-exclamation"></i>&nbsp;This PPC activity is not available</div>
+{% endif %}    
 
 

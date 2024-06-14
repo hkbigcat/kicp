@@ -22,6 +22,11 @@ use Drupal\common\AccessControl;
 use Drupal\Core\Utility\Error;
 
 class VoteChange1 extends FormBase {
+  
+  public $is_authen;
+  public $my_user_id;
+  public $module;    
+  public $allow_file_type;
 
     public function __construct() {
         $this->module = 'vote';

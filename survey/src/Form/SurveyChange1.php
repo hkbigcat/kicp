@@ -23,6 +23,11 @@ use Drupal\Core\Utility\Error;
 
 class SurveyChange1 extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;
+  public $allow_file_type;
+
     public function __construct() {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
@@ -58,16 +63,14 @@ class SurveyChange1 extends FormBase {
         $survey = SurveyDatatable::getSurvey($survey_id,  $this->my_user_id);
 
         if (!$survey) {
-          $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> Survey not found'),
-          );
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('Survey not found'));                        
           return $form; 
          }
          $owner = SurveyDatatable::checkOwner($survey_id,  $this->my_user_id);
          if (!$owner) {
-          $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You cannot edit this survey'),
-          );
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('You cannot edit this survey'));                                  
           return $form; 
          }
 

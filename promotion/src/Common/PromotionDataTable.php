@@ -222,7 +222,6 @@ class PromotionDataTable {
 		$database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-		
 		$k=0;
 		$lastPublish_Date = "";
 		$slide=0;
@@ -287,12 +286,15 @@ class PromotionDataTable {
 			}	
 			
 			$output .= $newsletterSlider;
+
 			
-			if ($Title!="") {
-				$output .= '<div class="imgwrap"><img src="/kicp/sites/default/files/public/promotion/photo/'.strtolower($Title).'" alt="Photo '.substr($Title,0,-4).'" border="0"></div>';
+			//if ($Title!="") {
+			if ($record["Title"]!="") {				
+				$output .= '<div class="imgwrap"><img src="/kicp/sites/default/files/public/promotion/photo/'.strtolower($record["Title"]).'" alt="Photo '.substr($record["Title"],0,-4).'" border="0"></div>';
 			}
 		
-			$lastPublish_Date = $Publish_Date;
+			//$lastPublish_Date = $Publish_Date;
+			$lastPublish_Date = $record['Publish_Date'];
 			$i++;
 		}
 		

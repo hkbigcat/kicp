@@ -20,6 +20,8 @@ use Drupal\Core\Utility\Error;
 
 class VideoChange extends FormBase {
 
+  public $module;
+
     public function __construct() {
         $this->module = 'video';
     }

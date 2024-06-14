@@ -17,6 +17,11 @@ use Drupal\Core\Utility\Error;
 
 class SurveyView extends FormBase {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;
+    public $allow_file_type;    
+
     public function __construct() {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
@@ -24,7 +29,6 @@ class SurveyView extends FormBase {
         $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();             
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
-        $this->max_preview_page = CommonUtil::getSysValue('survey_max_preview_page');
     }
 
     /**
@@ -52,7 +56,7 @@ class SurveyView extends FormBase {
         if (!$survey) {
             $isShowSubmit = false;
             $messenger = \Drupal::messenger(); 
-            $messenger->addStatus( t('This survey does not exist or you do not have authroity'));                        
+            $messenger->addWarning( t('This survey does not exist or you do not have authroity'));                        
             return $form; 
         }
 

@@ -21,13 +21,14 @@ use Drupal;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity;
-
+use Drupal\Core\Utility\Error;
 
 class ActivityItemChange extends FormBase  {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
-        $this->default_creator = 'KMU.OGCIO';
 
     }
 
@@ -59,6 +60,11 @@ class ActivityItemChange extends FormBase  {
         $form['#attributes']['enctype'] = 'multipart/form-data';
 
         $eventInfo = ActivitiesDatatable::getEventDetail($evt_id);
+        if (!$eventInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This activity is not available'));              
+            return $form;            
+        }           
 
         $form['evt_name'] = [
             '#type' => 'textfield',

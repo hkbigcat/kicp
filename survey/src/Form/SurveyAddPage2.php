@@ -24,6 +24,11 @@ use Drupal\Core\Utility\Error;
 
 class SurveyAddPage2 extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;
+  public $allow_file_type;
+
     public function __construct() {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";

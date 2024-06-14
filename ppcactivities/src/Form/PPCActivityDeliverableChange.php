@@ -20,6 +20,8 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityDeliverableChange extends FormBase {
 
+    public $module; 
+
     public function __construct() {
         $this->module = 'ppcactivities';
     }
@@ -42,6 +44,11 @@ class PPCActivityDeliverableChange extends FormBase {
         $form['#attributes']['enctype'] = 'multipart/form-data';
         
         $deliverableInfo = PPCActivitiesDatatable::getEventDeliverableInfo($evt_deliverable_id);
+        if (!$deliverableInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This item is not available'));               
+            return $form;            
+        }            
         
         $form['evt_deliverable_url'] = array(
             '#title' => t('Deliverable Name.'),

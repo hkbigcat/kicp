@@ -23,6 +23,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Drupal\Core\Utility\Error;
 
 class PPCActivitiesController extends ControllerBase {
+
+    public $is_authen;
+    public $my_user_id;
+    public $module;    
     
     public function __construct() {
         $this->module = 'ppcactivities';
@@ -41,17 +45,23 @@ class PPCActivitiesController extends ControllerBase {
             return new RedirectResponse($url->toString());
         }
 
-        $activitiesType = PPCActivitiesDatatable::getAllActivityType();
-        $activityInfo = PPCActivitiesDatatable::getActivityTypeInfo($type_id);
-        $activityInfo['type_id'] = $type_id;
+        $events = array();
+        $activityInfo = array();
         $category = PpcActivitiesDatatable::getAllActivityCategory();
-        $events = PPCActivitiesDatatable::getEventItemByTypeId($type_id, $cop_id);
+        $max_cop = max(array_column($category, 'cop_id'));
+        $activitiesType = PPCActivitiesDatatable::getAllActivityType();
+        $max_type = max(array_column($activitiesType, 'evt_type_id'));
+        if ($cop_id>=1 && $cop_id<=$max_cop && ($type_id==""  || ($type_id>=1 && $type_id <=$max_type))) {            
+            $activityInfo = PPCActivitiesDatatable::getActivityTypeInfo($type_id);
+            $activityInfo['type_id'] = $type_id>=1&&$type_id<=$max_type?$type_id:1;        
+            $events = PPCActivitiesDatatable::getEventItemByTypeId($type_id, $cop_id);
+        }
         $following = Follow::getFollow('PPCIS.OGCIO', $this->my_user_id);    
 
         return [
             '#theme' => 'ppcactivities-main',
             '#items' => $activityInfo,
-            '#cop_id' => $cop_id,
+            '#cop_id' => $cop_id>=1&&$cop_id<=$max_cop?$cop_id:1,
             '#categories' => $category,
             '#events' => $events,
             '#types' => $activitiesType,
@@ -72,8 +82,10 @@ class PPCActivitiesController extends ControllerBase {
 
 
         $EventDetail = PPCActivitiesDatatable::getEventDetail($evt_id);
-        $activitiesType = PPCActivitiesDatatable::getAllActivityType();
-        $category = PpcActivitiesDatatable::getAllActivityCategory();
+        if ($EventDetail) {
+            $activitiesType = PPCActivitiesDatatable::getAllActivityType();
+            $category = PpcActivitiesDatatable::getAllActivityCategory();
+        }
 
         return [
             '#theme' => 'ppcactivities-details',
@@ -776,13 +788,14 @@ class PPCActivitiesController extends ControllerBase {
                 }                
             }
             $breads[] = [
-                'name' => $type['evt_type_name']??'No Activities Type' ,
+                'name' => $type['evt_type_name']??'No PPC Activities' ,
                 'url' => $type_url??null,
             ]; 
-            $breads[] = [
-                'name' => $evt_name??'No Event' ,
-            ];                       
-
+            if ($type) {
+                $breads[] = [
+                    'name' => $evt_name??'No Event' ,
+                ];          
+            }             
         } else if ($routeName=="ppcactivities.admin_content") {
             $breads[] = $base_path;
             $breads[] = [

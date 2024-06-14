@@ -25,6 +25,10 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkController extends ControllerBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;
+
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();

@@ -18,6 +18,8 @@ use Drupal\Core\Utility\Error;
 
 class ActivityPhotoChange extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
     }
@@ -40,7 +42,11 @@ class ActivityPhotoChange extends FormBase {
         $form['#attributes']['enctype'] = 'multipart/form-data';
         
         $photoInfo = ActivitiesDatatable::getEventPhotoInfo($evt_photo_id);
-        
+        if (!$photoInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This photo is not available'));                
+            return $form;            
+        }            
         
         $form['evt_photo_url'] = array(
             '#title' => t('Photo Name'),

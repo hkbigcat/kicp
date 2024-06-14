@@ -18,6 +18,9 @@ use Drupal\Core\Url;
 
 class PromotionController extends ControllerBase {
 
+    public $is_authen;
+    public $module;    
+
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
@@ -33,6 +36,7 @@ class PromotionController extends ControllerBase {
             return new RedirectResponse($url->toString());
         }
 
+		
 		$refID = \Drupal::request()->query->get('refID');
 		$refID = $refID??""; 
 
@@ -43,7 +47,9 @@ class PromotionController extends ControllerBase {
         $search_str = $search_str??""; 
 
 		
-			
+		$content = "";
+		$content2 = "";
+		$content3 = "";	
        		
 		$total = 0;
 		$totalStr = new PromotionDataTable;
@@ -68,7 +74,8 @@ class PromotionController extends ControllerBase {
 
 		
 		}		
-        	
+        
+
 		if ($search_str!="") {
 			if ($refID != "" || $total == 1) {
 					$ContentTable2 = new PromotionDataTable;
@@ -126,6 +133,7 @@ class PromotionController extends ControllerBase {
         }
 	
         $code = 'promotion_maint';
+		$output = "";
 
         // Highlight the module name in top menu
         $output .= '<script> jQuery("a[href=\'/kicp/collections\']").addClass("is-active");</script>'; 
@@ -172,6 +180,8 @@ class PromotionController extends ControllerBase {
 		}
 				
 				
+		$items = "item";
+		$total = 0;
 		if ($rank !="" && $year !="") {
 		 
 		

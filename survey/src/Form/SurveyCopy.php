@@ -24,6 +24,11 @@ use Drupal\Core\Utility\Error;
 
 class SurveyCopy extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;
+  public $allow_file_type;
+
     public function __construct() {
         $this->allow_file_type = CommonUtil::getSysValue('survey_allow_file_type');
         $this->module = 'survey';
@@ -61,16 +66,14 @@ class SurveyCopy extends FormBase {
         $survey = SurveyDatatable::getSurvey($survey_id);
 
         if (!$survey) {
-          $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> Survey not found'),
-          );
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('Survey not found'));    
           return $form; 
          }
 
          if (!$survey->allow_copy) {
-          $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> This is Survey cannot be copied.'),
-          );
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This is Survey cannot be copied.'));              
           return $form; 
          }         
 

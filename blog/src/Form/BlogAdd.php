@@ -26,6 +26,10 @@ use Drupal\Core\Utility\Error;
 
 class BlogAdd extends FormBase  {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;
+
     public function __construct() {
         $this->module = 'blog';
         $AuthClass = "\Drupal\common\Authentication";

@@ -19,6 +19,11 @@ use Drupal\Core\Utility\Error;
 
 class VoteView extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;    
+  public $allow_file_type;
+
     public function __construct() {
         $this->module = 'vote';
         $AuthClass = "\Drupal\common\Authentication";
@@ -26,7 +31,6 @@ class VoteView extends FormBase {
         $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();         
         $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
-        $this->max_preview_page = CommonUtil::getSysValue('vote_max_preview_page');
     }
 
     /**
@@ -55,7 +59,7 @@ class VoteView extends FormBase {
         if (!$vote) {
           $isShowSubmit = false;
           $messenger = \Drupal::messenger(); 
-          $messenger->addStatus( t('This vote does not exist or you do not have authroity'));             
+          $messenger->addWarning( t('This vote does not exist or you do not have authroity'));             
           return $form; 
         }        
         $questionInfo = VoteDatatable::getVoteQuestionAll($vote_id);

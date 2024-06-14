@@ -19,10 +19,6 @@ class BookmarkDatatable extends ControllerBase {
 
   public static function getBookmarks($my_user_id=null,$bid=null ) {
 
-    if ($bid != null && !is_numeric($bid) ) {
-      return null;
-    }
-
     $myRecordOnly = \Drupal::request()->query->get('my');
     $tagsUrl = \Drupal::request()->query->get('tags');
 

@@ -1,4 +1,5 @@
     <div id="right_content" style="width:100%;">
+{% if items %}    
     <div class="type_title">Event Management - {{group["group_name"]}}</div>
     <div class="text-right">
         <button class="kicp_button size-2" onClick="self.location.href='{{ path('activities.admin_cop_item_add' , {'cop_group_id': group['group_id']} ) }}'"><i class="fa fa-calendar-plus-o" aria-hidden="true"></i> Add COP Item</button>
@@ -27,7 +28,10 @@
            {% endif %}
         {% endfor %}
     </div>
+{% else  %}
+    <div class="text-center font-large dark"><i class="fa-solid fa-circle-exclamation"></i>&nbsp;No group is available</p>
+{% endif %}
+    <div style="float:right; margin:20px;">{{ pager }}</div>
 </div>
 
-<div style="float:right; margin:20px;">{{ pager }}</div>
-{% include '@common/common-confirm-delete.html.twig'  with {module: 'event type'}  %}
+

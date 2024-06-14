@@ -79,7 +79,7 @@ class BlogDatatable {
 
     public static function checkBlogowner($entry_id="", $user_id="") {
 
-        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+        if ($entry_id == "" ) {
             return null;
         }
 
@@ -100,7 +100,7 @@ class BlogDatatable {
     public static function getBlogEntryContent($entry_id="") {
 
         # return "false" if the entry_id is EMPTY
-        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+        if ($entry_id == "" ) {
             return null;
         }
         $AuthClass = "\Drupal\common\Authentication";
@@ -153,7 +153,7 @@ class BlogDatatable {
     }    
 
     public static function getEntryName($entry_id="") {
-        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+        if ($entry_id == "") {
             return null;
         }        
         $sql = "SELECT entry_title, blog_id FROM kicp_blog_entry WHERE entry_id='$entry_id'";
@@ -165,7 +165,7 @@ class BlogDatatable {
 
 
     public static function getBlogName($blog_id="") {
-        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+        if ($blog_id == "" ) {
             return null;
         }            
         $sql = "SELECT blog_name FROM kicp_blog WHERE blog_id='$blog_id'";
@@ -178,7 +178,7 @@ class BlogDatatable {
 
     public static function getBlogInfo($blog_id="") {
 
-        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+        if ($blog_id == "" ) {
             return null;
         }        
 
@@ -234,7 +234,7 @@ class BlogDatatable {
 
     public static function getBlogIDByEntryID($entry_id = "") {
 
-        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+        if ($entry_id == "") {
             return null;
         }        
 
@@ -258,7 +258,7 @@ class BlogDatatable {
 
     public static function getBlogUID($entry_id = "") {
 
-        if ($entry_id == "" or  !is_numeric($entry_id) ) {
+        if ($entry_id == "") {
             return null;
         }        
 
@@ -284,7 +284,7 @@ class BlogDatatable {
 
     public static function getBlogListContent($blog_id) {
 
-        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+        if ($blog_id == "" ) {
             return null;
         }    
 
@@ -466,13 +466,15 @@ class BlogDatatable {
         
       }
 
-    public static function getBlogArchiveTree() {
+    public static function getBlogArchiveTree($blog_id="") {
 
-        $blog_id = self::getBlogIDByUserID();    
         $output = array();
+        if ($blog_id=="") {
+            $blog_id = self::getBlogIDByUserID();    
 
-        if ($blog_id == "") {
-            return $output;
+            if ($blog_id == "") {
+                return $output;
+            }
         }
 
         $sql = 'SELECT
@@ -744,7 +746,7 @@ class BlogDatatable {
     }
 
     public static function getBlogPhoto($blog_id="") {
-        if ($blog_id == "" or  !is_numeric($blog_id) ) {
+        if ($blog_id == ""  ) {
             return null;
         }       
         $sql = "SELECT image_name FROM kicp_blog where blog_id='$blog_id'";

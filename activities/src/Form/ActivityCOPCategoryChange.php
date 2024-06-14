@@ -18,9 +18,11 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity;
-
+use Drupal\Core\Utility\Error;
 
 class ActivityCOPCategoryChange extends FormBase {
+
+    public $module;
 
     public function __construct() {
         $this->module = 'activities';
@@ -39,7 +41,13 @@ class ActivityCOPCategoryChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $group_id="") {
 
         $groupInfo = ActivitiesDatatable::getCOPGroupInfo($group_id);
-        
+        if (!$groupInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This COP Group is not available'));             
+            return $form;            
+        }
+
+
         // display the form
 
         $form['group_name'] = array(

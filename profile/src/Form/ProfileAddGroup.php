@@ -17,9 +17,10 @@ use Drupal\Core\Utility\Error;
 
 class ProfileAddGroup extends FormBase {
 
+    public $module;   
+    
     public function __construct() {
         $this->module = 'profile';
-        $this->access_right_alert = "You do not have privilege on profile admin page.";
     }
 
     /**

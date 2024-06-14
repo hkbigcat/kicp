@@ -22,6 +22,8 @@ use Drupal\Core\Utility\Error;
 
 class VideoAdd extends FormBase {
 
+    public $module;
+    
     public function __construct() {
         $this->module = 'video';
     }

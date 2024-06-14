@@ -24,6 +24,11 @@ use Drupal\Core\Utility\Error;
 
 class VoteCopy extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;    
+  public $allow_file_type;  
+
     public function __construct() {
         $this->allow_file_type = CommonUtil::getSysValue('vote_allow_file_type');
         $this->module = 'vote';

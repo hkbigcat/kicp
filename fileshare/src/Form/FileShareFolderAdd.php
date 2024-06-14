@@ -16,10 +16,14 @@ use Drupal\file\Entity;
 use Drupal\fileshare\Common\FileShareDatatable;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
-
+use Drupal\Core\Utility\Error;
 
 
 class FileShareFolderAdd extends FormBase {
+
+  public $is_authen;
+  public $my_user_id;
+  public $module;
 
     public function __construct() {
       $AuthClass = "\Drupal\common\Authentication";
@@ -143,10 +147,12 @@ class FileShareFolderAdd extends FormBase {
 	     $tags =  $form_state->getValue('tags');
        $current_time =  \Drupal::time()->getRequestTime();
 
+       $database = \Drupal::database();
+       $transaction = $database->startTransaction(); 
 
       try {
 
-        $query = \Drupal::database()->insert('kicp_file_share_folder');
+        $query = $database  ->insert('kicp_file_share_folder');
 
         
         $query->fields([
@@ -184,12 +190,14 @@ class FileShareFolderAdd extends FormBase {
 
       }
       catch (\Exception $e ) {
+        $variables = Error::decodeException($e);
         \Drupal::messenger()->addError(
           t('Unable to save fileshare folder at this time due to datbase error. Please try again.')
         ); 
-
+        \Drupal::logger('fileshare')->error('Fileshare is not created ' .$variables); 
+        $transaction->rollBack();
       }
-
+      unset($transaction);
       
 
     }

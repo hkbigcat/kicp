@@ -22,6 +22,8 @@ use Drupal\Core\Utility\Error;
 
 class ActivityPhotoAdd extends FormBase {
 
+    public $module;
+    
     public function __construct() {
         $this->module = 'activities';
     }

@@ -20,7 +20,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class BlogController extends ControllerBase {
-    
+
+    public $BlogHomepageDisplayNo;
+    public $is_authen;
+    public $module;
+    public $my_blog_id;
+    public $my_user_id;
+
     public function __construct() {
 
         $this->BlogHomepageDisplayNo = 10;
@@ -85,7 +91,8 @@ class BlogController extends ControllerBase {
             $entry['my_blog_id'] = $this->my_blog_id;
             $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
             $entry['comments'] = $entryCommentAry;
-            $archive = BlogDatatable::getBlogArchiveTree();
+            $blog_id = $entry['blog_id'];
+            $archive = BlogDatatable::getBlogArchiveTree($blog_id);
             $TagList = new TagList();
             $taglist = $TagList->getTagsForModule('blog', $entry_id);        
         
@@ -118,7 +125,7 @@ class BlogController extends ControllerBase {
         }
 
         $blog = BlogDatatable::getBlogInfo($blog_id);
-        $entry = BlogDatatable::getBlogListContent($blog_id);
+        $entry = ($blog!=null)?BlogDatatable::getBlogListContent($blog_id):null;
 
         if ($entry==null) {
             return [

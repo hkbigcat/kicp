@@ -21,6 +21,8 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityCOPCategoryChange extends FormBase {
 
+  public $module; 
+
     public function __construct() {
       $this->module = 'ppcactivities';
     }
@@ -38,7 +40,12 @@ class PPCActivityCOPCategoryChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $cop_id="") {
 
         $copInfo = PPCActivitiesDatatable::getCOPInfo($cop_id);
-        
+        if (!$copInfo) {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This group is not available'));           
+          return $form;            
+        }           
+
         // display the form
 
         $form['cop_name'] = array(

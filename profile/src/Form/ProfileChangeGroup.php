@@ -17,9 +17,11 @@ use Drupal\Core\Utility\Error;
 
 class ProfileChangeGroup extends FormBase {
 
+    public $is_authen;
+    public $module;    
+
     public function __construct() {
         $this->module = 'profile';
-        $this->access_right_alert = "You do not have privilege on profile admin page.";
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $this->is_authen = $authen->isAuthenticated;
@@ -53,6 +55,11 @@ class ProfileChangeGroup extends FormBase {
             $field_text = "Personal Group Name";
             $groupInfo = ProfileDatatable::getBuddyGroupByGroupId($group_id);
         } 
+        if (!$groupInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This group is not available'));          
+            return $form;            
+        }           
         
         $form['group_name'] = array(
           '#title' => t($field_text),

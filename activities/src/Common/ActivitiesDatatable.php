@@ -21,22 +21,22 @@ class ActivitiesDatatable {
 
         $search_str = \Drupal::request()->query->get('search_str');
         $cond = "";
+        $database = \Drupal::database();
         if ($search_str && $search_str !="") {
-            $cond = " and a.evt_type_name like '%$search_str%' ";
+            $escaped = $database->escapeLike($search_str);
+            $cond = " and a.evt_type_name like '%$escaped%' ";
         }                    
-
         $sql = "SELECT a.evt_type_id, a.evt_type_name, a.description, a.display_order, IF(COUNT(b.evt_id)>0, false, true) AS allow_delete 
                 FROM kicp_km_event_type a LEFT JOIN kicp_km_event b on (b.evt_type_id = a.evt_type_id AND b.is_deleted = 0) 
                 WHERE a.is_deleted = 0 $cond GROUP BY a.evt_type_id, a.evt_type_name,  a.description, a.display_order ORDER BY a.display_order";
-        $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public static function getTypeName($type_id) {
+    public static function getTypeName($type_id="") {
 
-        if (!is_numeric($type_id))
-        return null;
+        if ($type_id=="")
+            return null;
 
         $sql = "SELECT evt_type_name FROM kicp_km_event_type WHERE evt_type_id = '$type_id'";
         $database = \Drupal::database();
@@ -60,7 +60,8 @@ class ActivitiesDatatable {
             $result = $query->execute()->fetchAssoc();
         } else {
             if ($search_str && $search_str !="") {
-                $query->condition('a.group_name', '%' . $search_str . '%', 'LIKE');
+                $escaped = $database->escapeLike($search_str);
+                $query->condition('a.group_name', '%' . $escaped . '%', 'LIKE');
             }                 
             $query -> leftjoin('kicp_km_cop', 'b', 'a.group_id = b.cop_group_id AND b.is_deleted=:is_deleted' , [':is_deleted' => 0]);
             $query->addExpression('COUNT(b.cop_id)', 'cop_total');
@@ -85,9 +86,6 @@ class ActivitiesDatatable {
 
     public static function getActivityTypeInfo($type_id=1) {
 
-        if (!is_numeric($type_id))
-            return null;
-
         $sql = "SELECT evt_type_name, description, display_order FROM kicp_km_event_type WHERE is_deleted = 0 AND evt_type_id=" . $type_id;
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
@@ -98,7 +96,7 @@ class ActivitiesDatatable {
 
     public static function getCOPbyGroupID($group_id="") {
 
-        if (!is_numeric($group_id))
+        if ($group_id=="")
           return null;
 
         $search_str = \Drupal::request()->query->get('search_str');
@@ -145,9 +143,6 @@ class ActivitiesDatatable {
 
 
     public static function getEventItemByTypeId($type_id, $item_id = "", $currentEventOnly=false) {
-
-        if ($type_id && !is_numeric($type_id))
-          return null;
 
         $output=array();
         $cond = '';
@@ -202,7 +197,8 @@ class ActivitiesDatatable {
         $query-> condition('a.is_deleted', '0');
         $query-> condition('b.is_deleted', '0');
         if ($search_str && $search_str !="") {
-            $query->condition('a.evt_name', '%' . $search_str . '%', 'LIKE');
+            $escaped = $database->escapeLike($search_str);
+            $query->condition('a.evt_name', '%' . $escaped . '%', 'LIKE');
         }                    
         $query-> orderBy('a.evt_start_date', 'DESC');
 
@@ -236,7 +232,7 @@ class ActivitiesDatatable {
         return $result;        
     }
 
-    public static function getEventDetail($evt_id) {
+    public static function getEventDetail($evt_id="") {
 
         $record = array();
         $AuthClass = "\Drupal\common\Authentication";
@@ -335,17 +331,19 @@ class ActivitiesDatatable {
 
         $search_sql = "";
         $search_str = \Drupal::request()->query->get('search_str');
+
+        $database = \Drupal::database();
         if ($search_str && $search_str !="") {
-            $search_sql = " and ( evt_deliverable_url like '%$search_str%' or  evt_deliverable_name like '%$search_str%' ) ";
+            $escaped = $database->escapeLike($search_str);
+            $search_sql = " and ( evt_deliverable_url like '%$escaped%' or  evt_deliverable_name like '%$escaped%' ) ";
         }
 
         if($evt_id == "") {
             return $record;
         } else {
             $sql = "SELECT evt_deliverable_id, evt_deliverable_url, evt_deliverable_name FROM kicp_km_event_deliverable WHERE evt_id='$evt_id' AND is_deleted = 0 $search_sql ORDER BY evt_deliverable_url";
-            $database = \Drupal::database();
+            
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);  
-
             if (!$result) 
               return null;
   
@@ -428,9 +426,10 @@ class ActivitiesDatatable {
 
         $search_str = \Drupal::request()->query->get('search_str');
         if ($search_str && $search_str !="") {
+            $escaped = $database->escapeLike($search_str);
             $orGroup = $query->orConditionGroup();
-            $orGroup->condition('a.evt_photo_url', '%' . $search_str . '%', 'LIKE');
-            $orGroup->condition('a.evt_photo_description', '%' . $search_str . '%', 'LIKE');
+            $orGroup->condition('a.evt_photo_url', '%' . $escaped . '%', 'LIKE');
+            $orGroup->condition('a.evt_photo_description', '%' . $escaped . '%', 'LIKE');
             $query->condition($orGroup);
         }                   
 

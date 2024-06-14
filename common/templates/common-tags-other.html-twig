@@ -1,7 +1,0 @@
-{% for other_tag in other_tags %}
-{% if other_tag['tag']  %}
-<span class="tagBullet">
-    <a style="font-size:{{ other_tag['fontsize'] }}%; font-style: normal; text-decoration:none" href="javascript:void(0)" onClick="addTagUrl('{{ other_tag['tag'] }}')" title="{{ other_tag['AMOUNT'] }}">{{ other_tag['tag'] }}</a>
-</span>
-{% endif %}
-{% endfor %}

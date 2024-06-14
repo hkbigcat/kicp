@@ -25,6 +25,7 @@ bookmark.change_data:
     _title: 'Edit Bookmark'
   requirements:
     _permission: 'access content'
+    bid: '\d+'
   options:
     no_cache: TRUE
 
@@ -35,5 +36,6 @@ bookmark.delete_data:
     _title: 'Delete Bookmark'
   requirements:
     _permission: 'access content'
+    bid: '\d+'    
   options:
     no_cache: TRUE    

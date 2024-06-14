@@ -17,9 +17,10 @@ use Drupal\Core\Utility\Error;
 
 class ProfileChangeMember extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'profile';
-        $this->access_right_alert = "You do not have privilege on profile admin page.";
     }
 
     /**
@@ -46,7 +47,13 @@ class ProfileChangeMember extends FormBase {
           }        
           
         $userInfo = ProfileDatatable:: getMembersGroupId($type, $group_id,  $user_id);
+        if (!$userInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This member is not available'));           
+            return $form;            
+        }   
         
+
         $form['user_name'] = array(
           '#title' => t('User Name'),
           '#type' => 'textfield',

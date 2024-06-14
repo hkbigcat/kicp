@@ -26,6 +26,9 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityItemAdd extends FormBase  {
 
+    public $module; 
+    public $default_creator;
+
     public function __construct() {
         $this->module = 'ppcactivities';
         $this->default_creator = 'KMU.OGCIO';

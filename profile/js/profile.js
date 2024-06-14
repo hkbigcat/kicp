@@ -146,6 +146,57 @@ function SubmitRenameMemberForm() {
 }
     
 function joinCopMember(cop_id, cop_name) {
+
+    Swal.fire({
+        title: "Join COP",
+        text: "Are you sure to join \"" + cop_name + "\" COP?",
+        type: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes"
+      }).then((result) => {
+        if (result.value) {
+            jQuery.ajax({
+                type: "POST",
+                url: 'profile_join_cop_membership',
+                data: {
+                    cop_id: cop_id,
+                    action: 'check'
+                },
+                success: function (data)
+                {
+                    if(data == 'Y') {
+                        // joined already, no further action
+                        alert("You have already joined this COP.");
+                    } else {
+                        // continue to join in
+                        jQuery.ajax({
+                            type: "POST",
+                            url: 'profile_join_cop_membership',
+                            data: {
+                                cop_id: cop_id,
+                                action: 'add'
+                            },
+                            success: function (data)
+                            {
+                                //alert('added');
+                                reloadCopJoinMemberTable();
+                            },
+                            error: function (error) {
+                                alert('error, ' + error.status + ':' + error.statusText);
+                            }
+                        });
+                    }
+                },
+                error: function (error) {
+                    alert('error, ' + error.status + ':' + error.statusText);
+                }
+            });            
+        }
+      });
+
+/*    
     if(confirm("Are you sure to join \"" + cop_name + "\" COP?")) {
         jQuery.ajax({
             type: "POST",
@@ -184,6 +235,7 @@ function joinCopMember(cop_id, cop_name) {
             }
         });
     }
+*/    
 }
 
 function reloadCopJoinMemberTable() {
@@ -236,3 +288,8 @@ function ProfileUpdateEmailNotify() {
         }
     });
 }
+
+jQuery(document).ready(function ($) {
+    jQuery("li.menu-item.menu-item-level-1:nth-child(12)").addClass("active");
+    
+  })

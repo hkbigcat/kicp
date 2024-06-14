@@ -24,6 +24,9 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityItemChange extends FormBase  {
 
+    public $module; 
+    public $default_creator;
+
     public function __construct() {
         $this->module = 'ppcactivities';
         $this->default_creator = 'KMU.OGCIO';
@@ -59,6 +62,11 @@ class PPCActivityItemChange extends FormBase  {
         $form['#attributes']['enctype'] = 'multipart/form-data';
 
         $eventInfo = PPCActivitiesDatatable::getEventDetail($evt_id);
+        if (!$eventInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This activity is not available'));              
+            return $form;            
+        }   
 
         $form['evt_name'] = [
             '#type' => 'textfield',

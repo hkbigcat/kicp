@@ -21,6 +21,9 @@ use Drupal\Core\Utility\Error;
 
 class VideoEventAdd extends FormBase {
 
+  public $module;
+  public $default_creator;
+
     public function __construct() {
         $this->module = 'video';
         $this->default_creator = 'KMU.OGCIO';

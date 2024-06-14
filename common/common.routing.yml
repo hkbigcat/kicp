@@ -132,3 +132,13 @@ common.update_follow_status:
     _permission: 'access content'
   options:
     no_cache: TRUE
+
+common.not_found:
+  path: '/not_found'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::notFound'
+    _title: 'Page Not Found'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE

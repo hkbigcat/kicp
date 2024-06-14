@@ -228,3 +228,8 @@ function EnterVote(name,post,dept){
     event.preventDefault();
     }
 }
+
+jQuery(document).ready(function ($) {
+    jQuery("li.menu-item.menu-item-level-1:nth-child(10)").addClass("active");
+    
+  })

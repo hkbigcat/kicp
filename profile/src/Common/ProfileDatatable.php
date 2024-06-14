@@ -61,7 +61,8 @@ class ProfileDatatable {
                 $query-> condition('pub_group_owner', $user_id);
             }
             if ($search_str && $search_str !="") {
-                $query->condition('a.pub_group_name', '%' . $search_str . '%', 'LIKE');
+                $escaped = $database->escapeLike($search_str);
+                $query->condition('a.pub_group_name', '%' . $escaped . '%', 'LIKE');
             }      
             $query-> orderBy('pub_group_name');
         }
@@ -74,7 +75,8 @@ class ProfileDatatable {
                 $query-> condition('a.user_id', $user_id);
             }
             if ($search_str && $search_str !="") {
-                $query->condition('a.buddy_group_name', '%' . $search_str . '%', 'LIKE');
+                $escaped = $database->escapeLike($search_str);
+                $query->condition('a.buddy_group_name', '%' . $escaped . '%', 'LIKE');
             }      
             $query-> orderBy('buddy_group_name');
         }   
@@ -136,10 +138,10 @@ class ProfileDatatable {
     public static function getUsers() {
 
         $search_str = \Drupal::request()->query->get('search_str');
+        $database = \Drupal::database();
         if ($search_str !=null && $search_str !="") {
-            $sql = "SELECT user_id, user_name FROM xoops_users WHERE user_name LIKE '%" . $search_str . "%' AND user_is_inactive=0 ORDER BY user_name";
-
-            $database = \Drupal::database();
+            $escaped = $database->escapeLike($search_str);
+            $sql = "SELECT user_id, user_name FROM xoops_users WHERE user_name LIKE '%" . $escaped . "%' AND user_is_inactive=0 ORDER BY user_name";
             $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
             return $result;
         } else 

@@ -21,6 +21,10 @@ use Drupal\Core\Url;
 
 class FileShareFolderChange extends FormBase {
 
+  public $is_authen;
+  public $my_user_id;
+  public $module;
+
     public function __construct() {
       $AuthClass = "\Drupal\common\Authentication";
       $authen = new $AuthClass();
@@ -53,21 +57,9 @@ class FileShareFolderChange extends FormBase {
         $folder = FileShareDatatable::load_folder($this->my_user_id,$folder_id);
 
         if ($folder['folder_id'] == null) {
-          $output = '<p style="text-align:center">You cannot edit this File Folder.</p>';
-          $form['intro'] = array(
-          '#markup' => t($output),
-          );
-
-          $form['cancel'] = array(
-              '#type' => 'button',
-              '#value' => t('Cancel and Go Back'),
-              '#prefix' => '&nbsp;',
-              '#attributes' => array('onClick' => 'history.go(-1); return false;'),
-              '#limit_validation_errors' => array(),
-            );
-
-            return $form;
-
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This file folder cannot be found.'));              
+          return $form;
         }
 
         $Taglist = new TagList();

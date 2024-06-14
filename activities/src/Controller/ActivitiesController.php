@@ -24,6 +24,10 @@ use Drupal\Core\Utility\Error;
 
 class ActivitiesController extends ControllerBase {
     
+    public $is_authen;
+    public $my_user_id;
+    public $module;
+    
     public function __construct() {
         //$Paging = new Paging();
         //$DefaultPageLength = $Paging->getDefaultPageLength();
@@ -49,25 +53,24 @@ class ActivitiesController extends ControllerBase {
         $COPitems = array();
         $events = array();
 
-        if (is_numeric($type_id)) {
-            if ($cop_id!="" )   { 
-                $COPitems = ActivitiesDatatable::getCOPbyGroupID($cop_id);
-                
-                if ($item_id!="" )   { 
-                    $item_index = array_search($item_id, (array_column($COPitems, 'cop_id')));
-                    $activityInfo = ['evt_type_name' => $COPitems[$item_index]['cop_name'], 'description' =>  $COPitems[$item_index]['cop_info']];
-                } else {
-                    $cop_info = ActivitiesDatatable::getCOPGroupInfo($cop_id);
-                    $activityInfo = ['evt_type_name' => $cop_info['group_name'], 'description' =>  $cop_info['group_description']];
-                }
+        if ($cop_id!="")   { 
+            $COPitems = ActivitiesDatatable::getCOPbyGroupID($cop_id);
+    
+            if ($item_id!="")   { 
+                $item_index = array_search($item_id, (array_column($COPitems, 'cop_id')));
+                $activityInfo = ['evt_type_name' => $COPitems[$item_index]['cop_name'], 'description' =>  $COPitems[$item_index]['cop_info']];
             } else {
-                $activityInfo = ActivitiesDatatable::getActivityTypeInfo($type_id);
+                $cop_info = ActivitiesDatatable::getCOPGroupInfo($cop_id);
+                $activityInfo = ['evt_type_name' => $cop_info['group_name'], 'description' =>  $cop_info['group_description']];
             }
-            $activityInfo['type_id'] = $type_id;
-
-            if ($type_id==1 & $item_id!="" || $type_id!=1 )
-                $events = ActivitiesDatatable::getEventItemByTypeId($type_id, $item_id);
+        } else {
+            $activityInfo = ActivitiesDatatable::getActivityTypeInfo($type_id);
         }
+        $activityInfo['type_id'] = $type_id;
+
+        if (($type_id==1 && $item_id!="" ) || $type_id!=1 )
+            $events = ActivitiesDatatable::getEventItemByTypeId($type_id, $item_id);
+
         $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
 
         return [
@@ -214,9 +217,11 @@ class ActivitiesController extends ControllerBase {
     public function AdminActivityCOP($group_id="") {
 
         $COPitems = ActivitiesDatatable::getCOPbyGroupID($group_id);
-        $copGroupInfo = ActivitiesDatatable::getCOPGroupInfo($group_id);
-        $search_str = \Drupal::request()->query->get('search_str');
-        $COPitems['search_str'] =  $search_str;        
+        if ($COPitems) {
+            $copGroupInfo = ActivitiesDatatable::getCOPGroupInfo($group_id);
+            $search_str = \Drupal::request()->query->get('search_str');
+            $COPitems['search_str'] =  $search_str;        
+        }
 
         return [
             '#theme' => 'activities-admin-cop',
@@ -877,7 +882,7 @@ class ActivitiesController extends ControllerBase {
                 }                
             }
             $breads[] = [
-                'name' => $type_name??'No Activities Type' ,
+                'name' => $type_name??'No Activitiy' ,
                 'url' => $type_url??null,
             ]; 
             if ($evt && $type_id==1) {
@@ -896,9 +901,11 @@ class ActivitiesController extends ControllerBase {
                     'url' => $cop_url??null,
                 ];         
             }
-            $breads[] = [
-                'name' => $evt_name??'No Event' ,
-            ];                       
+            if ($type_name) {
+                $breads[] = [
+                    'name' => $evt_name??'No Event' ,
+                ];               
+            }        
 
         } else if ($routeName=="activities.admin_content") {
             $breads[] = $base_path;

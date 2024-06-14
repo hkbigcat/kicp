@@ -17,6 +17,8 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityCOPCategoryAdd extends FormBase {
 
+    public $module; 
+
     public function __construct() {
         $this->module = 'ppcactivities';
     }

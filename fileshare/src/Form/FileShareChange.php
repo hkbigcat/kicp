@@ -69,9 +69,8 @@ class FileShareChange extends FormBase {
          $file = FileShareDatatable::getSharedFile($file_id);
 
          if (!$file) {
-             $form['intro'] = array(
-            '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> File not found'),
-             );
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This file cannot be found.'));     
             return $form; 
          }
 

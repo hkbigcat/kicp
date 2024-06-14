@@ -6,8 +6,8 @@ use Drupal\common\CommonUtil;
 
 class TagList {
   public function __construct() {
-        $this->default_interval = 30;
-        $this->default_delimitor = ";";
+        //$this->default_interval = 30;
+        //$this->default_delimitor = ";";
   }	
 
   
@@ -170,8 +170,10 @@ class TagList {
 
     public function getOtherTagList($start=0, $interval=0) {
 
+        $default_interval = 30;
+
         $output = array();
-        $interval = ($interval==0)?$this->default_interval:$interval;
+        $interval = ($interval==0)?$default_interval:$interval;
 
         $sql = "SELECT COUNT(1) AS AMOUNT, tag FROM kicp_tags WHERE tag NOT LIKE 'system:%' and is_deleted = 0 GROUP BY tag ORDER BY AMOUNT DESC, tag ";
         

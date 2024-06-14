@@ -16,6 +16,7 @@ vote.vote_view:
     _title: 'Vote'
   requirements:
     _permission: 'access content'
+    vote_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -26,6 +27,7 @@ vote.vote_delete:
     _title: 'Vote delete'
   requirements:
     _permission: 'access content'
+    vote_id: '\d+'
   options:
     no_cache: TRUE   
 
@@ -36,6 +38,7 @@ vote.vote_change_1:
     _title: 'Edit Vote'
   requirements:
     _permission: 'access content'
+    vote_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -86,6 +89,7 @@ vote.vote_copy:
     _title: 'Copy Vote'
   requirements:
     _permission: 'access content'
+    vote_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -97,5 +101,6 @@ vote.export_vote:
   requirements:
     _access: 'TRUE'
     _permission: 'access content'
+    vote_id: '\d+'
   options:
     no_cache: TRUE    

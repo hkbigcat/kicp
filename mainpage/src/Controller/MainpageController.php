@@ -25,17 +25,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MainpageController extends ControllerBase {
 
+    public $is_authen;
+    public $my_user_id;
+    public $module;     
+
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $this->is_authen = $authen->isAuthenticated;
         $this->my_user_id = $authen->getUserId();        
         $this->module = 'mainpage';
-        $this->record_in_mainpage = 12;
-        $this->tag_usage = 3;
-        $this->showRating = array('bookmark', 'video', 'fileshare');
-        $this->showLike = array('blog', 'activities', 'ppcactivities', 'survey', 'vote', 'forum', 'wiki');
-        $this->showFollowIcon = array('bookmark', 'blog', 'video', 'fileshare', 'activities', 'ppcactivities', 'survey',' vote', 'forum');
     }
 
     public function contentByView() {

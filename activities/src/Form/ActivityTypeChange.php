@@ -17,11 +17,11 @@ use Drupal\Core\Utility\Error;
 
 class ActivityTypeChange extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
-        $this->access_right_alert = "You do not have privilege on KM activities admin page.";
-        $this->domain_name = CommonUtil::getSysValue('domain_name');
-    }
+      }
 
     /**
      * {@inheritdoc}
@@ -36,6 +36,11 @@ class ActivityTypeChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $evt_type_id="") {
         
         $activityTypeInfoAry = ActivitiesDatatable::getActivityTypeInfo($evt_type_id);
+        if (!$activityTypeInfoAry) {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This activity type is not available'));           
+          return $form;            
+        }   
 
         // display the form
 

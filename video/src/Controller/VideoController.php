@@ -24,6 +24,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class VideoController extends ControllerBase {
     
+    public $is_authen;
+    public $my_user_id;
+    public $module;    
+    public $pagesize;
+
     public function __construct() {
 
         $this->module = 'video';

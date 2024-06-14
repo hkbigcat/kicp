@@ -21,6 +21,8 @@ use Drupal\activities\Controller\ActivitiesController;
 
 class ActivityDeliverableChange extends FormBase {
 
+    public $module;
+
     public function __construct() {
         $this->module = 'activities';
     }
@@ -43,6 +45,11 @@ class ActivityDeliverableChange extends FormBase {
         $form['#attributes']['enctype'] = 'multipart/form-data';
         
         $deliverableInfo = ActivitiesDatatable::getEventDeliverableInfo($evt_deliverable_id);
+        if (!$deliverableInfo) {
+            $messenger = \Drupal::messenger(); 
+            $messenger->addWarning( t('This item is not available'));               
+            return $form;            
+        }      
         
         $form['evt_deliverable_url'] = array(
             '#title' => t('Deliverable Name.'),

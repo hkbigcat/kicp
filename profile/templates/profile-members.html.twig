@@ -1,4 +1,5 @@
 {% set type0 = items['type']=="P"?'P':'B' %}
+{% if items and items['group_name'] %}
 <div class="ProfileMainContainer">
     <div class="clear"></div>
     <div style="float:left; display:inline-block;">
@@ -57,6 +58,8 @@
         </div>
     </div>
 </div>
-{% include '@common/common-confirm-delete.html.twig'  with {module: 'member'}  %}
+{% else %}
+<div class="text-center font-large dark"><i class="fa-solid fa-circle-exclamation"></i>&nbsp;This group is invalid</div>
+{% endif %}     
 
 

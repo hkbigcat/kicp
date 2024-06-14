@@ -17,6 +17,8 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivityTypeChange extends FormBase {
 
+  public $module; 
+
     public function __construct() {
         $this->module = 'ppcactivities';
     }
@@ -34,7 +36,12 @@ class PPCActivityTypeChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $evt_type_id="") {
         
         $activityTypeInfoAry = PPCActivitiesDatatable::getActivityTypeInfo($evt_type_id);
-
+        if (!$activityTypeInfoAry) {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This activity type is not available'));           
+          return $form;            
+        }   
+        
         // display the form
 
         $form['evt_type_name'] = array(

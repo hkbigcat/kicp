@@ -15,6 +15,7 @@ video.video_list:
     _title: 'Video List'
   requirements:
     _permission: 'access content'
+    media_event_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -44,7 +45,8 @@ video.change_event_data:
     _form: '\Drupal\video\Form\VideoEventChange'
     _title: 'Edit Event'
   requirements:
-   _permission: 'access administration pages' 
+   _permission: 'access administration pages'
+   media_event_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -55,6 +57,7 @@ video.admin_video_content:
     _title: 'Event Video Management'
   requirements:
     _permission: 'access administration pages'
+    media_event_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -65,6 +68,7 @@ video.delete_event_data:
     _title: 'Delete Event'
   requirements:
    _permission: 'access administration pages' 
+   media_event_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -74,7 +78,8 @@ video.delete_video_data:
     _controller: '\Drupal\video\Controller\VideoController::VideoDelete'
     _title: 'Delete Video'
   requirements:
-   _permission: 'access administration pages' 
+   _permission: 'access administration pages'
+   media_id: '\d+' 
   options:
     no_cache: TRUE        
 
@@ -84,7 +89,8 @@ video.video_event_privilege:
     _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilege'
     _title: 'Event Privilege'
   requirements:
-   _permission: 'access administration pages' 
+   _permission: 'access administration pages'
+   media_event_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -94,7 +100,9 @@ video.video_event_privilege_add_action:
     _controller: '\Drupal\video\Controller\VideoController::AdminVideoEventPrivilegeAddAction'
     _title: 'Event Privilege'
   requirements:
-   _permission: 'access administration pages' 
+   _permission: 'access administration pages'
+   media_event_id: '\d+'
+   pub_group_id: '\d+' 
   options:
     no_cache: TRUE
 
@@ -105,6 +113,8 @@ video.delete_event_privilege_data:
     _title: 'Delete Event Privilege'
   requirements:
    _permission: 'access administration pages' 
+   media_event_id: '\d+'
+   pub_group_id: '\d+' 
   options:
     no_cache: TRUE        
 
@@ -135,6 +145,7 @@ video.add_video_data:
     _title: 'Add Video'
   requirements:
    _permission: 'access administration pages' 
+   media_event_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -145,6 +156,7 @@ video.change_video_data:
     _title: 'Edit Video'
   requirements:
    _permission: 'access administration pages' 
+   media_event_id: '\d+'   
   options:
     no_cache: TRUE
 

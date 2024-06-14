@@ -14,8 +14,11 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\common\CommonUtil;
 use Drupal\activities\Common\ActivitiesDatatable;
 use Drupal\activities\Controller\ActivitiesController;
+use Drupal\Core\Utility\Error;
 
 class ActivityCOPItemChange extends FormBase {
+
+    public $module;
 
     public function __construct() {
         $this->module = 'activities';
@@ -34,6 +37,11 @@ class ActivityCOPItemChange extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state, $cop_id="") {
 
         $copItemInfo = ActivitiesDatatable::getCOPItem($cop_id);
+        if (!$copItemInfo) {
+          $messenger = \Drupal::messenger(); 
+          $messenger->addWarning( t('This item is not available'));            
+          return $form;            
+      }        
         
         // display the form
 

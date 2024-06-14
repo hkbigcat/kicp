@@ -36,6 +36,7 @@ fileshare.fileshare_folder_change:
     _title: 'Edit File Share Folder'
   requirements:
     _permission: 'access content'
+    folder_id: '\d+'
   options:
     no_cache: TRUE     
 
@@ -47,6 +48,7 @@ fileshare.fileshare_folder_delete:
   requirements:
     _access: 'TRUE'
     _permission: 'access content'
+    folder_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -57,6 +59,7 @@ fileshare.fileshare_view:
     _title: 'File Share'
   requirements:
     _permission: 'access content'  
+    file_id: '\d+'
   options:
      no_cache: TRUE
 
@@ -77,6 +80,7 @@ fileshare.fileshare_change:
     _title: 'Edit Share File'
   requirements:
     _permission: 'access content'
+    file_id: '\d+'
   option:
      no_cache: TRUE
 
@@ -86,7 +90,8 @@ fileshare.fileshare_delete:
     _controller: '\Drupal\fileshare\Controller\FileShareController::deleteShareFile'
     _title: 'File Share Delete'
   requirements:
-    _permission: 'access content'  
+    _permission: 'access content'
+    file_id: '\d+'
   option:
      no_cache: TRUE
 
@@ -97,5 +102,3 @@ fileshare.fileshare_autocomplete:
     _format: 'json'
   requirements:
     _permission: 'access content'
-
-

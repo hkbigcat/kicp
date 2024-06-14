@@ -6,6 +6,7 @@
         </div>
     </div>
     <div class="spacer"></div>
+{% if items %}
     <div>
         <p>{{items['description']}}</p>
         {% for cop in categories %}
@@ -20,6 +21,8 @@
         {% include '@ppcactivities/ppcactivities-general.html.twig' %}
     {% endif %}
 
-
+{% else %}                    
+     <div class="text-center">No activitiy information</div>
+{% endif %}     
 
 </div>

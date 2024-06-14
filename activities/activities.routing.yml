@@ -15,6 +15,7 @@ activities.content.type:
     _title: 'KM Activities'
   requirements:
     _permission: 'access content'
+    type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -25,6 +26,8 @@ activities.content.cop:
     _title: 'KM Activities'
   requirements:
     _permission: 'access content'
+    type_id: '\d+'
+    cop_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -35,6 +38,9 @@ activities.content.item:
     _title: 'KM Activities'
   requirements:
     _permission: 'access content'
+    type_id: '\d+'
+    cop_id: '\d+'
+    item_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -46,6 +52,7 @@ activities.activities_detail:
     _title: 'KM Activities - Event Information'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -86,6 +93,7 @@ activities.admin_category_delete:
     _title: 'Delete COP Category'
   requirements:
     _permission: 'access content'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -96,6 +104,7 @@ activities.admin_cop_category_change:
     _title: 'KM Activities - Edit COP Category'
   requirements:
     _permission: 'activities_admin'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -116,6 +125,7 @@ activities.admin_cop_item:
     _title: 'KM Activities Management'
   requirements:
     _permission: 'activities_admin'
+    group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -126,6 +136,7 @@ activities.admin_cop_delete:
     _title: 'Delete COP Item'
   requirements:
     _permission: 'access content'
+    cop_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -136,6 +147,7 @@ activities.admin_cop_item_change:
     _title: 'KM Activities - Edit COP Item'
   requirements:
     _permission: 'activities_admin'
+    cop_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -146,6 +158,7 @@ activities.admin_cop_item_add:
     _title: 'KM Activities - Add COP Item'
   requirements:
     _permission: 'activities_admin'
+    cop_group_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -156,6 +169,7 @@ activities.admin_event:
     _title: 'KM Activities Management Event'
   requirements:
     _permission: 'activities_admin'
+    type_id: '\d+'
   options:
     no_cache: TRUE     
 
@@ -166,6 +180,7 @@ activities.admin_item_add:
     _title: 'KM Activities - Add Event'
   requirements:
     _permission: 'activities_admin'
+    type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -176,6 +191,7 @@ activities.admin_item_delete:
     _title: 'Delete Event'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE  
 
@@ -186,6 +202,7 @@ activities.enroll_status:
     _title: 'Activities Enrollment Status'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -196,6 +213,7 @@ activities.admin.enroll_list:
     _title: 'Activities Enrollment List'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -206,6 +224,8 @@ activities.enroll_delete:
     _title: 'Delete Activities Enrollment'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE    
 
@@ -216,6 +236,8 @@ activities.enroll_status_update:
     _title: 'Update Activities Enrollment'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
+    user_id: '[\.0-9a-zA-Z]+'
   options:
     no_cache: TRUE
 
@@ -226,6 +248,7 @@ activities.photo:
     _title: 'KM Activities'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -236,6 +259,7 @@ activities.photo_add:
     _title: 'KM Activities - Add Event Photo'
   requirements:
     _permission: 'access content'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -246,6 +270,7 @@ activities.photo_change:
     _title: 'KM Activities - Edit Event Photo'
   requirements:
     _permission: 'activities_admin'
+    evt_photo_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -256,6 +281,7 @@ activities.photo_delete:
     _title: 'Delete Event Photo'
   requirements:
     _permission: 'activities_admin'
+    evt_photo_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -266,6 +292,7 @@ activities.deliverable:
     _title: 'KM Activities'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -276,6 +303,7 @@ activities.deliverable_add:
     _title: 'KM Activities - Add Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -286,6 +314,7 @@ activities.deliverable_change:
     _title: 'KM Activities - Edit Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_deliverable_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -296,6 +325,7 @@ activities.deliverable_delete:
     _title: 'Delete Event Deliverable'
   requirements:
     _permission: 'activities_admin'
+    evt_deliverable_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -306,6 +336,7 @@ activities.enroll_status_export:
     _title: 'Activities Enrollment Status'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -326,6 +357,7 @@ activities.admin_item_change:
     _title: 'KM Activities - Edit Event'
   requirements:
     _permission: 'activities_admin'
+    evt_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -336,6 +368,7 @@ activities.admin_list_change:
     _title: 'KM Activities - Edit Event Type'
   requirements:
     _permission: 'activities_admin'
+    evt_type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -356,6 +389,7 @@ activities.admin_list_delete:
     _title: 'Delete Event Type'
   requirements:
     _permission: 'activities_admin'
+    evt_type_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -366,6 +400,8 @@ activities.register:
     _title: 'Event Regsitration'
   requirements:
     _permission: 'access content'
+    action: '(enroll|cancel_enroll|reenroll|cancel_reenrol)'
+    evt_id: '\d+'
   options:
     no_cache: TRUE
 

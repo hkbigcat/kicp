@@ -21,6 +21,9 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkAdd extends FormBase  {
 
+    public $is_authen;
+    public $module;    
+
     public function __construct() {
         $this->module = 'bookmark';
         $AuthClass = "\Drupal\common\Authentication";

@@ -22,11 +22,18 @@ use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\Core\Utility\Error;
 
 class FileShareAdd extends FormBase  {
 
+    public $my_user_id;
+    public $is_authen;
+    public $module;
+    public $allow_file_type;
+    public $target_folder;    
+
     public function __construct() {
+
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $this->my_user_id = $authen->getUserId();         
@@ -87,14 +94,22 @@ class FileShareAdd extends FormBase  {
             '#required' => TRUE,
         ];
 
+        $validators = array(
+            'file_validate_extensions' => array(CommonUtil::getSysValue('default_file_upload_extensions')),
+            'file_validate_size' => array(CommonUtil::getSysValue('default_file_upload_size_limit') * 1024 * 1024),
+          );           
 
 		
         $form['filename'] = [
-            '#type' => 'file',
+            //'#type' => 'file',
+            '#type' => 'managed_file',
             '#title' => $this->t('File'),
-            '#size' => 150,
+            '#upload_location' => 'private://fileshare/file',
+            //'#size' => 150,
             '#description' => 'Only support '.str_replace(' ', ', ', $this->allow_file_type).' file format',
             '#required' => TRUE,
+            '#multiple' => FALSE,
+            '#upload_validators' => $validators
         ];
 
         $folderAry = FileShareDatatable::getMyEditableFolderList($this->my_user_id);
@@ -202,9 +217,22 @@ class FileShareAdd extends FormBase  {
 
    public function submitForm(array &$form, FormStateInterface $form_state) {
 
+       //Obtain the value as entered into the Form
+       foreach ($form_state->getValues() as $key => $value) {
+        $$key = $value;
+       }
+
+
 		//*************** File [Start]
-        $tmp_name = $_FILES["files"]["tmp_name"]['filename'];
-        $this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
+        //$tmp_name = $_FILES["files"]["tmp_name"]['filename'];
+        
+
+        foreach($filename as $filename1) {
+            $NewFile = File::load($filename1);
+            $tmp_name = $NewFile->getFilename();   
+            $this_filename = CommonUtil::file_remove_character($tmp_name);
+        }
+        //$this_filename = CommonUtil::file_remove_character($_FILES["files"]["name"]['filename']);
         $file_ext = strtolower(pathinfo($this_filename, PATHINFO_EXTENSION));
 		//*************** File [End]
 		
@@ -214,10 +242,6 @@ class FileShareAdd extends FormBase  {
 		$this_pdfname = str_replace('.'.$file_ext, '.pdf', $this_filename);		
 
 
-       //Obtain the value as entered into the Form
-       foreach ($form_state->getValues() as $key => $value) {
-        $$key = $value;
-       }
        
        $entry = array(
         'title' => $title,
@@ -253,6 +277,7 @@ class FileShareAdd extends FormBase  {
   
       $this_file_id = str_pad($file_id, 6, "0", STR_PAD_LEFT);
      
+      /*
       $file_system = \Drupal::service('file_system');  
       $FileshareUri = 'private://fileshare';
 
@@ -283,6 +308,36 @@ class FileShareAdd extends FormBase  {
       $newFile->uid = $file_id;
       $newFile->save();
       $url = $newFile->createFileUrl(FALSE);
+    */
+
+    $file_system = \Drupal::service('file_system');  
+    $FileshareUri = 'private://fileshare';    
+
+    FileShareDatatable::createFileshareDir($FileshareUri, $this_file_id);        
+    $file_path = $file_system->realpath($FileshareUri  . '/file/' . $this_file_id);
+    $image_path = $file_system->realpath($FileshareUri  . '/image/' . $this_file_id);   
+    $createDir = $FileshareUri . '/file/' . $this_file_id;
+
+    foreach($filename as $filename1) {
+        $NewFile = File::load($filename1);
+        $attachment_name = $NewFile->getFilename();
+        $source = $file_system->realpath($FileshareUri . '/file/'.  $attachment_name);
+        $destination = $file_system->realpath($createDir . '/' .  $this_filename);
+        $newFileName = $file_system->move($source, $destination, FileSystemInterface::EXISTS_REPLACE);
+        if (!$newFileName) {
+            throw new \Exception('Could not move the generic placeholder file to the destination directory.');
+        } else {
+            $NewFile->setFileUri($createDir . '/' .  $attachment_name);
+            $NewFile->uid = $file_id;
+            $NewFile->setPermanent();
+            $NewFile->save();
+        }
+    }
+
+
+
+
+
       
         // create thumbnail(s) of all PDF pages
 
@@ -319,7 +374,7 @@ class FileShareAdd extends FormBase  {
         }
 
 
-        if (count($imageDirFile) > 0) {
+        if ($imageDirFile && count($imageDirFile) > 0) {
             $i = 0;
 
             // insert record
@@ -373,11 +428,11 @@ class FileShareAdd extends FormBase  {
     }
 
     catch (\Exception $e ) {
-        
+        $variables = Error::decodeException($e);
         \Drupal::messenger()->addError(
-          t('Unable to save filess at this time due to datbase error. Please try again.')
+          t('Unable to save file at this time due to datbase error. Please try again.'.$e)
         ); 
-        \Drupal::logger('fileshare')->error('Fileshare is not created ' .$file_id);   
+        \Drupal::logger('fileshare')->error('Fileshare is not created ' .$variables);   
         $transaction->rollBack();
 
     }

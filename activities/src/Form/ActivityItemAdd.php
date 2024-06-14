@@ -21,9 +21,12 @@ use Drupal;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\FileInterface;
 use Drupal\file\Entity;
-
+use Drupal\Core\Utility\Error;
 
 class ActivityItemAdd extends FormBase  {
+
+    public $module;
+    public $default_creator;
 
     public function __construct() {
         $this->module = 'activities';

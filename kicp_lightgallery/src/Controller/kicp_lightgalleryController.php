@@ -15,6 +15,10 @@ use Drupal\common\CommonUtil;
 
 class kicp_lightgalleryController extends ControllerBase {
 
+    public $module;
+    public $thumnail_folder;
+    public $download_folder;
+
     public function __construct() {
         $this->module = 'album';
         $this->thumnail_folder = 'gal';

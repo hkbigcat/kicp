@@ -16,6 +16,7 @@ survey.survey_view:
     _title: ''
   requirements:
     _permission: 'access content'
+    survey_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -27,6 +28,7 @@ survey.export_survey:
   requirements:
     _access: 'TRUE'
     _permission: 'access content'
+    survey_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -37,6 +39,7 @@ survey.survey_delete:
     _title: 'Survey delete'
   requirements:
     _permission: 'access content'
+    survey_id: '\d+'
   options:
     no_cache: TRUE   
 
@@ -47,6 +50,7 @@ survey.survey_change_1:
     _title: 'Edit Survey'
   requirements:
     _permission: 'access content'
+    survey_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -97,6 +101,7 @@ survey.survey_copy:
     _title: 'Copy Survey'
   requirements:
     _permission: 'access content'
+    survey_id: '\d+'
   options:
     no_cache: TRUE
 

@@ -14,6 +14,9 @@ function module_item_delete(module, item_id) {
     case 'fileshare_folder':
         msgtitle = 'File Share Folder';
       break;
+    case 'bookmark':
+        msgtitle = 'Bookmark';
+      break;          
     case 'blog':
         msgtitle = 'Blog';
       break;          
@@ -93,40 +96,36 @@ function module_item_delete(module, item_id) {
   let delete_redirect_page = (document.getElementById('delete_redirect_page') && document.getElementById('delete_redirect_page').value!="")?document.getElementById('delete_redirect_page').value:"";
   console.log('delete_redirect_page: '+delete_redirect_page);
 
-  jQuery("#delete-confirm").dialog({
-    title: 'Delete '+ msgtitle,
-    width: 400,
-    height: 225,
-    modal: true,
-    buttons: {
-      "OK": function () {
-        if (module=="blog") {
-          //jQuery.post(page_url, {function(){
-            jQuery.post(page_url, function(data, status){
-              jQuery('#delete-confirm').dialog('close');
-              if (delete_redirect_page!="") {
-                console.log("close dialog 1 Status : "+status );
-                window.location.href=delete_redirect_page;      
-              } else {
-                console.log("close dialog 2 Status : "+status );
-                window.location.reload();        
-              }
-            });
-          } else {
-          jQuery.post({url:page_url, success: function(result){
-              jQuery('#delete-confirm').dialog('close');
-              console.log("close dialog 3: "+result);
-              window.location.reload();      
-            }});
-          } 
-      },
-
-      Cancel: function () {
-          console.log( "You canceled!");
-          jQuery(this).dialog("close");
-      }
+  Swal.fire({
+    title: "Delete " + msgtitle ,
+    text: "Confirm delete " + msgtitle + " ?",
+    type: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes"
+  }).then((result) => {
+    if (result.value) {
+      if (module=="blog") {
+        //jQuery.post(page_url, {function(){
+          jQuery.post(page_url, function(data, status){
+            if (delete_redirect_page!="") {
+              console.log("close dialog 1 Status : "+status );
+              window.location.href=delete_redirect_page;      
+            } else {
+              console.log("close dialog 2 Status : "+status );
+              window.location.reload();        
+            }
+          });
+        } else {
+        jQuery.post({url:page_url, success: function(result){
+            console.log("close dialog 3: "+result);
+            window.location.reload();      
+          }});
+        } 
     }
   });
+
 
 }
 
@@ -437,13 +436,14 @@ function mailto(sub, body) {
   }
   msg = "The corresponding URL has been copied into the clipboard\n\nDo you also want to send this URL through mail e.g. Microsoft Outlook?";
   if (confirm(msg)) {
-      window.location.href = "mailto:?Subject=" + sub + "&Body=" + KICPadvertisement1 + "%0a" + escape(txt) + "%0a%0a" + KICPadvertisement2 + "%0a";
+      window.location.href = "mailto:?subject=" + sub + "&Body=" + KICPadvertisement1 + "%0a" + escape(txt) + "%0a%0a" + KICPadvertisement2 + "%0a";
   }
 }
 
 
 jQuery(document).ready(function(){
-    jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
+    //jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
+    jQuery('[href="/kmapp/kicp/mediawiki"]').attr('target', '_blank');
     jQuery('.menu:last-child').addClass( 'columns' );  
     jQuery("[data-drupal-link-system-path='disclaimer']").attr('target', '_blank');
     jQuery("[data-drupal-link-system-path='contact']").text("Contact Us");

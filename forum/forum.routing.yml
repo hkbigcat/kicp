@@ -17,6 +17,7 @@ forum.forum_view_forum:
   requirements:
     _access: 'TRUE'
     _permission: 'access content'
+    forum_id: '\d+'
   options:
     no_cache: TRUE    
 
@@ -28,6 +29,7 @@ forum.forum_view_topic:
   requirements:
     _access: 'TRUE'
     _permission: 'access content'
+    topic_id: '\d+'
   options:
     no_cache: TRUE
 
@@ -38,6 +40,7 @@ forum.forum_topic_add:
     _title: 'Add Forum Topic'
   requirements:
     _permission: 'access content'
+    forum_id: '\d+'
   options:
     no_cache: TRUE    
 
