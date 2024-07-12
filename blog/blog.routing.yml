@@ -30,6 +30,16 @@ blog.blog_view:
   options:
     no_cache: TRUE    
 
+blog.blog_view_old:
+  path: '/blog_view'
+  defaults:
+    _controller: '\Drupal\blog\Controller\BlogController::viewBlogOld'
+    _title: 'Blog'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
 blog.add_data:
   path: '/blog_add'
   defaults:

@@ -5,6 +5,18 @@ common.download:
     _title: 'Download File'
   requirements:
     _permission: 'access content'  
+    module_name: '(blog|fileshare|activities|ppcactivities|survey|survey_question|vote|vote_question)'
+    file_id: '\d+'    
+  options:
+     no_cache: TRUE
+
+common.download_old:
+  path: '/download'
+  defaults:
+    _controller: '\Drupal\common\Controller\CommonController::downloadModuleFileOld'
+    _title: 'Download File'
+  requirements:
+    _permission: 'access content'  
   options:
      no_cache: TRUE
 

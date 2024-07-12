@@ -21,7 +21,6 @@ use Drupal\Core\Url;
 
 class SurveyController extends ControllerBase {
 
-    public $is_authen;
     public $my_user_id;
     public $module;    
 
@@ -29,14 +28,15 @@ class SurveyController extends ControllerBase {
         $this->module = 'survey';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();    
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();            
     }
 
     public function SurveyContent() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -66,6 +66,17 @@ class SurveyController extends ControllerBase {
         ];   
 
     }
+
+
+    public function SurveyViewOld() {
+        $survey_id = \Drupal::request()->query->get('survey_id');
+        if ($survey_id && is_numeric($survey_id))
+            $url = Url::fromUri('base:/survey_view/'.$survey_id);
+        else {
+                $url = Url::fromUri('base:/survey/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+      }
 
     public function deleteSurvey($survey_id) {
 

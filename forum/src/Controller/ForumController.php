@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ForumController extends ControllerBase {
 
-    public $is_authen;
     public $my_user_id;
     public $module;
 
@@ -26,14 +25,15 @@ class ForumController extends ControllerBase {
         $this->module = 'forum';
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();        
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();              
     }
     
     public function content() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -50,11 +50,22 @@ class ForumController extends ControllerBase {
 
     }
 
+    public function viewTopicListOld() {
+        $forum_id = \Drupal::request()->query->get('forum_id');
+        if ($forum_id && is_numeric($forum_id))
+            $url = Url::fromUri('base:/forum_view_forum/'.$forum_id);
+        else {
+                $url = Url::fromUri('base:/forum/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+    }
+
     
     public function viewTopicList($forum_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -76,10 +87,22 @@ class ForumController extends ControllerBase {
 
     }
 
+    public function viewPostListOld() {
+        $topic_id = \Drupal::request()->query->get('topic_id');
+        if ($topic_id && is_numeric($topic_id))
+            $url = Url::fromUri('base:/forum_view_topic/'.$topic_id);
+        else {
+                $url = Url::fromUri('base:/forum/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+
+    }
+
     public function viewPostList($topic_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -107,7 +130,8 @@ class ForumController extends ControllerBase {
 
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 

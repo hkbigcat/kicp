@@ -24,7 +24,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class VideoController extends ControllerBase {
     
-    public $is_authen;
     public $my_user_id;
     public $module;    
     public $pagesize;
@@ -35,20 +34,22 @@ class VideoController extends ControllerBase {
         $this->pagesize = 5;        
 
         $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();              
+        $authen = new $AuthClass();        
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();       
+         
     }
     
     public function content() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
         $EventListAry = VideoDatatable::getVideoEventList($this->pagesize); // get most updated events
-        $EventListRight = VideoDatatable::getVideoEventList($limit="", $start=($this->pagesize+1));
+        $EventListRight = VideoDatatable::getVideoEventList($limit="", $start=($this->pagesize));
         $following = Follow::getFollow('KMU.OGCIO', $this->my_user_id);    
         return [
             '#theme' => 'video-home',
@@ -62,14 +63,33 @@ class VideoController extends ControllerBase {
 
     }
 
+    public function VideoContentOld() {
+        $media_event_id = \Drupal::request()->query->get('media_event_id');
+        if ($media_event_id && is_numeric($media_event_id))
+            $url = Url::fromUri('base:/video_list/'.$media_event_id);
+        else {
+                $url = Url::fromUri('base:/video/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+    }
+
     public function VideoContent($media_event_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
         $EventInfo = VideoDatatable::getVideoEventInfo($media_event_id);
+        if (!$EventInfo) {
+            return [
+                '#type' => 'markup',
+                '#markup' => $this->t('This event\'s media is not avaiable'),
+            ];
+
+        }
+
         $VideoList = VideoDatatable::getVideoListByEventId($media_event_id);
         $TagList = new TagList();
         $taglist = $TagList->getTagsForModule('video', $media_event_id);        
@@ -97,7 +117,8 @@ class VideoController extends ControllerBase {
     public function VideoTagContent() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -347,6 +368,29 @@ class VideoController extends ControllerBase {
 
     }
 
+    public function video_playback($media_id) {
+
+        $EventInfo = array();
+        $media = VideoDatatable::getVideoInfo($media_id);
+        if ($media) {
+            $EventInfo = VideoDatatable::getVideoEventInfo($media['media_event_id']);
+        } 
+        if (!$EventInfo) {
+            return [
+                '#type' => 'markup',
+                '#markup' => $this->t('This event\'s media is not avaiable'),
+            ];
+        }
+        return [
+            '#theme' => 'video-playback',
+            '#media' => $media,
+            '#event_info' => $EventInfo,
+            '#empty' => t('No entries available.'),
+    ];    
+
+
+    }
+
     public static function Breadcrumb() {
 
         $base_url = Url::fromRoute('video.video_entrylist');
@@ -378,12 +422,34 @@ class VideoController extends ControllerBase {
             if ($media_event_id) {
                 $media_event_name = VideoDatatable::getEventName($media_event_id);
                 if ($media_event_name) {
+                    $media_list_url = Url::fromRoute('video.video_list', ['media_event_id' => $media_event_id]);
                     $breads[] = [
                         'name' => $media_event_name, 
                     ];        
                 }
             }
-        }  else if  ($routeName=="video.admin_content") {
+        }   else if ($routeName=="video.video_playback") {
+            $breads[] = $base_path;
+            $media_id = $route_match->getParameter('media_id');
+            $media = VideoDatatable::getVideoInfo($media_id);
+            if ($media) {
+                $media_event_id = $media['media_event_id'];
+                $media_event_name = VideoDatatable::getEventName($media_event_id);
+                if ($media_event_name) {
+                    $media_list_url = Url::fromRoute('video.video_list', ['media_event_id' => $media_event_id]);
+                    $breads[] = [
+                        'name' => $media_event_name, 
+                        'url'  => $media_list_url,      
+                    ];
+                    $title = preg_replace( "/<br>|\n|<br( ?)\/>/", " ", $media['media_title']);        
+                    $breads[] = [
+                        'name' => $title, 
+                    ]; 
+
+                }
+            }
+            
+        } else if  ($routeName=="video.admin_content") {
             $breads[] = $base_path;
             $breads[] = [
                 'name' => 'Admin - Events List', 
@@ -437,7 +503,7 @@ class VideoController extends ControllerBase {
             $breads[] = [
                 'name' => 'Edit', 
             ];            
-        }
+        } 
         
         
         return $breads;

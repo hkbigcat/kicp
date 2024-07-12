@@ -24,7 +24,6 @@ use Drupal\Core\Utility\Error;
 
 class ActivitiesController extends ControllerBase {
     
-    public $is_authen;
     public $my_user_id;
     public $module;
     
@@ -33,19 +32,26 @@ class ActivitiesController extends ControllerBase {
         //$DefaultPageLength = $Paging->getDefaultPageLength();
 
         $this->module = 'activities';
-
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();      
+
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();             
         
     }
     
     public function content($type_id=1, $cop_id="", $item_id="" ) {
         
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
+        }
+
+        $rtype_id = \Drupal::request()->query->get('type_id');
+        if ($rtype_id && is_numeric($rtype_id)) {
+            $url = Url::fromUri('base://activities/'.$rtype_id);
+            return new RedirectResponse($url->toString(), 301);   
         }
 
         $activitiesType = ActivitiesDatatable::getAllActivityType();
@@ -87,11 +93,21 @@ class ActivitiesController extends ControllerBase {
 
     }
 
+    public function ActivityDetailOld() {
+        $evt_id = \Drupal::request()->query->get('evt_id');
+        if ($evt_id && is_numeric($evt_id))
+            $url = Url::fromUri('base://activities_detail/'.$evt_id);
+        else {
+                $url = Url::fromUri('base://activities/');
+        }
+        return new RedirectResponse($url->toString(), 301);        
+    }
 
     public function ActivityDetail($evt_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -666,12 +682,13 @@ class ActivitiesController extends ControllerBase {
         $output= "";
 
         $EnrollRecord = ActivitiesDatatable::getEnrollmemtRecord($evt_id);
+        $total_enroll = count($EnrollRecord);
         $EventDetail = ActivitiesDatatable::getEventDetail($evt_id);
         $EnrollRecord['event'] = $EventDetail;
 
         $output .= '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';        
         $output .= '<h2>Event Name: '.$EventDetail['evt_name'].'</h2>';
-        $output .= '<div>Total <strong>'.count($EventDetail).'</strong> enrollment(s) as at '.date('H:i:s').' on '.date('d.m.Y').'</div>';
+        $output .= '<div>Total <strong>'.$total_enroll.'</strong> enrollment(s) as at '.date('H:i:s').' on '.date('d.m.Y').'</div>';
         $output .= '<div>&nbsp;</div>';
         $output .= '<table border="1">';
         $output .= '<tr>';

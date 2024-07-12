@@ -69,6 +69,7 @@ class VideoDatatable {
             $query->addField('a','is_visible');
             $query->addField('a', 'is_banned');
         } else {
+            $query-> condition('a.is_visible', '1');
             $query->addField('a', 'media_description');
             $query->addField('a','media_file_path');
             $query->addField('a', 'media_img');
@@ -99,11 +100,23 @@ class VideoDatatable {
     }
 
     public static function getVideoEventInfo($media_event_id) {
-            $sql = "SELECT media_event_name, media_event_sequence, media_event_date, is_visible, is_wmv, media_event_image, evt_id, evt_type, user_id FROM kicp_media_event_name WHERE is_deleted=0 AND media_event_id=" . $media_event_id;
-            $database = \Drupal::database();
-            $result = $database-> query($sql)->fetchObject();
-    
-            return $result;
+
+        $AuthClass = "\Drupal\common\Authentication";
+        $authen = new $AuthClass();
+        $my_user_id = $authen->getUserId();
+
+        $access_right = true;
+        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
+        if (!$isSiteAdmin) {
+            $access_right = self::hasEventAccessRight($media_event_id, $my_user_id);
+        }            
+        if (!$access_right) return null;
+
+        $sql = "SELECT media_event_name, media_event_sequence, media_event_date, is_visible, is_wmv, media_event_image, evt_id, evt_type, user_id FROM kicp_media_event_name WHERE is_deleted=0 AND media_event_id=" . $media_event_id;
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchObject();
+
+        return $result;
 
     }
 
@@ -287,15 +300,17 @@ class VideoDatatable {
     }    
 
     public static function getVideoInfo($media_id="") {
-        $returnAry = array();
-
         if ($media_id == "") {
-            return $returnAry;
+            return null;
         }
 
-        $sql = "SELECT media_id, media_title, media_description, media_duration, media_postdate, media_file_path, is_visible, is_banned, media_img, sort_field, media_event_id FROM kicp_media_info WHERE is_deleted=0 AND media_id=" . $media_id;
+        $sql = "SELECT media_id, media_title, media_description, media_duration, media_postdate, media_file_path, media_file_local,  is_visible, is_banned, media_img, sort_field, media_event_id FROM kicp_media_info WHERE is_deleted=0 AND media_id=" . $media_id;
         $database = \Drupal::database();
         $result = $database-> query($sql)->fetchAssoc();
+
+        $TagList = new TagList();
+        if ($result) 
+            $result["tags"] = $TagList->getTagsForModule('video_video',$media_id);
 
         return $result;
 

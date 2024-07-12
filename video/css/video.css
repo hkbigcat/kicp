@@ -62,7 +62,7 @@ width:auto;
 
 .homepage_div .video_list_text {
 float:left; 
-width:38%;
+/*width:38%;*/
 }
 
 
@@ -185,4 +185,8 @@ font-weight: bold;
 #video_content_div{
     clear: both;
     margin-top: 10px;
+}
+
+h1.page-title {
+    color: #0071b3;
 }

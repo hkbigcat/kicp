@@ -21,6 +21,17 @@ forum.forum_view_forum:
   options:
     no_cache: TRUE    
 
+forum.forum_view_forum_old:
+  path: '/forum_view_forum'
+  defaults:
+    _controller: '\Drupal\forum\Controller\ForumController::viewTopicListOld'
+    _title: 'Forum'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
 forum.forum_view_topic:
   path: '/forum_view_topic/{topic_id}'
   defaults:
@@ -32,6 +43,17 @@ forum.forum_view_topic:
     topic_id: '\d+'
   options:
     no_cache: TRUE
+
+forum.forum_view_topic_old:
+  path: '/forum_view_topic'
+  defaults:
+    _controller: '\Drupal\forum\Controller\ForumController::viewPostListOld'
+    _title: 'Forum'
+  requirements:
+    _access: 'TRUE'
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
 
 forum.forum_topic_add:
   path: '/forum_topic_add/{forum_id}'

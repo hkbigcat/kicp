@@ -1,7 +1,7 @@
 {% for item in items %}
 <div style="display:inline-block;padding-right:10px;">
 
-    <a href="{{ path('common.download', {'module_name': 'activities', 'file_id': evt_id, 'fname': item['evt_deliverable_url']  }) }}" target="_blank"><i class="fa-solid fa-paperclip"></i> {{item['evt_deliverable_name']}}</a>
+    <a href="{{ path('common.download', {'module_name': 'activities', 'file_id': evt_id, 'fname': item['evt_deliverable_url']  }) }}" target="_blank" onClick="_paq.push([\'trackLink\', this.href, \'download\']);"><i class="fa-solid fa-paperclip"></i> {{item['evt_deliverable_name']}}</a>
     {% include '@common/common-like.html.twig'  with {module: 'activities_deliverable', 'record_id':  item['evt_deliverable_id'], countLike: item ['countlike'], 'liked': item ['liked']  }  %}
 </div>
 {% include '@common/common-tags-list.html.twig'  with {'tags': item['tags']}  %}            

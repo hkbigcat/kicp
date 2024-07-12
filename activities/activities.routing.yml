@@ -56,6 +56,16 @@ activities.activities_detail:
   options:
     no_cache: TRUE
 
+activities.activities_detail_old:
+  path: '/activities_detail'
+  defaults:
+    _controller: '\Drupal\activities\Controller\ActivitiesController::ActivityDetailOld'
+    _title: 'KM Activities - Event Information'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
 activities.event_data:
   path: '/activities_event_data'
   defaults:

@@ -25,51 +25,52 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkController extends ControllerBase {
 
-  public $is_authen;
   public $my_user_id;
   public $module;
 
     public function __construct() {
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();        
 
-        $this->module = 'bookmark';
+      $AuthClass = "\Drupal\common\Authentication";
+      $authen = new $AuthClass();
+
+      $current_user = \Drupal::currentUser();
+      $this->my_user_id = $current_user->getAccountName();            
+      $this->module = 'bookmark';
     }
 
     public function BookmarkContent() {
 
       $url = Url::fromUri('base:/no_access');
-      if (! $this->is_authen) {
+      $logged_in = \Drupal::currentUser()->isAuthenticated();
+      if (!$logged_in) {
           return new RedirectResponse($url->toString());
       }
 
-        $tags = array();
-        $tmp = null;
+      $tags = array();
+      $tmp = null;
+    
+      $myRecordOnly = \Drupal::request()->query->get('my');
+      $tagsUrl = \Drupal::request()->query->get('tags');
+
+      $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id); 
       
-        $myRecordOnly = \Drupal::request()->query->get('my');
-        $tagsUrl = \Drupal::request()->query->get('tags');
-
-        $bookmarks = BookmarkDatatable::getBookmarks($this->my_user_id); 
-        
-        if ($tagsUrl) {
-          $tags = json_decode($tagsUrl);
-          if ($tags && count($tags) > 0 ) {
-            $tmp = $tags;
-          }
+      if ($tagsUrl) {
+        $tags = json_decode($tagsUrl);
+        if ($tags && count($tags) > 0 ) {
+          $tmp = $tags;
         }
+      }
 
-        return [
-            '#theme' => 'bookmark-list',
-            '#items' => $bookmarks,
-            '#my_user_id' => $this->my_user_id,
-            '#empty' => t('No entries available.'),
-            '#myRecordOnly' => $myRecordOnly,
-            '#tagsUrl' => $tmp,
-            '#pager' => ['#type' => 'pager',
-          ],
-        ];      
+      return [
+          '#theme' => 'bookmark-list',
+          '#items' => $bookmarks,
+          '#my_user_id' => $this->my_user_id,
+          '#empty' => t('No entries available.'),
+          '#myRecordOnly' => $myRecordOnly,
+          '#tagsUrl' => $tmp,
+          '#pager' => ['#type' => 'pager',
+        ],
+      ];      
         
     }
 

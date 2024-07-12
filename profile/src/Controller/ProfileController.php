@@ -18,20 +18,19 @@ use Drupal\Core\Utility\Error;
 
 class ProfileController extends ControllerBase {
 
-    public $is_authen;
     public $module;    
 
     public function __construct() {
         $this->module = 'profile';
         $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
+        $authen = new $AuthClass();        
     }
 
     public function ProfileCop() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -49,7 +48,8 @@ class ProfileController extends ControllerBase {
     public function reloadCopJoinMemberTable() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -69,14 +69,14 @@ class ProfileController extends ControllerBase {
     public function ProfileJoinCopMembership() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }   
         
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        
-        $user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName(); 
+
         $cop_id = $_REQUEST['cop_id'];
         $action = $_REQUEST['action'];
         
@@ -118,7 +118,8 @@ class ProfileController extends ControllerBase {
     public function ProfileGroupContent() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -184,7 +185,8 @@ class ProfileController extends ControllerBase {
     public function ProfileGroupMemberContent($type="",$group_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 

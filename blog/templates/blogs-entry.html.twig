@@ -9,25 +9,28 @@
 
 <div id="MainEntryContainer">
    <div style="float:right;">
+       {% if ( user.hasPermission('access administration pages') or my_user_id == items['user_id'] or  items['delegate']) %}    
+       <button class="kicp_button" onClick="self.location.href='{{ path('blog.add_data') }}'"><i class="fa-solid fa-circle-plus"></i> Add New Entry</button>
+       {% endif %}
       <button class="kicp_button"  onclick="self.location.href='{{ path('blog.blog_view', {'blog_id': items['blog_id'] }) }}'"><i class="fa-solid fa-thumbtack"></i> All posts</button>
-      <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+      <button class="share_button" onclick="copyTextToClipboard(); mailto(4,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
       <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     </div>
     <div><span class="BlogName">{{ items ['user_full_name'] }}</span><span>{% include '@common/common-follow.html.twig'  with {contributor_id: items['user_id'], following: items['follow'] }  %}</span></div>
     
     <div id="DivEntry_{{ items ['entry_id'] }}" class="EntryContainer">
-        <div style="float:right">
+        <div class="text-right">
             {% if ( user.hasPermission('access administration pages') or my_user_id == items['user_id'] or  items['delegate']) %}        
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': items['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ items['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
             {% endif %}              
          </div>
-        <div class="entry_title">{{ items ['entry_title'] }} </div>
+        <!--div class="entry_title">{{ items ['entry_title'] }} </div-->
         <div class="entry_content" id="COp_entry_content">
             {{ items ['entry_content']  | raw }}
         </div><br>
         {% for attachment in items['attachment'] %}
-            <a href="{{ path('common.download', {'module_name': 'blog', 'file_id': items ['entry_id'], 'fname': attachment }) }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
+            <a href="{{ path('common.download', {'module_name': 'blog', 'file_id': items ['entry_id'], 'fname': attachment }) }}"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
         {% endfor %}
         {% include '@common/common-tags-list.html.twig' %}    
 

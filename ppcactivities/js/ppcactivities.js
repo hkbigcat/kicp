@@ -98,6 +98,8 @@ function getEventData(type, evt_id) {
         }
     });
 
+    var Capitalize_type = 'Tab ' + type.charAt(0).toUpperCase() + type.slice(1);
+    _paq.push(['trackEvent', 'PPC Activities', Capitalize_type, 'Event ID: '+evt_id]);
     
 }
 

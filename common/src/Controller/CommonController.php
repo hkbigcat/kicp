@@ -29,15 +29,26 @@ use Drupal\Core\Utility\Error;
 
 class CommonController extends ControllerBase {
 
+
+    public function downloadModuleFileOld() {
+        $file_id = \Drupal::request()->query->get('file_id');
+        $file_name = \Drupal::request()->query->get('fname');
+        $fname = ($file_name)?"?fname=".$file_name:"";
+        $module_name = \Drupal::request()->query->get('module');
+        $url = Url::fromUri('base://download/'.$module_name.'/'.$file_id);
+        
+        return new RedirectResponse($url->toString().$fname);        
+    }
+
     public function downloadModuleFile($module_name=NULL, $file_id=NULL) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $is_authen = $authen->isAuthenticated;
-        $my_user_id = $authen->getUserId(); 
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();   
+
 
         $url = Url::fromUri('base:/no_access');
-        if (! $is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -121,45 +132,26 @@ class CommonController extends ControllerBase {
                 '#type' => 'markup',
                 '#markup' => $this->t('You do not have access right to download this file'),   
             );
-        
-            exit;
         } else  if(!file_exists($filename)) {
             return array(
                 '#type' => 'markup',
                 '#markup' => $this->t('File not found.'),   
             );
-            exit;            
         } else {
-
             $filesize = filesize(urldecode( DRUPAL_ROOT ."/".$filename));
-
-            header('Content-type: application/pdf');
             header("application/force-download");
             header('Content-Disposition: attachment; filename='.basename($filename).';');
             header("Content-length: $filesize");
-
             @readfile($filename);
-            
-/*
-            return array(
-                '#type' => 'markup',
-                '#markup' => $this->t(' '),   
-            );
-*/            
-            //return new RedirectResponse($filename);
-
         }
-
+        exit;
     }
 
 
     public static function addLike() {
 
-
-        $AuthClass = "\Drupal\common\Authentication"; // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();    
-
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();             
         $module = \Drupal::request()->query->get('module');
         $record_id = \Drupal::request()->query->get('record_id');
 
@@ -332,13 +324,10 @@ class CommonController extends ControllerBase {
 
 
     public function AccessControlAddAction() {
-        
-        
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
-        $my_user_id = $authen->getUserId();
-        
+                
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();     
+
         $request = \Drupal::request();   // Request from ajax call
         $content = $request->getContent();
         $params = array();
@@ -449,22 +438,6 @@ class CommonController extends ControllerBase {
 
     public function AccessControlDeleteAction() {
 
-        /*
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass'); 
-        
-        $user_id = $authen->getUserId();
-        $isSiteAdmin = $author::isSiteAdmin($user_id);
-        */
-
-        /*
-        if (!$authen->isAuthenticated) {
-            $response = array('result' => '3');
-            return new JsonResponse($response);
-        }
-        */
-
         $request = \Drupal::request();   // Request from ajax call
         $content = $request->getContent();
         $params = array();
@@ -476,19 +449,6 @@ class CommonController extends ControllerBase {
         foreach ($params as $key => $value) {
             $$key = $value;
         }
-
-        /*
-        if (!$isSiteAdmin) {
-            if (!$author::hasPermission($this_module, TRUE)) {
-                $response = array('result' => '3');
-                return new JsonResponse($response);
-            }
-            if (!$author::hasRight($this_module.'_maint', $authen->getUId(), 'D', true)) {
-                $response = array('result' => '3');
-                return new JsonResponse($response);
-            }
-        }
-        */
         
         $database = \Drupal::database();
         $transaction = $database->startTransaction();             
@@ -608,19 +568,33 @@ class CommonController extends ControllerBase {
         );
         
 
+        $database = \Drupal::database();
+        $transaction = $database->startTransaction();   
         try {
-            $database = \Drupal::database();
             $return = $database-> insert('kicp_rate')
                 ->fields($entry)
                 ->execute();
+
+            \Drupal::logger('comomon')->info('Add Rating module: %module, rate ID: %rate_id, user id: %user_id:  rating: %rating',   
+            array(
+                '%module' => $module,
+                '%rate_id' => $id,
+                '%user_id' => strtoupper($user),
+                '%rating' => $rating,
+            ));     
+
+
         }
         catch (\Exception $e) {
-
+            $variables = Error::decodeException($e);
             \Drupal::messenger()->addError(
                 t('Unable to add rating. '.$id )
                 );
+            \Drupal::logger('common')->error('Rating is not created '  . $variables);                    
+            $transaction->rollBack();                 
 
         }
+        unset($transaction);
 
         if ($return) {
             $err_code = '1';
@@ -648,12 +622,9 @@ class CommonController extends ControllerBase {
 
     public function getKicpediaTag() {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $is_authen = $authen->isAuthenticated;
-
         $url = Url::fromUri('base:/no_access');
-        if (! $is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -682,9 +653,8 @@ class CommonController extends ControllerBase {
     }
 
     public function updateFollowStatus() {
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();           
         
         $contributor_id = (isset($_REQUEST['contributor_id']) && $_REQUEST['contributor_id'] != "") ? $_REQUEST['contributor_id'] : "";
         $status = (isset($_REQUEST['status']) && $_REQUEST['status'] != "") ? $_REQUEST['status'] : "";

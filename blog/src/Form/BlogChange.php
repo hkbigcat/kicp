@@ -33,17 +33,8 @@ class BlogChange extends FormBase  {
 
     public function __construct() {
         $this->module = 'blog';
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();        
-
-        $UserInfo = $authen->getKICPUserInfo($this->my_user_id);
-        if ($UserInfo==null) {
-            \Drupal::logger('blog')->error('uid not found for user_id: '.$this->my_user_id);       
-    
-        }
-
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();   
 
     }
 
@@ -84,7 +75,8 @@ class BlogChange extends FormBase  {
 
         $config = \Drupal::config('blog.settings'); 
 
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -102,7 +94,7 @@ class BlogChange extends FormBase  {
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
         $isdeletegate = BlogDatatable::isBlogDelegatedUser($entry['blog_id'],  $this->my_user_id);          
-        if (!$isSiteAdmin && $entry['user_id'] != $this->my_user_id  )  {
+        if (!$isSiteAdmin && $entry['user_id'] != $this->my_user_id  && !$isdeletegate )  {
             $form['intro'] = array(
               '#markup' => t('<i style="font-size:20px; color:red; margin-right:10px;" class="fa-solid fa-ban"></i> You cannot edit this blog.'),
                );
@@ -326,15 +318,16 @@ class BlogChange extends FormBase  {
 
         $delAttach = 0;
         if ($delete_doc_id != "") {
-            $delAttach = BlogDatatable::DeleteBlogEntryAttachment($delete_doc_id, $blog_owner_id, $this_entry_id_path);
+            $delAttach = BlogDatatable::DeleteBlogEntryAttachment($delete_doc_id,  $this_blog_owner_id, $this_entry_id_path);
         }
 
         ///// Delete attachment [End] ///////              
 
+        $createDir = "";
         if ($hasAttach) {
         /////////// Handle attachment [Start] /////////////
 
-            $createDir = $BlogFileUri . '/' . $blog_owner_id . '/' . $this_entry_id_path;
+            $createDir = $BlogFileUri . '/' .  $this_blog_owner_id . '/' . $this_entry_id_path;
             if (!is_dir($file_system->realpath($createDir ))) {
                 // Prepare the directory with proper permissions.
                 if (!$file_system->prepareDirectory( $createDir , FileSystemInterface::CREATE_DIRECTORY)) {
@@ -409,11 +402,12 @@ class BlogChange extends FormBase  {
                 }
             }            
 
-            \Drupal::logger('blog')->info('Updated id: %id, title: %title, attachment: %attach.',   
+            \Drupal::logger('blog')->info('Updated id: %id, title: %title, directory: %create_directory, attachment: %attach.',   
             array(
                 '%id' => $entry_id,
                 '%title' => $bTitle,
                 '%attach' => ($hasAttach)?'Y':'N',
+                '%create_directory' => $createDir,
             ));     
 
             $url = Url::fromUserInput('/blog_entry/'.$entry_id);

@@ -48,7 +48,23 @@ function common_page_attachments_alter(&$page) {
 	$path = $current_path = \Drupal::service('path.current')->getPath();
 	$routeName = \Drupal::routeMatch()->getRouteName();  
 
+	$AuthClass = "\Drupal\common\Authentication";
+	$authen = new $AuthClass();
+	$userName = $authen->getName();
+
     $page['#attached']['library'][] = 'common/common_key';	
+	$page['#attached']['drupalSettings']['userName'] = $userName;
+	$current_user = \Drupal::currentUser();
+	$page['#attached']['drupalSettings']['user_id']  = $current_user->getAccountName();    
+
+	if (!str_contains($path, '/admin')  ) {
+		$page['#attached']['library'][] = 'common/common_matomo';
+	}
+
+	if (str_contains($path, '/contact')  ) {
+		$page['#attached']['library'][] = 'common/contact_form';
+	}
+
 
 	if (str_contains($path, '/kicpedia_tag')  ) {
 		$page['#attached']['library'][] = 'common/content_tags';

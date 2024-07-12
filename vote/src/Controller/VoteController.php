@@ -67,6 +67,16 @@ class VoteController extends ControllerBase {
 
     }
 
+    public function VoteViewOld() {
+        $vote_id = \Drupal::request()->query->get('vote_id');
+        if ($vote_id && is_numeric($vote_id))
+            $url = Url::fromUri('base:/vote_view/'.$vote_id);
+        else {
+                $url = Url::fromUri('base:/vote/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+      }
+
     public function deleteVote($vote_id) {
 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 

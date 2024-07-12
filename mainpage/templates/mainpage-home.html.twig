@@ -58,8 +58,8 @@
     <div style="width:8%;display:inline-block;float:right;">
     {% include '@common/common-like.html.twig'  with {module: item['module'], 'record_id':  item['record_id'], countLike: item['countlike'], 'liked': items['liked']  }  %}
     {% elseif item['module'] in ['fileshare', 'bookmark'] %}
-    <div style="width:33%;display:inline-block;float:right;">
-    {% include '@common/common-rating.html.twig' with {rating: item['rating']}  %}
+    <div id="cpRate_{{item['module']}}_{{ item['record_id'] }}" style="width:33%;display:inline-block;float:right;">
+    {% include '@common/common-rating.html.twig' with {rating: item['rating'], user_id: my_user_id}  %}
     {% endif %}
     </div>
 </div>

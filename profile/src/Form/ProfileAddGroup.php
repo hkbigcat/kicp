@@ -35,10 +35,8 @@ class ProfileAddGroup extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $is_authen = $authen->isAuthenticated;
-        if (!$is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -109,8 +107,8 @@ class ProfileAddGroup extends FormBase {
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();   
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
@@ -127,7 +125,7 @@ class ProfileAddGroup extends FormBase {
             
             if($type == "B") {
                 $entry = array(
-                    'user_id' => $authen->getUserId(),
+                    'user_id' => $user_id,
                     'buddy_group_name' => $group_name,
                   );
                   $query = $database->insert('kicp_buddy_group')
@@ -135,7 +133,7 @@ class ProfileAddGroup extends FormBase {
       
             } else {
                 $entry = array(
-                    'pub_group_owner' => $authen->getUserId(),
+                    'pub_group_owner' => $user_id,
                     'pub_group_name' => $group_name,
                     'bool_trusted'  => 0,
                     'source' => 'U',

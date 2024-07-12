@@ -46,7 +46,7 @@ class PromotionController extends ControllerBase {
 		$search_str = \Drupal::request()->query->get('search_str');
         $search_str = $search_str??""; 
 
-		
+		$output = "";
 		$content = "";
 		$content2 = "";
 		$content3 = "";	
@@ -134,6 +134,7 @@ class PromotionController extends ControllerBase {
 	
         $code = 'promotion_maint';
 		$output = "";
+		$content = "";
 
         // Highlight the module name in top menu
         $output .= '<script> jQuery("a[href=\'/kicp/collections\']").addClass("is-active");</script>'; 

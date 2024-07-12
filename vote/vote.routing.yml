@@ -20,6 +20,16 @@ vote.vote_view:
   options:
     no_cache: TRUE    
 
+vote.vote_view_old:
+  path: '/vote_view'
+  defaults:
+    _controller: '\Drupal\vote\Controller\VoteController::VoteViewOld'
+    _title: 'Vote'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
 vote.vote_delete:
   path: '/vote_delete/{vote_id}'
   defaults:

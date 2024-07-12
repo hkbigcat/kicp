@@ -63,6 +63,16 @@ fileshare.fileshare_view:
   options:
      no_cache: TRUE
 
+fileshare.fileshare_view_old:
+  path: '/fileshare_view'
+  defaults:
+    _controller: '\Drupal\fileshare\Controller\FileShareController::viewShareFileOld'
+    _title: 'File Share'
+  requirements:
+    _permission: 'access content'  
+  options:
+     no_cache: TRUE
+
 fileshare.fileshare_add:
   path: '/fileshare_add'
   defaults:

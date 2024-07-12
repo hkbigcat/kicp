@@ -25,22 +25,23 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MainpageController extends ControllerBase {
 
-    public $is_authen;
     public $my_user_id;
     public $module;     
 
     public function __construct() {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();        
+
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();            
         $this->module = 'mainpage';
     }
 
     public function contentByView() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
        
@@ -72,7 +73,8 @@ class MainpageController extends ControllerBase {
     public function GeneralTagContent() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -218,7 +220,7 @@ kicpadm@ogcio.gov.hk for Internet mail users.</p>
         
             
         // can skip this code
-        global $skipDisclaimerCheck, $_SESSION;
+        //global $skipDisclaimerCheck, $_SESSION;
         $skipDisclaimerCheck = true;
         
         //$AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
@@ -243,8 +245,8 @@ kicpadm@ogcio.gov.hk for Internet mail users.</p>
 
     public function getDisclaimer() {
         
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
+        //$AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
+        //$authen = new $AuthClass();
         
         $outputMessage = self::getDisclaimerMessage();
         
@@ -259,16 +261,24 @@ kicpadm@ogcio.gov.hk for Internet mail users.</p>
     public function goAcceptDisclaimer() {
         
         // can skip this code
-        global $skipDisclaimerCheck, $_SESSION;
+        //global $skipDisclaimerCheck, $_SESSION;
+        $request = \Drupal::request();
+        $session = $request->getSession();
         $skipDisclaimerCheck = true;
+        $session->set('skipDisclaimerCheck', $skipDisclaimerCheck);        
+
                         
         $result = MainpageDatatable::acceptDisclaimer($this->my_user_id);
        
         $target = (isset($_REQUEST['target']) && $_REQUEST['target'] != "") ? $_REQUEST['target'] : "main";
               
-        $response = new RedirectResponse(urldecode($target));
-        $response->send();
-        return true;
+        //$response = new RedirectResponse(urldecode($target));
+        //$response->send();
+
+        return new RedirectResponse(urldecode($target));
+
+
+        //return true;
 
         //CommonUtil::goToUrl($target);
     }

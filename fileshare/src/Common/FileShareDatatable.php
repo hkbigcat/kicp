@@ -124,7 +124,7 @@ class FileShareDatatable extends ControllerBase {
     }
 
     
-    public static function getSharedFile($file_id = NULL, $my_user_id="") {
+    public static function getSharedFile($file_id = NULL) {
 
       $tags="";
       $tagsUrl = \Drupal::request()->query->get('tags');
@@ -138,9 +138,9 @@ class FileShareDatatable extends ControllerBase {
       }      
       $myRecordOnly = \Drupal::request()->query->get('my');
       $myfollowed = \Drupal::request()->query->get('my_follow');
-      $AuthClass = "\Drupal\common\Authentication";
-      $authen = new $AuthClass();
-      $my_user_id = $authen->getUserId();
+      $current_user = \Drupal::currentUser();
+      $my_user_id = $current_user->getAccountName();           
+
       $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
       if ($myfollowed) {
         $following_all = Follow::getFolloweringList($my_user_id);
@@ -165,30 +165,12 @@ class FileShareDatatable extends ControllerBase {
           $query-> condition('a.user_id', $following, 'IN');
         } else {        
           if (!$isSiteAdmin) {          
-
-            /*
-            $folder_access = $database-> select('kicp_access_control', 'b');
-            $folder_access -> leftJoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':typeP' => 'P', ':user_id' => $my_user_id]);
-            $folder_access -> leftJoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [ ':typeB' => 'B']);           
-            $folder_access -> leftJoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id');
-            $folder_access -> leftJoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id');
-            $folder_access-> addField('b', 'record_id');
-            $folder_access -> condition('b.module', 'fileshare');
-            $folder_access -> condition('b.is_deleted', 0);
-            $folder_access -> groupBy('b.record_id');
-            $folder_access -> having('COUNT(e.pub_user_id)=:matchecount AND COUNT(f.buddy_user_id) = :matchecount AND COUNT(g.pub_group_id) = :matchecount AND COUNT(h.user_id) = :matchecount ',  [':matchecount' => 0]);
-            $query-> condition('a.folder_id', $folder_access, 'NOT IN');
-*/
-            
-            
             $query -> leftJoin('kicp_access_control', 'b', 'b.record_id = j.folder_id AND b.module = :module AND b.is_deleted = :is_deleted', [':module' => 'fileshare', ':is_deleted' => '0']);
             $query -> leftJoin('kicp_public_user_list', 'e', 'b.group_id = e.pub_group_id AND b.group_type= :typeP AND e.is_deleted = :is_deleted AND e.pub_user_id = :user_id', [':typeP' => 'P', ':user_id' => $my_user_id]);
             $query -> leftJoin('kicp_buddy_user_list', 'f', 'b.group_id = f.buddy_group_id AND b.group_type= :typeB AND f.is_deleted = :is_deleted AND f.buddy_user_id = :user_id', [ ':typeB' => 'B']);
             $query -> leftJoin('kicp_public_group', 'g', 'b.group_id = g.pub_group_id AND b.group_type= :typeP AND g.is_deleted = :is_deleted AND g.pub_group_owner = :user_id');
             $query -> leftJoin('kicp_buddy_group', 'h', 'b.group_id = h.buddy_group_id AND b.group_type= :typeB AND h.is_deleted = :is_deleted AND h.user_id = :user_id');
-            $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0');
-            
-          
+            $query-> having('a.user_id = :user_id OR COUNT(b.id)=0 OR COUNT(e.pub_user_id)> 0 OR COUNT(f.buddy_user_id)> 0 OR COUNT(g.pub_group_id)> 0 OR COUNT(h.user_id)> 0');            
           }
         }
         if ($tags && count($tags) > 0 ) {
@@ -345,6 +327,7 @@ class FileShareDatatable extends ControllerBase {
           throw new \Exception('Could not create the fileshare file_id directory.');
       }
     }
+    
 
   }
 

@@ -26,11 +26,9 @@ class FileShareFolderAdd extends FormBase {
   public $module;
 
     public function __construct() {
-      $AuthClass = "\Drupal\common\Authentication";
-      $authen = new $AuthClass();
-      $this->is_authen = $authen->isAuthenticated;
-      $this->my_user_id = $authen->getUserId();      
-        $this->module = 'fileshare';
+      $current_user = \Drupal::currentUser();
+      $this->my_user_id = $current_user->getAccountName();
+      $this->module = 'fileshare';
     }
 
     /**
@@ -47,7 +45,8 @@ class FileShareFolderAdd extends FormBase {
 
         $output = NULL;
         
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {    
           $form['no_access'] = [
               '#markup' => CommonUtil::no_access_msg(),
           ];     

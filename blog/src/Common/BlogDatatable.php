@@ -14,12 +14,10 @@ class BlogDatatable {
 
     public static function getHomepageBlogList($my_user_id, $blogType, $limit) {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
   
-
         $sql_access ="";
         $sql_access2 = "";
         $sql_access3 = "";
@@ -103,9 +101,8 @@ class BlogDatatable {
         if ($entry_id == "" ) {
             return null;
         }
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $sql_access ="";
@@ -182,9 +179,8 @@ class BlogDatatable {
             return null;
         }        
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
 
         $sql="SELECT b.blog_name, b.user_id, c.user_name AS user_full_name FROM kicp_blog b LEFT JOIN xoops_users c ON c.user_id=b.user_id WHERE b.blog_id=$blog_id and b.is_deleted = 0 ";        
         try {
@@ -207,9 +203,9 @@ class BlogDatatable {
 
         if ($user_id == "") {
             # return user_id of current user
-            $AuthClass = "\Drupal\common\Authentication";
-            $authen = new $AuthClass();
-            $user_id = $authen->getUserId();
+            $current_user = \Drupal::currentUser();
+            $user_id = $current_user->getAccountName();           
+    
         }        
 
 
@@ -291,9 +287,8 @@ class BlogDatatable {
         $output=array();
         $TagList = new TagList();
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         try {
@@ -383,11 +378,9 @@ class BlogDatatable {
 
 
     public static function getBlogEntryByTags() {
-
     
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $output=array();
@@ -545,9 +538,9 @@ class BlogDatatable {
     
        public static function getAllEntry($my_user_id="") {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();           
+
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
       
         $search_str = \Drupal::request()->query->get('search_str');

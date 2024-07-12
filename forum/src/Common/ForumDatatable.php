@@ -17,9 +17,8 @@ class ForumDatatable {
 
     public static function getLatest5Topic() {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();         
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $access_sql = "";
@@ -67,9 +66,8 @@ class ForumDatatable {
 
     public static function getForumList() {
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
         $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
 
         $access_sql = "";
@@ -100,10 +98,11 @@ class ForumDatatable {
     public static function getForumPostList($forum_id="") {
 
         $output=array();
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
 
+
+        
         $database = \Drupal::database();
         $query = $database-> select('kicp_forum_topic', 'a');
         $query -> leftjoin('kicp_forum_forum', 'b', 'a.forum_id = b.forum_id');
@@ -170,9 +169,8 @@ class ForumDatatable {
         $TagList = new TagList();
         $database = \Drupal::database();
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();        
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
 
         $query = $database-> select('kicp_forum_topic', 'a'); 
         
@@ -268,15 +266,13 @@ class ForumDatatable {
         else return null;
     }
 
-    public static function getForumByTopic($topic_id) {
+    public static function getForumByTopic($topic_id="") {
 
         if ($topic_id == "" ) {
             return null;
-        }               
-
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        }
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
 
         $sql = " SELECT forum_id, forum_name FROM kicp_forum_forum WHERE forum_id=( select forum_id from kicp_forum_topic where topic_id = ".$topic_id." )";
         $database = \Drupal::database();
@@ -302,31 +298,6 @@ class ForumDatatable {
         $record = $database-> query($sql)->fetchObject();   
         
         return $record->title;
-    }
-
-
-    public static function myAccessibleForum($user_id="") {
-        
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
-        $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages'); 
-        $sql = "SELECT aa.forum_id
-        FROM kicp_forum_forum aa
-        LEFT JOIN kicp_access_control d ON (d.is_deleted=0 AND d.module='forum' AND d.record_id=aa.forum_id)
-        LEFT JOIN kicp_public_group e ON ( e.is_deleted=0 AND d.group_type='P' AND e.pub_group_id=d.group_id)
-        LEFT JOIN kicp_buddy_group f ON ( f.is_deleted=0 AND d.group_type='B' AND f.buddy_group_id=d.group_id)
-        LEFT JOIN kicp_public_user_list g ON ( g.is_deleted=0 AND g.pub_group_id=e.pub_group_id AND g.pub_user_id='$user_id')
-        LEFT JOIN kicp_buddy_user_list h ON ( h.is_deleted=0 AND h.buddy_group_id=f.buddy_group_id AND h.buddy_user_id='$user_id')
-        group by aa.forum_id
-        having count(d.id) = 0 or count(g.id) >0 or count(h.buddy_user_id) >0; ";
-
-        
-        $database = \Drupal::database();
-        $result = $database-> query($sql)->fetchCol();
-
-        return $result;
-        
     }
 
 

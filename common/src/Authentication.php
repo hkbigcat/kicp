@@ -75,20 +75,13 @@ class Authentication {
 
 		// if fail to get user_id from session, try to retrieve it from another way
         if($User_Id == "") {
-			$sessionAry = explode('; ', $_SERVER['HTTP_COOKIE']);
-			foreach($sessionAry as $para) {
-				if(substr($para, 0, 17) == "kicp_wikiUserName") {
-					$User_Id = substr($para,18);
-					break;
-				}
-			}
+            $User_Id = (isset($_COOKIE['wiki_login_user']) && $_COOKIE['wiki_login_user'] != "") ? $_COOKIE['wiki_login_user'] : "";
         }
 
-	
-        if (empty($User_Id))
-            
-	    //drupal_set_message(t('HTTP_UID from request header is empty'), 'error');
-        \Drupal::messenger()->addError(t('HTTP_UID from request header is empty'));
+        if (empty($User_Id)) {           
+            \Drupal::logger('common')->error('HTTP_UID from request header is empty');                              
+            \Drupal::messenger()->addError(t('HTTP_UID from request header is empty'));
+        }
 
         return $User_Id;
     }
@@ -96,42 +89,18 @@ class Authentication {
     static function getKICPUserInfo($UserId) {
 
         $userInfo = array();
-
-        $sql = " SELECT u.uid, u.user_name, user_displayname, user_int_email FROM xoops_users u ";
-        $sql .= " WHERE u.user_id = '" . $UserId . "' ";
-
-        //$result = db_query($sql);
-        $result = \Drupal::database() -> query($sql);
-
-        foreach ($result as $record) {
-            return $userInfo = array('uid' => $record->uid,
-              'user_name' => $record->user_name,
-              'display_name' => $record->user_displayname,
-	      'user_int_email' => $record->user_int_email
-            );
-        }
-
+        $sql = " SELECT u.uid, u.user_name, user_displayname as display_name, user_int_email FROM xoops_users u WHERE u.user_id = '" . $UserId . "' ";
+        $database = \Drupal::database();
+        $userInfo = $database-> query($sql)->fetchAssoc();
         return $userInfo;
     }
     
     static function getKICPUserInfoByUId($UId) {
 
         $userInfo = array();
-
-        $sql = " SELECT u.uid, u.user_name, user_displayname, user_id FROM xoops_users u ";
-        $sql .= " WHERE u.uid = '" . $UId . "' ";
-
-        //$result = db_query($sql);
-        $result = \Drupal::database() -> query($sql);
-
-        foreach ($result as $record) {
-            return $userInfo = array('uid' => $record->uid,
-              'user_name' => $record->user_name,
-              'display_name' => $record->user_displayname,
-              'user_id' => $record->user_id
-            );
-        }
-
+        $sql = " SELECT u.uid, u.user_name, user_displayname as display_name, user_id FROM xoops_users u WHERE u.uid = '" . $UId . "' ";
+        $database = \Drupal::database();
+        $userInfo = $database-> query($sql)->fetchAssoc();
         return $userInfo;
     }
 
@@ -169,9 +138,12 @@ class Authentication {
 
     static function loginDrupal($UserId) {
         
-        global $skipDisclaimerCheck;
+        //global $skipDisclaimerCheck;
+        $request = \Drupal::request();
+        $session = $request->getSession();
+        $skipDisclaimerCheck = $session->get('skipDisclaimerCheck');
        
-        // skip checking on current page
+                // skip checking on current page
         if(!$skipDisclaimerCheck) {
             // go check 
             $acceptedDisclaimer = self::isUserAcceptedDisclaimer($UserId);
@@ -181,9 +153,12 @@ class Authentication {
             $node = \Drupal::routeMatch()->getParameter('node');
             if(!$acceptedDisclaimer && $routeName!="mainpage.mainpage_ask_disclaimer" && $routeName!='mainpage.mainpage_go_accept_disclaimer' && $routeName!='mainpage.mainpage_ask_disclaimer' && $node!=1) {
                 $goto = urlencode($_SERVER['REQUEST_URI']);
-                $url = 'ask_disclaimer?a=1&target='.$goto;
-                $response = new RedirectResponse($url);
+                $url = Url::fromUri('base:/ask_disclaimer');
+                $response = new RedirectResponse($url->toString().'?a=1&target='.$goto);
                 $response->send();
+
+                return new RedirectResponse(urldecode($url));
+
                 //CommonUtil::goToUrl('ask_disclaimer?a=1&target='.$goto);
                 exit;
             }
@@ -202,9 +177,12 @@ class Authentication {
             $AutoLogin_obj = new AutoLogin();
             $new_user_obj = $AutoLogin_obj->login($UserId, $pwd);
 
-            if (is_null($new_user_obj) or ! isset($new_user_obj))
-                //drupal_set_message(t('Cannot login Drupal'), 'error');
+            if (is_null($new_user_obj) or ! isset($new_user_obj)) {
+                \Drupal::logger('common')->error('login error: '.$UserId);                              
                 \Drupal::messenger()->addError(t('Cannot login Drupal'));
+            }
+            else 
+                \Drupal::logger('common')->info('Login: '.$UserId);              
 
         } 
     }
@@ -246,9 +224,9 @@ class Authentication {
 
     function checkAccessRight() {
 
-        $url = Url::fromRoute('<front>')->toString();
+        $url = Url::fromUri('base:/no_access');
         if (!$this->isAuthenticated) {
-            return new RedirectResponse($url.'no_access');
+            return new RedirectResponse($url->toString());
         }
 
     }

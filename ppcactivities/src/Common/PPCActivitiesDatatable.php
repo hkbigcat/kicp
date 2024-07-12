@@ -114,9 +114,8 @@ class PPCActivitiesDatatable {
         $output=array();
         $cond = '';
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
 
 
         if ($cop_id !="") {
@@ -186,7 +185,8 @@ class PPCActivitiesDatatable {
         $record = array();
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName(); 
 
         if ($evt_id == "") {
             return $record;
@@ -266,9 +266,8 @@ class PPCActivitiesDatatable {
     public static function getEventDeliverableByEventId($evt_id) {
         $record = array();
         $output = array();
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName(); 
 
         $search_sql = "";
         $search_str = \Drupal::request()->query->get('search_str');

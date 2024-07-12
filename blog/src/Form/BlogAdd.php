@@ -26,16 +26,15 @@ use Drupal\Core\Utility\Error;
 
 class BlogAdd extends FormBase  {
 
-    public $is_authen;
     public $my_user_id;
     public $module;
 
     public function __construct() {
         $this->module = 'blog';
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();   
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();           
+
+
     }
 
     /**
@@ -64,8 +63,8 @@ class BlogAdd extends FormBase  {
 
         $config = \Drupal::config('blog.settings'); 
 
-
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -278,6 +277,7 @@ class BlogAdd extends FormBase  {
             /////////// Handle image inside CKEditor [End] /////////////                            
 
             /////////// Handle attachment [Start] /////////////
+            $createDir = "";
             if ($hasAttach) {
                 $createDir = $BlogFileUri . '/' . $this_blog_owner_id . '/' . $this_entry_id_path;
                 if (!is_dir($file_system->realpath($createDir ))) {
@@ -317,11 +317,12 @@ class BlogAdd extends FormBase  {
                 
             }                
 
-            \Drupal::logger('blog')->info('Created id: %id, title: %title, attachment: %attach.',   
+            \Drupal::logger('blog')->info('Created id: %id, title: %title, directory:  %create_directory, attachment: %attach.',   
             array(
                 '%id' => $entry_id,
                 '%title' => $bTitle,
                 '%attach' => ($hasAttach)?'Y':'N',
+                '%create_directory' => $createDir,
             ));     
 
             $url = Url::fromUserInput('/blog_entry/'.$entry_id);

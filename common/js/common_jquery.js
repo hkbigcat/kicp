@@ -1,3 +1,5 @@
+var loadingImg = '<img src="modules/custom/common/images/loader.gif" border="0" width="40">';
+
 function getAddGroupMemberUI(module, record_id) {
     console.log("module: "+module);
     jQuery("ul.menu").css("display","none");
@@ -395,7 +397,8 @@ function cpRating(rateId, userId, rating, divName, module, type) {
     if (module != null && rateId != null) {
         //var ModulePath = document.getElementById("module_path").textContent;
         var url =  app_path + 'updateCpRate';
-        console.log*(url);
+        console.log('url' + url);
+        console.log('userid' + userId);
         jQuery.ajax({
             type: 'POST',
             url: url,
@@ -404,9 +407,10 @@ function cpRating(rateId, userId, rating, divName, module, type) {
             dataType: "json",
             cache: false,
             success: function (data, status, xhr) {
+                console.log(data);
                 showResult(module, data.result);
                 var x = 'cpRate_' + module + '_' + rateId;
-                console.log(x);
+                console.log('x: ' + x);
                 console.log(data.ratingpic);
                 document.getElementById(x).innerHTML = data.ratingpic;
             },

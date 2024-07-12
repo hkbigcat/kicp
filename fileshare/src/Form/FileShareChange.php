@@ -24,11 +24,14 @@ use Drupal\Core\Url;
 
 class FileShareChange extends FormBase {
 
+  public $my_user_id;
+  public $module;
+  public $allow_file_type;
+  public $target_folder;   
+
   public function __construct() {
-    $AuthClass = "\Drupal\common\Authentication";
-    $authen = new $AuthClass();
-    $this->is_authen = $authen->isAuthenticated;
-    $this->my_user_id = $authen->getUserId();      
+    $current_user = \Drupal::currentUser();
+    $this->my_user_id = $current_user->getAccountName();
     $this->module = 'fileshare';
     $this->allow_file_type = 'doc docx ppt pptx pdf';
     $this->target_folder = 'fileshare';
@@ -59,7 +62,8 @@ class FileShareChange extends FormBase {
 
          $config = \Drupal::config('fileshare.settings'); 
 
-         if (! $this->is_authen) {
+         $logged_in = \Drupal::currentUser()->isAuthenticated();
+         if (!$logged_in) {     
           $form['no_access'] = [
               '#markup' => CommonUtil::no_access_msg(),
           ];     

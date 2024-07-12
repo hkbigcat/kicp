@@ -8,6 +8,9 @@
 
 <div id="MainEntryContainer">
     <div style="float:right;">
+       {% if user.hasPermission('access administration pages') or (items['blog']['user_id'] == my_user_id or delegate)  %}
+       <button class="kicp_button" onClick="self.location.href='{{ path('blog.add_data') }}'"><i class="fa-solid fa-circle-plus"></i> Add New Entry</button>
+       {% endif %}
        <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
        <div id="DivCopyText" style="display:none;"><input name="CopyTextTemp" id="CopyTextTemp" value=""></div>
     </div>
@@ -18,7 +21,7 @@
  {% for item in items %}
     {% if  item['entry_title'] %}
     <div id="DivEntry_{{item ['entry_id'] }}" class="EntryContainer {{ loop.index0 is odd ? 'odd' : 'even' }}">
-        <div style="float:right">
+        <div class="text-right">
            {% if user.hasPermission('access administration pages') or (item ['user_id'] == my_user_id or delegate)  %}
             <span><button class="kicp_button" onclick="self.location.href='{{ path('blog.change_data' , {'entry_id': item['entry_id']}) }}'"><i class="fa-solid fa-pencil"></i> Edit</button></span>
             <span><button class="kicp_button" onClick="module_item_delete('blog',{{ item['entry_id'] }})"><i class="fa-solid fa-trash-can"></i> Delete</button></span>
@@ -31,7 +34,7 @@
         <div class="entry_content">{{item ['entry_content'] | raw }}</div>
         <div>
         {% for attachment in item['attachments'] %}
-         <a href="/download/blog/{{ item ['entry_id'] }}?fname={{ attachment | url_encode }}" target="_blank"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
+         <a href="{{ path('common.download', {'module_name': 'blog', 'file_id': item ['entry_id'], 'fname': attachment  }) }}"><i class="fa fa-paperclip" aria-hidden="true"></i> {{ attachment}}</a><br><br>
         {% endfor %}
         </div>
         {% if item['is_pub_comment'] %}

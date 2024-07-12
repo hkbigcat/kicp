@@ -11,13 +11,17 @@ common_key:
     js/calendar/CalendarPopup.js: {}
     js/calendar/PopupWindow.js: {}
     js/calendar/date.js: {}    
-
   dependencies:
     - core/jquery
     - core/drupalSettings
     - core/drupal
     - core/drupal.dialog
 
+common_matomo:
+  version: 1.x
+  js:
+    js/matomo.js: {}
+    
 common_assets:
   version: 1.x
   header: true
@@ -75,6 +79,13 @@ jssor_slider_function2:
   header: true
   js:
     js/jssor_slider_function2.js: {}    
+  dependencies:
+    - core/jquery
+
+contact_form:
+  version: 1.x
+  js:
+    js/contactform.js: {}
   dependencies:
     - core/jquery
 

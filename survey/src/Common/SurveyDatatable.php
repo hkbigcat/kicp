@@ -18,6 +18,10 @@ class SurveyDatatable {
 
     public static function getSurveyList($tags=null) {
         
+        public $is_authen;
+        public $my_user_id;
+        public $module;
+        
         $output=array();
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();

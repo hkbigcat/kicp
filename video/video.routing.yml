@@ -19,6 +19,17 @@ video.video_list:
   options:
     no_cache: TRUE
 
+video.video_list_old:
+  path: '/video_list'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::VideoContentOld'
+    _title: 'Video List'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+
 video.video_tag:
   path: '/video_tag'
   defaults:
@@ -156,7 +167,17 @@ video.change_video_data:
     _title: 'Edit Video'
   requirements:
    _permission: 'access administration pages' 
-   media_event_id: '\d+'   
+   media_id: '\d+'  
   options:
     no_cache: TRUE
 
+video.video_playback:
+  path: '/video_playback/{media_id}'
+  defaults:
+    _controller: '\Drupal\video\Controller\VideoController::video_playback'
+    _title: 'Video'
+  requirements:
+    _permission: 'access content'
+    media_id: '\d+'
+  options:
+    no_cache: TRUE

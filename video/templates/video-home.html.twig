@@ -62,12 +62,12 @@
                 <div>
                     <!-- large image //-->
                     <a href="{{ path('video.video_list', { 'media_event_id': item['media_event_id']  }) }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_name'] }}" >
-                        <img data-u="image" src="{{ path('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
+                        <img data-u="image" src="{{ path('<front>') }}system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" border="0"  style="padding-top:5px;width:540px;height:360px;" />
                     </a>
                     <!-- Thumbnail //-->
                     <div data-u="thumb">
-                        <img class="i" src="{{ path('<front>') }}/system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
-                        <div class="t" style="line-height:12pt;"><a href="video_list/{{ item['media_event_id'] }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_image'] }}" >{{ item['media_event_name'] }}</a></div>                                               
+                        <img class="i" src="{{ path('<front>') }}system/files/video/image/{{ "%06d" | format( item['media_event_id'] ) }}/{{ item['media_event_image'] }}" onClick="self.location.href='video_list?media_event_id={{ item['media_event_id'] }}'" style="cursor:pointer;" />
+                        <div class="t" style="line-height:12pt;"><a href="{{ path('video.video_list', {'media_event_id': item['media_event_id'] } )  }}" title="{{ item['media_event_name'] }}" alt="{{ item['media_event_image'] }}" >{{ item['media_event_name'] }}</a></div>                                               
                     </div>
                 </div>
                 <!-- event_display -->
@@ -93,9 +93,9 @@
 {% for item_right in items_right %}
         <div id="Event_Item_{{ item_right['media_event_id'] }}" class="video_list_item">
             <div class="video_list_image">
-                <a href="video_list?media_event_id={{ item_right['media_event_id'] }}" style="border-bottom:0px;"><img src="system/files/video/image/{{ "%06d" | format( item_right['media_event_id'] ) }}/{{ item_right['media_event_image'] }}" border="0" width="100" alt={{ item_right['media_event_name'] }}" title="{{ item_right['media_event_name'] }}"></a>
+                <a href="{{ path('video.video_list', {'media_event_id': item_right['media_event_id'] } )  }}" style="border-bottom:0px;"><img src="{{ path('<front>') }}system/files/video/image/{{ "%06d" | format( item_right['media_event_id'] ) }}/{{ item_right['media_event_image'] }}" border="0" width="100" alt={{ item_right['media_event_name'] }}" title="{{ item_right['media_event_name'] }}"></a>
             </div>
-            <div class="video_list_text"><a href="video_list?media_event_id={{ item_right['media_event_id'] }}">{{ item_right['media_event_name'] }}</a></div><br>
+            <div class="video_list_text"><a href="{{ path('video.video_list', {'media_event_id': item_right['media_event_id'] } )  }}">{{ item_right['media_event_name'] }}</a></div><br>
         </div>
 {% endfor %}               
     </div>

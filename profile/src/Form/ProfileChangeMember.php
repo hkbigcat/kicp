@@ -36,10 +36,8 @@ class ProfileChangeMember extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state,$type="", $group_id="", $user_id="") {
 
         $output = NULL;
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
-        $is_authen = $authen->isAuthenticated;
-        if (!$is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -86,7 +84,7 @@ class ProfileChangeMember extends FormBase {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'profile_group_member?type='.$_REQUEST['type'] . '&group_id='.$_REQUEST['group_id'].'\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
 
@@ -116,9 +114,6 @@ class ProfileChangeMember extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;

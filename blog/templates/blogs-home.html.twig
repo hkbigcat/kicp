@@ -21,7 +21,7 @@
     <div class="entry_new">   
       <div id="Div_Personal_{{item['blog_id']}}_Image" class="blog_image">
         {% if (item['image_name']) and (item['image_name'] != 'shadow.gif')  %}
-            <img src="{{ path('<front>') }}/system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0" >
+            <img src="{{ path('<front>') }}system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0" >
         {% else %}    
              <img src="{{ path('<front>') }}/sites/default/files/public/default/shadow.gif" border="0">
         {% endif %}    
@@ -40,7 +40,7 @@
     <div class="entry_new">
         <div id="Div_{{item['entry_id']}}_Image" class="blog_image">
         {% if (item['image_name']) and (item['image_name'] != 'shadow.gif')  %}
-            <img src="{{ path('<front>') }}/system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0" >
+            <img src="{{ path('<front>') }}system/files/blog/icon/{{ "%06d" | format(item['uid']) }}/{{item['image_name']  }}" border="0" >
         {% else %}    
              <img src="{{ path('<front>') }}/sites/default/files/public/default/shadow.gif" border="0">
         {% endif %}

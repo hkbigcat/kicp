@@ -9,7 +9,7 @@
         <button class="kicp_button2" onclick="self.location.href='{{ path('bookmark.bookmark_content' , {'my': 1 }  ) }}'"><i class="fa-solid fa-fingerprint"></i> My Entries Only</button>
         {% endif %}
         <button class="kicp_button" onClick="self.location.href='{{ path('bookmark.add_data') }}'"><i class="fa-solid fa-circle-plus"></i> Add </button>
-        <button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <button class="share_button" onclick="copyTextToClipboard(); mailto(10,'')"><i class="fa-solid fa-share-nodes"></i> Share</button>
     </div>
   {% for item in items %}
     <!--{{item ['bid'] }} -->

@@ -241,8 +241,8 @@ class ForumAdd extends FormBase {
      * {@inheritdoc}
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();    
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
@@ -264,7 +264,7 @@ class ForumAdd extends FormBase {
                 $entry = array(
                 'title' => $topic_subject,
                 'content' => $topic_content['value'],
-                'user_id' => $authen->getUserId(),
+                'user_id' => $my_user_id,
                 'counter' => 0,
                 'forum_id' => $forum_id,
                 'is_deleted' => 0,
@@ -297,7 +297,7 @@ class ForumAdd extends FormBase {
               'content' => $topic_content['value'],
               'is_guest' => $is_guest,
               'poster_name' => $poster_name,
-              'user_id' => $authen->getUserId(),
+              'user_id' => $my_user_id,
               'parent_id' => $parent_id,
               'topic_id' => $topic_id,
               'is_deleted' => 0,

@@ -263,5 +263,7 @@ tr td, tr th {
     top: 8%;
     left: 50%;
     transform: translate(-50%, -50%);
-    display:none;    
+    display:none;
+    max-height: 560px;    
+    overflow-y: auto;
 }

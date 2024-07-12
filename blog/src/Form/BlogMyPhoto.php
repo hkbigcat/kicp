@@ -52,13 +52,15 @@ class BlogMyPhoto extends FormBase  {
     public function buildForm(array $form, FormStateInterface $form_state) {
 
         $config = \Drupal::config('blog.settings'); 
-        
+
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $is_authen = $authen->isAuthenticated;
-        $user_id = $authen->getUserId();
 
-        if (! $is_authen) {
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();           
+
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -131,10 +133,12 @@ class BlogMyPhoto extends FormBase  {
             $$key = $value;
         }
 
+
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $uid = $authen->getUid();
-        
+
+        $current_user = \Drupal::currentUser();
         $user_owner_id = str_pad($uid, 6, "0", STR_PAD_LEFT);
 
            /* Upload image [Start] */
@@ -179,10 +183,11 @@ class BlogMyPhoto extends FormBase  {
                     ->execute();          
 
             // write logs to common log table
-            \Drupal::logger('blog')->info('Photo added to blog blog id: %id, photo: %image',   
+            \Drupal::logger('blog')->info('Photo added to blog blog id: %id, Photo path: %photo_path,  photo: %image',   
             array(
                 '%id' => $blog_id,
                 '%image' => $filename,
+                '%photo_path' => $BlogPhotoPath,
             ));      
 
             $url = Url::fromUserInput('/blog_view/'.$blog_id);

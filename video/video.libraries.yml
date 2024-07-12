@@ -7,7 +7,6 @@ video_key:
   js:
     js/video.js: {}
     js/url.min.js: {}
-    js/wowzaplayer.min.js: {}
   dependencies:
     - core/jquery
     - core/drupalSettings
@@ -27,3 +26,13 @@ video_home:
   header: true
   js:
     js/home.js: {}
+
+video_js:
+  version: 1.x
+  css:
+    theme:
+      css/video-js.css: {}
+  js:
+    js/video.min.js: {}  
+  dependencies:
+    - core/jquery    

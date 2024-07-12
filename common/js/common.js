@@ -392,8 +392,9 @@ function copyTextToClipboard(link="") {
 }
 
 function mailto(sub, body) {
-  var txt = self.location.href;
+  //var txt = self.location.href;
 
+  /*
   switch (sub) {
       case 0: //kicppedia
           sub = 'Your friend would like to share with you a KICPedia page in KICP';
@@ -434,20 +435,38 @@ function mailto(sub, body) {
       default:
           sub = sub;
   }
-  msg = "The corresponding URL has been copied into the clipboard\n\nDo you also want to send this URL through mail e.g. Microsoft Outlook?";
-  if (confirm(msg)) {
-      window.location.href = "mailto:?subject=" + sub + "&Body=" + KICPadvertisement1 + "%0a" + escape(txt) + "%0a%0a" + KICPadvertisement2 + "%0a";
-  }
+  */
+  const cats = [
+    "Kicppedia",
+    "Taxonomy",
+    "KM",
+    "Blog",
+    "Blog Entry",
+    "Forum",
+    "News",
+    "Video",
+    "Survey",
+    "Vote",
+    "Bookmark",
+    "PPC Activity",
+    "Fileshare"
+  ];
+  _paq.push(['trackEvent', cats[sub], 'Click', 'Share']);
+  Swal.fire({text:'The corresponding URL has been copied into the clipboard.', type:'info'});
+  //msg = "The corresponding URL has been copied into the clipboard\n\nDo you also want to send this URL through mail e.g. Microsoft Outlook?";
+  //if (confirm(msg)) {
+  //  window.location.href = "mailto:?subject=" + sub + "&Body=" + KICPadvertisement1 + "%0a" + escape(txt) + "%0a%0a" + KICPadvertisement2 + "%0a";
+  //}
 }
 
 
 jQuery(document).ready(function(){
+    var userName = drupalSettings.userName;
     //jQuery('li.menu-item.menu-item-level-1:nth-child(6) a').attr('target', '_blank');
-    jQuery('[href="/kmapp/kicp/mediawiki"]').attr('target', '_blank');
+    jQuery('[href="'+app_path+'mediawiki"]').attr('target', '_blank');
     jQuery('.menu:last-child').addClass( 'columns' );  
     jQuery("[data-drupal-link-system-path='disclaimer']").attr('target', '_blank');
     jQuery("[data-drupal-link-system-path='contact']").text("Contact Us");
-
 });
 
 

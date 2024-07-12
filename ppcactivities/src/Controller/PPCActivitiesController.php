@@ -24,7 +24,6 @@ use Drupal\Core\Utility\Error;
 
 class PPCActivitiesController extends ControllerBase {
 
-    public $is_authen;
     public $my_user_id;
     public $module;    
     
@@ -34,16 +33,25 @@ class PPCActivitiesController extends ControllerBase {
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
         $checkAuth = $authen -> checkAccessRight();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();    
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();  
+
     }
     
     public function content( $cop_id="1", $type_id="") {
         
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
+
+        $evt_id = \Drupal::request()->query->get('evt_id');
+        if ($evt_id && is_numeric($evt_id)) {
+            $url = Url::fromUri('base://ppcactivities_detail/'.$evt_id);
+            return new RedirectResponse($url->toString(), 301);   
+        }
+
 
         $events = array();
         $activityInfo = array();
@@ -72,11 +80,11 @@ class PPCActivitiesController extends ControllerBase {
 
     }
 
-
     public function ActivityDetail($evt_id="") {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -593,12 +601,13 @@ class PPCActivitiesController extends ControllerBase {
         $output= "";
 
         $EnrollRecord = PPCActivitiesDatatable::getEnrollmemtRecord($evt_id);
+        $total_enroll = count($EnrollRecord);
         $EventDetail = PPCActivitiesDatatable::getEventDetail($evt_id);
         $EnrollRecord['event'] = $EventDetail;
 
         $output .= '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\"><html><head><meta http-equiv=\"Content-type\" content=\"text/html;charset=utf-8\" /></head><body>';        
         $output .= '<h2>Event Name: '.$EventDetail['evt_name'].'</h2>';
-        $output .= '<div>Total <strong>'.count($EventDetail).'</strong> enrollment(s) as at '.date('H:i:s').' on '.date('d.m.Y').'</div>';
+        $output .= '<div>Total <strong>'.$total_enroll.'</strong> enrollment(s) as at '.date('H:i:s').' on '.date('d.m.Y').'</div>';
         $output .= '<div>&nbsp;</div>';
         $output .= '<table border="1">';
         $output .= '<tr>';

@@ -22,15 +22,12 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkChange extends FormBase  {
 
-    public $is_authen;
     public $my_user_id;
     public $module;    
 
     public function __construct() {
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
-        $this->my_user_id = $authen->getUserId();  
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();    
         $this->module = 'bookmark';
     }
 
@@ -60,7 +57,8 @@ class BookmarkChange extends FormBase  {
 
         $config = \Drupal::config('bookmark.settings'); 
 
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -170,7 +168,7 @@ class BookmarkChange extends FormBase  {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'bookmark\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
         

@@ -57,10 +57,10 @@ class BookmarkDatatable extends ControllerBase {
           $query->condition('a.user_id', $my_user_id);
         } else {
           if (!$isSiteAdmin) {
-            $orGroup = $query->orConditionGroup()
+            $orGroup2 = $query->orConditionGroup()
             ->condition('a.user_id', $my_user_id)
             ->condition('a.bStatus', 0);
-            $query->condition($orGroup);
+            $query->condition($orGroup2);
           }
         }
 

@@ -1,14 +1,14 @@
 {% if items is empty  %}
 <div style="padding:2px">
-	<div class="access_control_header access_control_inside" Add Public Group</div>
+	<div class="access_control_header access_control_inside">Add Public Group</div>
 	<div class="access_control_header" style="width:100%;display:flex;"><div class="access_control_inside" style="width:40%;">Group Name:</div>
-	<div class="access_control_inside" style="width:57%;">
+	<div class="access_control_inside" style="width:60%;">
 		<input type="text" name="pub_group_search_str" id="pub_group_search_str" value="" size="20" style="height:24px; font-size:9pt;" tabindex="1" onkeypress="return key_press_search_public_group(event); ">
 	</div>
 </div>
 <div class="access_control_header" style="width:100%; display:flex;">
 	<div class="access_control_inside" style="width:40%;">Load Group List:</div>
-	<div class="access_control_inside" style="width:57%;"><a href="javascript:;" style="border-bottom:0px;" tabindex="2"><img src="{{ path('<front>') }}modules/custom/common/images/btn_load.gif" border="0" alt="Load" title="Load" onclick="get_search_public_group(jQuery('#pub_group_search_str').val(), '{{module}}', {{ record_id }})" id="loadBtn"></a></div>
+	<div class="access_control_inside" style="width:60%;"><a href="javascript:;" style="border-bottom:0px;" tabindex="2"><img src="{{ path('<front>') }}modules/custom/common/images/btn_load.gif" border="0" alt="Load" title="Load" onclick="get_search_public_group(jQuery('#pub_group_search_str').val(), '{{module}}', {{ record_id }})" id="loadBtn"></a></div>
 </div>
 {% endif %}
 <div id="div_public_group" style="padding:2px;width:99%;">

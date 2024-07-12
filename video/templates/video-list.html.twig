@@ -8,9 +8,10 @@
     <div id="DivFollower">Knowledge Management Unit <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'KMU.OGCIO'}  %}</span></div>
     {% include '@common/common-tags-list.html.twig' %}    
     {% include '@common/common-tags.html.twig' %}
-     <input type="hidden" name="tag_page" id="tag_page" value="../video_tag">
-     <input type="hidden" name="notag_page" id="notag_page" value="../video">
+     <input type="hidden" name="tag_page" id="tag_page" value="{{path('video.video_tag')}}">
+     <input type="hidden" name="notag_page" id="notag_page" value="{{path('video.video_entrylist')}}">
      <div class="width30" style="float:right;" id="cpRate_video_{{  media_event_id }}">{% include '@common/common-rating.html.twig' %}</div>
+
 </div>
 <div id="video_content_div">
 {% for item in items %}
@@ -18,24 +19,24 @@
     <div class="homepage_div">
         <div id="Video_Item_{{ item['media_id']}}" class="video_list_item">
             <div class="video_list_image">
-                 <a href="javascript:void(0);" onclick="var view_video=window.open('{{ item['media_file_path']}}');view_video.focus();" style="border-bottom:0px;">
+                 <a href="{{ path('video.video_playback', {'media_id': item['media_id']} ) }}" style="border-bottom:0px;">
                  <img src="{{ path('<front>') }}/system/files/video/video_image/{{ "%06d" | format( media_event_id ) }}/{{ item['media_img']}}" width="120" height="100" alt="{{ item['media_title']}}" title="{{ item['media_title']}}" border="0">
                 </a>
             </div>
             <div class="video_description_text">
               <span class="video_list_title">
-                <a href="javascript:;" onclick="var view_video=window.open('{{ item['media_file_path']}}','view_video', 'width=930,height=755,status=no,menubar=no,resizable=yes,scrollbars=no,location=no,toolbar=no,directories=no');view_video.focus();" style="border-bottom:0px;">
-                  {{ item['media_title']}}
+                <a href="{{ path('video.video_playback', {'media_id': item['media_id']} ) }}">
+                  {{ item['media_title'] | raw }}
                 </a>
               </span>
-                <div>{{ item['media_title']}}
-                    <div style="margin-top:10px;"><strong>Duration: </strong>{{ item['media_duration']}}</div>
+                <div>{{ item['media_description'] | nl2br  }}</div>
+                <div style="margin-top:10px;"><strong>Duration: </strong>{{ item['media_duration']}}</div>
+                <div class="video_list_text">
+                    <div>
+                            {% include '@common/common-tags-list.html.twig' with {tags: item ['tags']} %} 
+                    </div>
                 </div>
-            </div>
-            <div class="video_list_text">
-                <div>
-                        {% include '@common/common-tags-list.html.twig' with {tags: item ['tags']} %} 
-                </div>
+
             </div>
         </div>
     </div>

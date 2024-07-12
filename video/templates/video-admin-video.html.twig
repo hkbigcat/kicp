@@ -15,7 +15,8 @@
         <div style="width:10%;">&nbsp;</div>
     </div>
 {% for item in items %}
-    <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}" style="width:100%">
+{% if item %}
+    <div id="row_{{ loop.index0 + 1 }}" class="DivContentTable_item {{ loop.index0 is odd ? 'even' : 'odd' }}">
         <div style="width:25%;float:left;display:block;margin-left:5px;">{{ item['media_title'] }}</div>
         <div style="width:10%;float:left;display:block;">{{ item['media_duration']}}</div>
         <div style="width:10%;float:left;display:block;">{{ item['media_postdate'] | date('d.m.Y') }}</div>
@@ -27,6 +28,9 @@
             <button class="kicp_button size-2" onclick="module_item_delete('video','{{ item['media_id'] }}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
 		</div>
     </div>
+{% endif %}
 {% endfor %}   
+
+
 </div>
 <div style="float:right; margin:20px;">{{ pager }}</div>

@@ -253,10 +253,10 @@ class PromotionDataTable {
 					$k = $j;
 				}				
 
-				$downloadpdf = is_null($record['newlink'])?'/kicp/sites/default/files/public/promotion/estaffnews/'.$dateNum.'.pdf':$record['newlink'];
-
+				$downloadpdf = ($record['newlink'] && $record['newlink']!=null)?$record['newlink']:'/kicp/sites/default/files/public/promotion/estaffnews/'.$dateNum.'.pdf';
+	
 				$output .= '<div class="newsletter"><a target="_top" href="'.$downloadpdf.'" title="Download eStaff Newsletter">E-Staff News: '.date( 'M, Y', strtotime($record['Publish_Date'])).'</a><div class="w20px"></div>';
-				$output .= '<a href="javascript:void(0);" title="Open e-Staff News '.$dateNum.'" onclick="showSlides(1,'.$slide.', this);"><i id="newsimg-'.$slide.'" class="fa-regular fa-newspaper" style="color:#000"></i></a><div class="w20px"></div><a target="_top" href="/home/hrm/html/newsletter/'.$dateNum.'/'.$dateNum.'.pdf" title="Download e-Staff News '.$dateNum.'"><i class="fa-solid fa-download" style="color:#000"></i></a></div>';
+				$output .= '<a href="javascript:void(0);" title="Open e-Staff News '.$dateNum.'" onclick="showSlides(1,'.$slide.', this);"><i id="newsimg-'.$slide.'" class="fa-regular fa-newspaper" style="color:#000"></i></a><div class="w20px"></div><a target="_top" href="'.$downloadpdf.'" title="Download e-Staff News '.$dateNum.'"><i class="fa-solid fa-download" style="color:#000"></i></a></div>';
 				$output .= '<p>Promoted to the rank: '.$record['ToPost'].'</p>';
 				$allyrpost = ' ( <a title="All staff who got promoted to '.$record['ToPost'].$s_samerank.' in '.$yrstr.'" class="detailslink" href="/kicp/collections_rank?rank='.$record['ToPost'].'&year='.$yrstr.'">'.$total_samerank.' '.$record['ToPost'].$s_samerank.' in '.$yrstr.'</a> )';
 				$output .= '<p class="publish_date">Effective date: '.date( 'd M, Y', strtotime($record['Promotion_Date'])).$allyrpost.'</p>';

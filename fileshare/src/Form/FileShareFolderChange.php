@@ -21,15 +21,12 @@ use Drupal\Core\Url;
 
 class FileShareFolderChange extends FormBase {
 
-  public $is_authen;
   public $my_user_id;
   public $module;
 
     public function __construct() {
-      $AuthClass = "\Drupal\common\Authentication";
-      $authen = new $AuthClass();
-      $this->is_authen = $authen->isAuthenticated;
-      $this->my_user_id = $authen->getUserId();      
+      $current_user = \Drupal::currentUser();
+      $this->my_user_id = $current_user->getAccountName();
       $this->module = 'fileshare';
     }
 
@@ -47,7 +44,8 @@ class FileShareFolderChange extends FormBase {
 
         $output = NULL;
 
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {    
           $form['no_access'] = [
               '#markup' => CommonUtil::no_access_msg(),
           ];     

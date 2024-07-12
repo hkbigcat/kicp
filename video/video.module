@@ -6,6 +6,7 @@ use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\Entity;
 use Drupal\file\Entity\File;
+use Drupal\video\Common\VideoDatatable;
 
 
 function video_page_attachments_alter(&$page) {
@@ -31,6 +32,10 @@ function video_page_attachments_alter(&$page) {
         if($routeName === 'video.add_event_data' || $routeName === 'video.change_event_data') {
             $page['#attached']['library'][] = 'common/content_tags';
         }
+        if($routeName === 'video.video_playback') {
+            $page['#attached']['library'][] = 'video/video_js';
+        }
+
 
     }
     
@@ -94,11 +99,30 @@ function video_theme($existing, $type, $theme, $path) {
                 'items' => NULL,
             ],
         ],
+        'video-playback' =>[
+            'variables' => [
+                'media' => NULL,
+                'event_info' => NULL,
+            ],
+        ],
         
     ];
 
 }
 
+
+function video_preprocess_page_title(&$variables) {
+    $route_match = \Drupal::routeMatch();
+    $route_name = $route_match->getRouteName();
+    if ($route_name === "video.video_playback") {
+        $media_id = $route_match->getParameter('media_id');
+        $media = VideoDatatable::getVideoInfo($media_id);
+        if ($media) {
+            $title = preg_replace( "/<br>|\n|<br( ?)\/>/", " ", $media['media_title']);        
+            $variables['title'] = $title;
+        }
+    }
+  }
 
 /**
  * Implements hook_help().

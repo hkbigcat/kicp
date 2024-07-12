@@ -22,22 +22,20 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class BlogController extends ControllerBase {
 
     public $BlogHomepageDisplayNo;
-    public $is_authen;
     public $module;
     public $my_blog_id;
     public $my_user_id;
 
     public function __construct() {
 
-        $this->BlogHomepageDisplayNo = 10;
-        $this->module = 'blog';
-        //$this->LimitPerPage = (isset($_REQUEST['limit']) && $_REQUEST['limit'] != '') ? $_REQUEST['limit'] : $DefaultPageLength;
-
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
 
-        $this->my_user_id = $authen->getUserId();
+        $this->BlogHomepageDisplayNo = 10;
+        $this->module = 'blog';
+
+        $current_user = \Drupal::currentUser();
+        $this->my_user_id = $current_user->getAccountName();          
         $this->my_blog_id = BlogDatatable::getBlogIDByUserID($this->my_user_id);
 
         if ($this->my_blog_id)
@@ -48,7 +46,8 @@ class BlogController extends ControllerBase {
     public function content() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -74,7 +73,8 @@ class BlogController extends ControllerBase {
     public function viewEntry($entry_id) {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -90,7 +90,8 @@ class BlogController extends ControllerBase {
 
             $entry['my_blog_id'] = $this->my_blog_id;
             $entryCommentAry = BlogDatatable::getEntryComment($entry_id);
-            $entry['comments'] = $entryCommentAry;
+            if ($entryCommentAry)
+                $entry['comments'] = $entryCommentAry;
             $blog_id = $entry['blog_id'];
             $archive = BlogDatatable::getBlogArchiveTree($blog_id);
             $TagList = new TagList();
@@ -108,10 +109,27 @@ class BlogController extends ControllerBase {
 
     }
 
+    public function viewBlogOld() {
+
+        $blog_id = \Drupal::request()->query->get('blog_id');
+        if ($blog_id && is_numeric($blog_id))
+            $url = Url::fromUri('base:/blog_view/'.$blog_id);
+        else {
+            $entry_id = \Drupal::request()->query->get('entry_id');
+            if ($entry_id && is_numeric($entry_id))
+                $url = Url::fromUri('base:/blog_entry/'.$entry_id);
+            else 
+                $url = Url::fromUri('base:/blog/');
+        }
+        return new RedirectResponse($url->toString(), 301);
+
+    }
+
     public function viewBlog($blog_id) {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -155,7 +173,8 @@ class BlogController extends ControllerBase {
     public function ViewBlogByTag() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -293,8 +312,6 @@ class BlogController extends ControllerBase {
     }
 
     public function CommentAdd() {
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
 
         $is_guest = (!isset($_REQUEST['is_guest']) || $_REQUEST['is_guest'] == "") ? 0 : $_REQUEST['is_guest'];
 
@@ -302,7 +319,7 @@ class BlogController extends ControllerBase {
         $entry = array(
           'entry_id' => $_REQUEST['entry_id'],
           'comment_content' => $_REQUEST['my_comment'],
-          'user_id' => $authen->getUserId(),
+          'user_id' => $this->my_user_id,
           'is_guest' => $is_guest,
           'comment_name' => $_REQUEST['guest_name'],
         );
@@ -367,7 +384,8 @@ class BlogController extends ControllerBase {
     public function BlogDelegateList() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 
@@ -427,7 +445,8 @@ class BlogController extends ControllerBase {
     public function BlogDelegateAdd() {
 
         $url = Url::fromUri('base:/no_access');
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             return new RedirectResponse($url->toString());
         }
 

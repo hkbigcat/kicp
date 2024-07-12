@@ -1,0 +1,49 @@
+<div id="video_content_div"  style="max-width:1000px;">
+{% if media['media_file_local'] %}
+
+{% set ext = (media['media_file_local']|slice(-4) == 'webm')?'webm' : media['media_file_local']|slice(-3) %}
+
+        <video
+        style="min-width:240px;"
+        id="my-video"
+        class="video-js"
+        width="720"
+        controls
+        preload="auto"
+        poster="{{ path('<front>') }}system/files/video/video_image/{{ "%06d" | format( media['media_event_id'] ) }}/{{ media['media_img']}}"
+        controlsList="nodownload"
+        data-setup="{}"
+      >
+        <source src="{{ path('<front>') }}/system/files/video/video{{media['media_file_local']}}" type="video/{{ext}}" />
+        <p class="vjs-no-js">
+          To view this video please enable JavaScript, and consider upgrading to a
+          web browser that
+          <a href="https://videojs.com/html5-video-support/" target="_blank"
+            >supports HTML5 video</a
+          >
+        </p>
+      </video>
+
+      {% else %}
+      <script>
+      //location.href="{{media['media_file_path']}}";
+      </script>
+
+  {% endif %}
+    <div class="spacer"></div>
+    <input type="hidden" name="tag_page" id="tag_page" value="{{path('video.video_tag')}}">
+    <div style="max-width:1000px;">
+    <div style="float:right"><button class="share_button" onclick="copyTextToClipboard(); mailto(3,'')"><i class="fa-solid fa-share-nodes"></i> Share</button></div>
+    <div id="DivFollower">Knowledge Management Unit <span> {% include '@common/common-follow.html.twig'  with {contributor_id: 'KMU.OGCIO'}  %}</span></div>
+      <div>
+        <div class="font-large"><strong>{{media['media_title'] | raw }}</strong></div>
+        <div>{{ media['media_description'] | nl2br  }}</div>        
+        <div class="spacer"></div>
+        <div>Event Name: {{ event_info.media_event_name }}</div>
+        <div>Event Date: </strong> {{ event_info.media_event_date | date('d.m.Y') }}</div>
+      </div>  
+      {% if media['tags'] %}
+      <div>{% include '@common/common-tags-list.html.twig' with {tags: media['tags']} %} </div>
+      {% endif %}
+
+</div>

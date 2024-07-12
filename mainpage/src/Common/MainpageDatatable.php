@@ -448,7 +448,6 @@ class MainpageDatatable {
 
     public static function acceptDisclaimer($user_id) {
         $return_value = NULL;
-        \Drupal::logger('mainpage')->info('Accept Dsiclimare user id:'.$user_id); 
         $database = \Drupal::database();
         $transaction = $database->startTransaction(); 
         try {

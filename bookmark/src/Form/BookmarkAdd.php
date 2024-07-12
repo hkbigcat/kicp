@@ -21,14 +21,10 @@ use Drupal\Core\Utility\Error;
 
 class BookmarkAdd extends FormBase  {
 
-    public $is_authen;
     public $module;    
 
     public function __construct() {
         $this->module = 'bookmark';
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
     }
 
     /**
@@ -58,7 +54,8 @@ class BookmarkAdd extends FormBase  {
 
         $config = \Drupal::config('bookmark.settings'); 
 
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     
@@ -115,7 +112,7 @@ class BookmarkAdd extends FormBase  {
             '#type' => 'button',
             '#value' => t('Cancel'),
             '#prefix' => '&nbsp;',
-            '#attributes' => array('onClick' => 'window.open(\'blog_view?blog_id=1234\', \'_self\'); return false;'),
+            '#attributes' => array('onClick' => 'history.go(-1); return false;'),
             '#limit_validation_errors' => array(),
         );
         
@@ -197,15 +194,15 @@ class BookmarkAdd extends FormBase  {
     
     public function submitForm(array &$form, FormStateInterface $form_state) {
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass'); // get the Authentication class name from database
-        $authen = new $AuthClass();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();  
 
         foreach ($form_state->getValues() as $key => $value) {
             $$key = $value;
         }
         
         $entry = array(
-            'user_id' => $authen->getUserId(),
+            'user_id' => $my_user_id,
             'bIp' => Drupal::request()->getClientIp(),
             'bStatus' => $bStatus,
             'bTitle' => $bTitle,

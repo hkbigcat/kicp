@@ -30,16 +30,18 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class FileShareController extends ControllerBase {
 
-  public $is_authen;
   public $my_user_id;
   public $module;
   public $file_path;
 
   public function __construct() {
+
     $AuthClass = "\Drupal\common\Authentication";
     $authen = new $AuthClass();
-    $this->is_authen = $authen->isAuthenticated;
-    $this->my_user_id = $authen->getUserId();
+
+    $current_user = \Drupal::currentUser();
+    $this->my_user_id = $current_user->getAccountName();
+    
     $file_system = \Drupal::service('file_system');
     $this->module = 'fileshare';
     $FileshareUri = 'private://fileshare/';
@@ -62,7 +64,8 @@ class FileShareController extends ControllerBase {
   public function myShareFolder() {
 
     $url = Url::fromRoute('<front>')->toString();
-    if (! $this->is_authen) {
+    $logged_in = \Drupal::currentUser()->isAuthenticated();
+    if (!$logged_in) {
         return new RedirectResponse($url.'no_access');
     }
 
@@ -91,7 +94,8 @@ class FileShareController extends ControllerBase {
   public function getShareFile() {
 
     $url = Url::fromUri('base:/no_access');
-    if (! $this->is_authen) {
+    $logged_in = \Drupal::currentUser()->isAuthenticated();
+    if (!$logged_in) {
         return new RedirectResponse($url->toString());
     }
 
@@ -122,6 +126,16 @@ class FileShareController extends ControllerBase {
   
   }
 
+  public function viewShareFileOld() {
+    $id = \Drupal::request()->query->get('id');
+    if ($id && is_numeric($id))
+        $url = Url::fromUri('base:/fileshare_view/'.$id);
+    else {
+            $url = Url::fromUri('base:/fileshare/');
+    }
+    return new RedirectResponse($url->toString(), 301);
+  }
+
 /**
    * gete files
    *
@@ -131,11 +145,12 @@ class FileShareController extends ControllerBase {
   public function viewShareFile($file_id) {
 
     $url = Url::fromRoute('<front>')->toString();
-    if (! $this->is_authen) {
+    $logged_in = \Drupal::currentUser()->isAuthenticated();
+    if (!$logged_in) {
         return new RedirectResponse($url.'no_access');
     }
 
-    $table_rows_file = FileShareDatatable::getSharedFile($file_id, $this->my_user_id);
+    $table_rows_file = FileShareDatatable::getSharedFile($file_id);
     if ($table_rows_file == null ) {
       return [
         '#markup' => '<p>You are not authorize to access this file or file does no exisit</p>',
@@ -341,7 +356,7 @@ class FileShareController extends ControllerBase {
         $transaction->rollBack();
      }      
      unset($transaction);
-     $response = array('result' => $err_code);
+     $response = array('result' => 1);
      return new JsonResponse($response);
 
   }
@@ -359,40 +374,6 @@ class FileShareController extends ControllerBase {
     return $file_path;
     
   } 
-
-
-  public function getShareFileTag() {
-
-    $url = Url::fromRoute('<front>')->toString();
-    if (! $this->is_authen) {
-        return new RedirectResponse($url.'no_access');
-    }
-
-    $tags = array();
-    
-  
-    $tagsUrl = \Drupal::request()->query->get('tags');
-
-    $table_rows_file = FileShareDatatable::getSharedFileByTags($tags);
-
-    if ($tagsUrl) {
-      $tags = json_decode($tagsUrl);
-      if ($tags && count($tags) > 0 ) {
-        $tmp = $tags;
-      }
-    }
-
-    return [
-        '#theme' => 'fileshare-files',
-        '#items' => $table_rows_file,
-        '#tags' => $tags,
-        '#empty' => t('No entries available.'),
-        '#tagsUrl' => $tmp,
-        '#pager' => ['#type' => 'pager',
-                    ],
-    ];    
-
-  }
 
 
   public function HandleAutocomplete($string)

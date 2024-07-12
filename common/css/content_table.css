@@ -15,7 +15,7 @@
     box-shadow: 2px 2px 5px #BDBDBD;
 }
 
-.EntryContainer .entry_title {
+.EntryContainer .entry_title, h1.page-title {
     font-weight: bold;
     color: #0071b3;
     font-size: 1.2em;

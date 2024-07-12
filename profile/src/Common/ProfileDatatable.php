@@ -10,15 +10,14 @@ class ProfileDatatable {
     public static function getUserJoinedCopInfo() {
             
             
-            $AuthClass = CommonUtil::getSysValue('AuthClass');
-            $authen = new $AuthClass();
-            $user_id = $authen->getUserId();
-                    
-            $sql = " SELECT a.cop_id, a.cop_name, b.cop_id AS joined_cop FROM kicp_km_cop a LEFT JOIN kicp_km_cop_membership b ON (a.cop_id=b.cop_id AND b.user_id='".$user_id."') WHERE a.is_deleted = 0 AND a.cop_group_id != 4 ORDER BY cop_name ";
-            $database = \Drupal::database();
-            $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();             
+                
+        $sql = " SELECT a.cop_id, a.cop_name, b.cop_id AS joined_cop FROM kicp_km_cop a LEFT JOIN kicp_km_cop_membership b ON (a.cop_id=b.cop_id AND b.user_id='".$user_id."') WHERE a.is_deleted = 0 AND a.cop_group_id != 4 ORDER BY cop_name ";
+        $database = \Drupal::database();
+        $result = $database-> query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-            return $result;
+        return $result;
             
     }
 
@@ -42,12 +41,8 @@ class ProfileDatatable {
         $cond = "";
         $type = \Drupal::request()->query->get('type');
 
-        $AuthClass = CommonUtil::getSysValue('AuthClass');
-        $authen = new $AuthClass();
-        $author = CommonUtil::getSysValue('AuthorClass');
-        $user_id = $authen->getUserId();
-
-        
+        $current_user = \Drupal::currentUser();
+        $user_id = $current_user->getAccountName();             
         $database = \Drupal::database();
         $search_str = \Drupal::request()->query->get('search_str');
 
@@ -57,7 +52,9 @@ class ProfileDatatable {
             $query->addField('a', 'pub_group_name', 'group_name');
             $query-> condition('a.is_deleted', '0');
             $query-> condition('a.source', 'U');
-            if (!$author::isSiteAdmin($authen->getUserId())) {
+
+            $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages');             
+            if (!$isSiteAdmin) {
                 $query-> condition('pub_group_owner', $user_id);
             }
             if ($search_str && $search_str !="") {
@@ -71,7 +68,8 @@ class ProfileDatatable {
             $query->addField('a', 'buddy_group_id', 'group_id');
             $query->addField('a', 'buddy_group_name', 'group_name');
             $query-> condition('a.is_deleted', '0');
-            if (!$author::isSiteAdmin($authen->getUserId())) {
+            $isSiteAdmin = \Drupal::currentUser()->hasPermission('access administration pages');             
+            if (!$isSiteAdmin) {
                 $query-> condition('a.user_id', $user_id);
             }
             if ($search_str && $search_str !="") {

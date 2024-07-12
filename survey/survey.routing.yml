@@ -20,6 +20,16 @@ survey.survey_view:
   options:
     no_cache: TRUE
 
+survey.survey_view_old:
+  path: '/survey_view'
+  defaults:
+    _controller: '\Drupal\survey\Controller\SurveyController::SurveyViewOld'
+    _title: ''
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE    
+
 survey.export_survey:
   path: '/export_survey/{survey_id}'
   defaults:

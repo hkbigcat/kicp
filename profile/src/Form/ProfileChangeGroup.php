@@ -17,14 +17,10 @@ use Drupal\Core\Utility\Error;
 
 class ProfileChangeGroup extends FormBase {
 
-    public $is_authen;
     public $module;    
 
     public function __construct() {
         $this->module = 'profile';
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $this->is_authen = $authen->isAuthenticated;
     }
 
     /**
@@ -39,7 +35,8 @@ class ProfileChangeGroup extends FormBase {
      */
     public function buildForm(array $form, FormStateInterface $form_state,$type="", $group_id="") {
 
-        if (! $this->is_authen) {
+        $logged_in = \Drupal::currentUser()->isAuthenticated();
+        if (!$logged_in) {
             $form['no_access'] = [
                 '#markup' => CommonUtil::no_access_msg(),
             ];     

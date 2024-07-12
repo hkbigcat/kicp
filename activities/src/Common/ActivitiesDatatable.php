@@ -147,9 +147,8 @@ class ActivitiesDatatable {
         $output=array();
         $cond = '';
 
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();    
 
         if ($type_id == 1 && $item_id != "") {
             $cond .= ' AND cop_id=' . $item_id;
@@ -237,7 +236,8 @@ class ActivitiesDatatable {
         $record = array();
         $AuthClass = "\Drupal\common\Authentication";
         $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();    
 
         if ($evt_id == "") {
             return $record;
@@ -325,9 +325,8 @@ class ActivitiesDatatable {
     public static function getEventDeliverableByEventId($evt_id) {
         $record = array();
         $output = array();
-        $AuthClass = "\Drupal\common\Authentication";
-        $authen = new $AuthClass();
-        $my_user_id = $authen->getUserId();
+        $current_user = \Drupal::currentUser();
+        $my_user_id = $current_user->getAccountName();    
 
         $search_sql = "";
         $search_str = \Drupal::request()->query->get('search_str');
